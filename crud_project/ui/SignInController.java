@@ -185,12 +185,16 @@ public class SignInController {
                     Customer.class, email, password);
 
             // Si todo es correcto se abrirá la página “Main” y se cerrará la actual.
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("Main.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("UserControllerWindow.fxml"));
             Parent root = loader.load();
             // Cargamos controlador.
-            MainController controller = loader.getController();
-            controller.initStage(this.stage, root);
-            LOGGER.info("Changing to Main Window");
+            UserController controller = loader.getController();
+            this.stage.hide();
+            controller.initUserStage(root);
+            controller.getStage().setOnHiding(e->{
+                this.stage.show();
+            });
+            LOGGER.info("Changing to User Window");
 
         } catch (NotAuthorizedException e) {
             LOGGER.warning(e.getMessage());
