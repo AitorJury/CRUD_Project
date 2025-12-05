@@ -101,7 +101,6 @@ public class SignUpController {
     private List<Label> errLabels;
 
     // Agrupa campos y labels para manejo centralizado.
-    @FXML
     private void initialize() {
         txtFields = Arrays.asList(
                 txtFirstName, txtLastName, txtMiddleInitial, txtEmail,
