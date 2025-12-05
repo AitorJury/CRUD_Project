@@ -52,9 +52,10 @@ public class SignInController {
      */
     public void initStage(Stage stage, Parent root) {
         Scene scene = new Scene(root);
+        this.stage = stage;
         stage.setScene(scene);
 
-        this.stage = stage;
+        
         LOGGER.info("Initializing window");
         // Establecer el título de la ventana.
         stage.setTitle("Sign in");
@@ -113,7 +114,15 @@ public class SignInController {
             Parent root = loader.load();
 
             SignUpController controller = loader.getController();
-            controller.init(this.stage, root);
+            //Ocultar la ventana actual
+            this.stage.hide();
+            
+            controller.init(root);
+            //Obetener la stage que se crea en el init para mostrar cuando se cierre la otra ventana
+            controller.getStage().setOnHiding(e->{
+                this.stage.show();
+            });
+            
             // Obtener el controlador correcto.
             LOGGER.info("Changing to Sign Up Window");
 

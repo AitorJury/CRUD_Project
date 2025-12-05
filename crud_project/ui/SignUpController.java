@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -119,10 +120,11 @@ public class SignUpController {
      * @param stage La ventana principal (Stage) donde se muestra la escena.
      * @param root La raíz (Parent) que contiene los elementos del FXML.
      */
-    public void init(Stage stage, Parent root) {
+    public void init( Parent root) {
         try {
-            this.stage = stage;
+            initialize();
             Scene scene = new Scene(root);
+            stage = new Stage();
             stage.setScene(scene);
             LOGGER.info("Initializing window.");
             stage.setTitle("Sign Up");
@@ -164,6 +166,8 @@ public class SignUpController {
             // Asociar eventos de botones y links a manejadores.
             btnCreateAccount.setOnAction(this::handleBtnCreateAccountOnAction);
             btnExit.setOnAction(this::handleBtnExitOnAction);
+            stage.setOnCloseRequest(this::handleBtnExitOnAction);
+            
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -737,8 +741,9 @@ public class SignUpController {
      *
      * @param event El evento de acción generado por el botón.
      */
-    private void handleBtnExitOnAction(ActionEvent event) {
+    private void handleBtnExitOnAction(Event event) {
         try {
+            /*
             LOGGER.info("Clicked exit button");
             // Mostrar alert modal de confirmación para salir de la ventana y pase a Sign In.
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
@@ -760,6 +765,10 @@ public class SignUpController {
                     }
                 }
             });
+            */
+            event.consume();
+            stage.close();
+            
         } catch (Exception e) {
             // Si no logra cambiar u otro error, mostrar un alert modal que 
             // indique que no se puede salir. Debe aceptar el mensaje con un OK.
@@ -844,5 +853,8 @@ public class SignUpController {
         }
 
         btnCreateAccount.setDisable(!allValid);
+    }
+    public Stage getStage(){
+        return this.stage;
     }
 }

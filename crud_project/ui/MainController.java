@@ -1,4 +1,4 @@
-package crud_project.ui;
+ package crud_project.ui;
 
 // Imports.
 import java.io.IOException;
