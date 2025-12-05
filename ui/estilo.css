@@ -1,0 +1,108 @@
+/* ---------- Contenedor Principal ---------- */
+.root-pane {
+    -fx-background-color: #FFFFFF;
+    -fx-font-family: "Segoe UI", "Arial", sans-serif;
+}
+
+/* ---------- Títulos ---------- */
+.title-label {
+    -fx-font-size: 120px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1A1A1A;
+}
+
+.welcome-label {
+    -fx-font-size: 60px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #333333;
+    -fx-alignment: center;
+}
+
+/* ---------- Textos Simples ---------- */
+.label {
+    -fx-font-size: 14px;
+    -fx-text-fill: #1A1A1A;
+}
+
+.error-label {
+    -fx-text-fill: red;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+/* ---------- Campos de Texto ---------- */
+.text-field,
+.password-field {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #BFBFBF;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+    -fx-padding: 5;
+    -fx-font-size: 14px;
+    -fx-text-fill: #1A1A1A;
+}
+
+.text-field:focused,
+.password-field:focused {
+    -fx-border-color: #6C3FA3;
+    -fx-effect: dropshadow(three-pass-box, rgba(76, 63, 163, 0.25), 6, 0, 0, 0);
+}
+
+/* ---------- Botones ---------- */
+.button-primary {
+    -fx-background-color: #3C8C59;
+    -fx-text-fill: #FFFFFF;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 5;
+    -fx-cursor: hand;
+    -fx-border-color: transparent;
+}
+
+.button-primary:hover {
+    -fx-background-color: #3C8A23;
+}
+
+.button-secondary {
+    -fx-background-color: #BFBFBF;
+    -fx-text-fill: #1A1A1A;
+    -fx-font-size: 16px;
+    -fx-background-radius: 5;
+    -fx-cursor: hand;
+}
+
+.button-secondary:hover {
+    -fx-background-color: #6C3FA3;
+    -fx-text-fill: #1E3E2C;
+}
+
+/* ---------- Links ---------- */
+.link {
+    -fx-font-size: 13px;
+    -fx-text-fill: #4B2A78;
+}
+
+.link:hover {
+    -fx-text-fill: #6C3FA3;
+    -fx-underline: true;
+}
+
+/* ---------- Tooltips ---------- */
+.tooltip {
+    -fx-background-color: #4B2A78;
+    -fx-text-fill: #FFFFFF;
+    -fx-font-size: 12px;
+    -fx-background-radius: 5;
+    -fx-padding: 6;
+}
+
+/* ---------- Logos (Imágenes) ---------- */
+.image-view {
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);
+}
+
+/* ---------- Separadores ---------- */
+.separator {
+    -fx-background-color: #BFBFBF;
+    -fx-pref-height: 1;
+}
