@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package ev2_crud_application.model;
+package crud_project.model;
 
 import java.io.Serializable;
 import java.util.Date;

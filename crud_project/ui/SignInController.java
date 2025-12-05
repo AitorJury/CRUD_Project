@@ -1,8 +1,8 @@
-package ev2_crud_application.ui;
+package crud_project.ui;
 
 // Imports.
-import ev2_crud_application.logic.CustomerRESTClient;
-import ev2_crud_application.model.Customer;
+import crud_project.logic.CustomerRESTClient;
+import crud_project.model.Customer;
 import java.util.logging.Logger;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;

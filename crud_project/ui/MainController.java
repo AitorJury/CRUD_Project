@@ -1,4 +1,4 @@
-package ev2_crud_application.ui;
+package crud_project.ui;
 
 // Imports.
 import java.io.IOException;
