@@ -6,6 +6,8 @@
 package crud_project.ui;
 
 import java.util.logging.Logger;
+
+import crud_project.model.Customer;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -19,13 +21,14 @@ public class UserController {
     private static final Logger LOGGER= Logger.getLogger("crudbankclientside.ui");
     private final Stage userStage = new Stage();
     private Scene userScene;
+    private Customer customer;
     
     public void initUserStage(Parent root){
         //Creacion de la nueva ventana para User
         userScene = new Scene(root);
         userStage.setScene(userScene);
         LOGGER.info("Initialization window user");
-        userStage.setTitle("Users management");
+        userStage.setTitle("Users management for "+customer.getFirstName());
         LOGGER.info("Setting title");
         userStage.setResizable(false);
         LOGGER.info("Setting fix size");
@@ -35,5 +38,11 @@ public class UserController {
     }
     public Stage getStage(){
         return this.userStage;
+    }
+    public Customer getCustomer(){
+        return this.customer;
+    }
+    public void setCustomer(Customer customer){
+        this.customer = customer;
     }
 }

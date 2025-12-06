@@ -20,7 +20,7 @@ public class AppCRUD extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         FXMLLoader loader =new FXMLLoader(getClass().getResource("ui/SignIn.fxml"));
-        Parent root = (Parent)loader.load();
+        Parent root = loader.load();
         
         SignInController controller = loader.getController();
         
