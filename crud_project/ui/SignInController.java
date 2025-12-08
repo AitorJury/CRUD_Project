@@ -52,9 +52,10 @@ public class SignInController {
      */
     public void initStage(Stage stage, Parent root) {
         Scene scene = new Scene(root);
+        this.stage = stage;
         stage.setScene(scene);
 
-        this.stage = stage;
+        
         LOGGER.info("Initializing window");
         // Establecer el título de la ventana.
         stage.setTitle("Sign in");
@@ -113,7 +114,15 @@ public class SignInController {
             Parent root = loader.load();
 
             SignUpController controller = loader.getController();
-            controller.init(this.stage, root);
+            //Ocultar la ventana actual
+            this.stage.hide();
+            
+            controller.init(root);
+            //Obetener la stage que se crea en el init para mostrar cuando se cierre la otra ventana
+            controller.getStage().setOnHiding(e->{
+                this.stage.show();
+            });
+            
             // Obtener el controlador correcto.
             LOGGER.info("Changing to Sign Up Window");
 
@@ -175,13 +184,18 @@ public class SignInController {
             Customer customer = client.findCustomerByEmailPassword_XML(
                     Customer.class, email, password);
 
-            // Si todo es correcto se abrirá la página “Main” y se cerrará la actual.
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("Main.fxml"));
+            // Si t0do es correcto se abrirá la página “Main” y se cerrará la actual.
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("UserControllerWindow.fxml"));
             Parent root = loader.load();
             // Cargamos controlador.
-            MainController controller = loader.getController();
-            controller.initStage(this.stage, root);
-            LOGGER.info("Changing to Main Window");
+            UserController controller = loader.getController();
+            controller.setCustomer(customer);
+            this.stage.hide();
+            controller.initUserStage(root);
+            controller.getStage().setOnHiding(e->{
+                this.stage.show();
+            });
+            LOGGER.info("Changing to User Window");
 
         } catch (NotAuthorizedException e) {
             LOGGER.warning(e.getMessage());

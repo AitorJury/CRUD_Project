@@ -33,8 +33,9 @@ public class CustomerRESTClient {
         webTarget = client.target(BASE_URI).path("customer");
     }
 
-    public void edit_XML(Object requestEntity) throws ClientErrorException {
-        webTarget.request(javax.ws.rs.core.MediaType.APPLICATION_XML).put(javax.ws.rs.client.Entity.entity(requestEntity, javax.ws.rs.core.MediaType.APPLICATION_XML));
+    public void edit_XML(Object requestEntity,Long id) throws ClientErrorException {
+        webTarget.request(javax.ws.rs.core.MediaType.APPLICATION_XML)
+                .put(javax.ws.rs.client.Entity.entity(requestEntity, javax.ws.rs.core.MediaType.APPLICATION_XML),requestEntity.getClass());
     }
 
     public void edit_JSON(Object requestEntity) throws ClientErrorException {
@@ -66,7 +67,9 @@ public class CustomerRESTClient {
     }
 
     public void create_XML(Object requestEntity) throws ClientErrorException {
-        webTarget.request(javax.ws.rs.core.MediaType.APPLICATION_XML).post(javax.ws.rs.client.Entity.entity(requestEntity, javax.ws.rs.core.MediaType.APPLICATION_XML));
+        webTarget.request(javax.ws.rs.core.MediaType.APPLICATION_XML)
+                .post(javax.ws.rs.client.Entity
+                        .entity(requestEntity, javax.ws.rs.core.MediaType.APPLICATION_XML), Object.class);
     }
 
     public void create_JSON(Object requestEntity) throws ClientErrorException {
@@ -90,5 +93,5 @@ public class CustomerRESTClient {
     public void close() {
         client.close();
     }
-    
+
 }
