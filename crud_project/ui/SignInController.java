@@ -188,7 +188,7 @@ public class SignInController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("UserControllerWindow.fxml"));
             Parent root = loader.load();
             // Cargamos controlador.
-            UserController controller = loader.getController();
+            CustomerController controller = loader.getController();
             controller.setCustomer(customer);
             this.stage.hide();
             controller.initUserStage(root);
