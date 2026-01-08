@@ -55,17 +55,17 @@ public class AccountsController {
         // Configurar columnas
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
         
-        // Columna Descripción Editable
+        // Columna Descripción
         colDescription.setCellValueFactory(new PropertyValueFactory<>("description"));
         colDescription.setCellFactory(TextFieldTableCell.forTableColumn());
         colDescription.setOnEditCommit(this::handleEditDescription);
 
-        // Columna CreditLine Editable (con restricción)
+        // Columna CreditLine
         colCreditLine.setCellValueFactory(new PropertyValueFactory<>("creditLine"));
         colCreditLine.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
         colCreditLine.setOnEditCommit(this::handleEditCreditLine);
 
-        // Cargar datos (Simulado de momento)
+        // Cargar datos
         loadAccountsData();
         
         btnDeleteAccount.setOnAction(this::handleDeleteAccount);
