@@ -23,9 +23,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 
-
-
-
 /**
  *
  * @author juancaizaduenas
@@ -36,7 +33,6 @@ public class UserController {
     private final Stage userStage = new Stage();
     private Scene userScene;
     private Customer customer;
-
 
     @FXML
     public TableView<Customer> fxTableView;
@@ -72,7 +68,7 @@ public class UserController {
     public Button fxBtnDelete;
     @FXML
     public Button fxBtnSaveChanges;
-    private ObservableList<Customer> customerData = FXCollections.observableArrayList();
+    private ObservableList<Customer> customerData;
 
     public void initUserStage(Parent root) {
         //Creacion de la nueva ventana para User
@@ -101,15 +97,8 @@ public class UserController {
         fxTcCity.setCellValueFactory(new PropertyValueFactory<>("city"));
         fxTcState.setCellValueFactory(new PropertyValueFactory<>("state"));
         fxTcZip.setCellValueFactory(new PropertyValueFactory<>("zip"));
-
         //Carga de datos a las columnas
-        Customer[] customersArray = client.findAll_XML(Customer[].class);
-        List<Customer> customers = Arrays.asList(customersArray);
-
-        customerData.setAll(customers);
-        fxTableView.setItems(customerData);
-
-
+        loadDataCustomer(client);
 
     }
 
@@ -123,5 +112,16 @@ public class UserController {
 
     public void setCustomer(Customer customer) {
         this.customer = customer;
+    }
+
+    private void loadDataCustomer(CustomerRESTClient client) {
+        
+        Customer [] customerArray = client.findAll_JSON(Customer[].class);
+        
+        customerData = FXCollections.observableArrayList(Arrays.asList(customerArray));
+        
+        fxTableView.setItems(customerData);
+        
+
     }
 }

@@ -18,6 +18,26 @@ import javax.xml.bind.annotation.XmlTransient;
 @XmlRootElement
 public class Customer implements Serializable {
 
+    public Customer(Long id, String firstName, String lastName, String middleInitial, String street, String city, String state, Integer zip, Long phone, String email, String password, Set<Account> accounts) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.middleInitial = middleInitial;
+        this.street = street;
+        this.city = city;
+        this.state = state;
+        this.zip = zip;
+        this.phone = phone;
+        this.email = email;
+        this.password = password;
+        this.accounts = accounts;
+    }
+
+    public Customer() {
+    }
+    
+    
+
     private static final long serialVersionUID = 1L;
     /**
      * Identification field for client.
