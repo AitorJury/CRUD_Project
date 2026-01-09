@@ -8,6 +8,8 @@ package crud_project.model;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
+import javafx.beans.property.*;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
@@ -25,34 +27,34 @@ public class Account implements Serializable {
     /**
      * Identification field for the account.
      */
-    private Long id;
+    private final SimpleLongProperty id;
     /**
      * Type of the account.
      */
-    private AccountType type;
+    private final SimpleObjectProperty<AccountType> type;
     /**
      * Description of the account.
      */
-    private String description;
+    private final SimpleStringProperty description;
     /**
      * Current balance of the account.
      */
-    private Double balance;
+    private final SimpleDoubleProperty balance;
     /**
      * Limit for the credit line. The balance can be negative but not below this
      * limit. Do note that the limit is stored always as a positive value. 
      */
-    private Double creditLine;
+    private final SimpleDoubleProperty creditLine;
     /**
      * Begin balance of the account. Normally it is set when opening the account.
      * It is useful to reconcile balance and movements in conjuction with its corresponding
      * timestamp.
      */
-    private Double beginBalance;
+    private final SimpleDoubleProperty beginBalance;
     /**
      * Begin balance timestamp.
      */
-    private Date beginBalanceTimestamp;
+    private final SimpleObjectProperty<Date> beginBalanceTimestamp;
     /**
      * Relational field containing Customers owning the account. 
      */
@@ -61,69 +63,99 @@ public class Account implements Serializable {
      * Relational field containing the list of movements on the account.
      */
     private Set<Movement> movements;
+    
+    // Constructor vacío.
+    public Account() {
+        this.id = new SimpleLongProperty();
+        this.type = new SimpleObjectProperty<>();
+        this.description = new SimpleStringProperty();
+        this.balance = new SimpleDoubleProperty();
+        this.creditLine = new SimpleDoubleProperty();
+        this.beginBalance = new SimpleDoubleProperty();
+        this.beginBalanceTimestamp = new SimpleObjectProperty<>();
+    }
+    
+    // Constructor con parámetros.
+    public Account(Long id, AccountType type, String description, Double balance, 
+                   Double creditLine, Double beginBalance, Date beginBalanceTimestamp) {
+        this.id = new SimpleLongProperty(id);
+        this.type = new SimpleObjectProperty<>(type);
+        this.description = new SimpleStringProperty(description);
+        this.balance = new SimpleDoubleProperty(balance);
+        this.creditLine = new SimpleDoubleProperty(creditLine);
+        this.beginBalance = new SimpleDoubleProperty(beginBalance);
+        this.beginBalanceTimestamp = new SimpleObjectProperty<>(beginBalanceTimestamp);
+    }
+    
     /**
      * 
      * @return the id
      */
+    @XmlElement
     public Long getId() {
-        return id;
+        return id.get();
     }
     /**
      * 
      * @param id the id to be set
      */
     public void setId(Long id) {
-        this.id = id;
+        this.id.set(id);
     }
 
     /**
      * @return the type
      */
+    @XmlElement
     public AccountType getType() {
-        return type;
+        return type.get();
     }
 
     /**
      * @param type the type to set
      */
     public void setType(AccountType type) {
-        this.type = type;
+        this.type.set(type);
     }
-
+    
     /**
      * @return the description
      */
+    @XmlElement
     public String getDescription() {
-        return description;
+        return description.get();
     }
 
     /**
      * @param description the description to set
      */
     public void setDescription(String description) {
-        this.description = description;
+        this.description.set(description);
     }
-
+    
     /**
      * @return the balance
      */
+    @XmlElement
     public Double getBalance() {
-        return balance;
+        return balance.get();
     }
 
     /**
      * @param balance the balance to set
      */
     public void setBalance(Double balance) {
-        this.balance = balance;
+        this.balance.set(balance);
     }
+    
     /**
      * Limit for the credit line. The balance can be negative but not below this
      * limit. Do note that the limit is stored always as a positive value.
      * @return the creditLine
      */
+    @XmlElement
     public Double getCreditLine() {
-        return creditLine;
+        return creditLine.get();
     }
 
     /**
@@ -132,7 +164,7 @@ public class Account implements Serializable {
      * @param creditLine the creditLine to set
      */
     public void setCreditLine(Double creditLine) {
-        this.creditLine = creditLine;
+        this.creditLine.set(creditLine);
     }
 
     /**
@@ -141,9 +173,11 @@ public class Account implements Serializable {
      * timestamp.
      * @return the beginBalance
      */
+    @XmlElement
     public Double getBeginBalance() {
-        return beginBalance;
+        return beginBalance.get();
     }
+    
     /**
      * Begin balance of the account. Normally it is set when opening the account.
      * It is useful to reconcile balance and movements in conjuction with its corresponding
@@ -151,29 +185,35 @@ public class Account implements Serializable {
      * @param beginBalance the beginBalance to set
      */
     public void setBeginBalance(Double beginBalance) {
-        this.beginBalance = beginBalance;
+        this.beginBalance.set(beginBalance);
     }
+    
     /**
      * Begin balance timestamp.
      * @return the beginBalanceTimestamp
      */
+    @XmlElement
     public Date getBeginBalanceTimestamp() {
-        return beginBalanceTimestamp;
+        return beginBalanceTimestamp.get();
     }
+    
     /**
      * Begin balance timestamp.
      * @param beginBalanceTimestamp the beginBalanceTimestamp to set
      */
     public void setBeginBalanceTimestamp(Date beginBalanceTimestamp) {
-        this.beginBalanceTimestamp = beginBalanceTimestamp;
+        this.beginBalanceTimestamp.set(beginBalanceTimestamp);
     }
+    
     /**
      * Relational field containing Customers owning the account.
      * @return the customers
      */
+    @XmlTransient
     public Set<Customer> getCustomers() {
         return customers;
     }
+    
     /**
      * Relational field containing Customers owning the account.
      * @param customers the customers to set
@@ -186,6 +226,7 @@ public class Account implements Serializable {
      * Relational field containing the list of movements on the account.
      * @return the movements
      */
+    @XmlTransient
     public Set<Movement> getMovements() {
         return movements;
     }
@@ -197,6 +238,7 @@ public class Account implements Serializable {
     public void setMovements(Set<Movement> movements) {
         this.movements = movements;
     }
+    
     /**
      * Integer representation for Account instance.
      * @return 
@@ -207,6 +249,7 @@ public class Account implements Serializable {
         hash += (id != null ? id.hashCode() : 0);
         return hash;
     }
+    
     /**
      * Compares two Account objects for equality. This method consider a Account 
      * equal to another Account if their id fields have the same value. 
