@@ -76,7 +76,7 @@ public class UserController {
     @FXML
     public Button fxBtnSaveChanges;
     private ObservableList<Customer> customerData;
-    private FilteredList<Customer> filteredList;
+    ArrayList<Customer> customerList = new ArrayList<>();
 
     public CustomerRESTClient client = new CustomerRESTClient();
 
@@ -93,8 +93,6 @@ public class UserController {
         LOGGER.info("Showing window");
 
         //Recuperar lista de todos los customers
-
-
         //Configuracion de columnas
         fxTfSearchBar.setPromptText("Search by name");
         //Columnas editables
@@ -122,42 +120,45 @@ public class UserController {
         fxTcZip.setEditable(true);
 
         //Carga de datos a las columnas
-        Customer[] customerArray = client.findAll_JSON(Customer[].class);
+        client.findAll_XML(customerList.getClass());
 
-        customerData = FXCollections.observableArrayList(Arrays.asList(customerArray));
-
-        filteredList = new FilteredList<>(customerData, p -> true);
-        fxTableView.setItems(filteredList);
+        customerData = FXCollections.observableList(customerList);
 
         fxBtnNewCustomer.setOnAction(this::addCustomer);
-        fxBtnDelete.setOnAction(this::handleDeleteCustomerRow);
-        fxTfSearchBar.textProperty().addListener(this::handleSearchCustomer);
-
+        fxBtnDelete.setOnAction(this::handleDeleteCustomerAndRow);
 
     }
 
-    private void handleSearchCustomer(ObservableValue observableValue, String oldValue, String newValue) {
+    private boolean isRowSelected(TableView table) {
 
-       filteredList.setPredicate( customer ->{
-           if(newValue == null || newValue.isEmpty()){
-               return true;
-           }
-           String lowerCaseFilter = newValue.toLowerCase();
+        return table.getSelectionModel().getSelectedItem() != null;
 
-           return customer.getFirstName().toLowerCase().contains(lowerCaseFilter) || customer.getLastName().toLowerCase().contains(lowerCaseFilter);
-       } );
     }
 
+    private void handleDeleteCustomerAndRow(ActionEvent actionEvent) {
+        try {
+            Customer selectedCustomer = fxTableView.getSelectionModel().getSelectedItem();
+            fxBtnDelete.setDisable(true);
+            //Comprobar si esta seleccionado una fila
+            if (selectedCustomer != null) {
+                client.remove(selectedCustomer.getId().toString());
 
-    private void handleDeleteCustomerRow(ActionEvent actionEvent) {
-        fxTableView.getItems()
-                .remove(fxTableView.getSelectionModel().getSelectedItem());
-        fxTableView.refresh();
+                fxTableView.getItems()
+                        .remove(selectedCustomer);
+                fxTableView.refresh();
+
+            }
+
+        } catch (Exception e) {
+
+            //TODO Mostrar mensaje de error si ha ocurrido al selecciona la fila
+            LOGGER.warning(e.getMessage());
+        }
     }
 
     public void addCustomer(ActionEvent event) {
 
-        fxTableView.getItems().add(Customer.builder()
+        /*fxTableView.getItems().add(Customer.builder()
                 .id(customer.getId())
                 .firstName("")
                 .lastName("")
@@ -171,9 +172,8 @@ public class UserController {
                 .password("")
                 .accounts(customer.getAccounts())
                 .build());
-
+         */
         fxTableView.refresh();
-
 
     }
 
@@ -182,19 +182,17 @@ public class UserController {
      */
     public void editStringCell(TableColumn<Customer, String> column, BiConsumer<Customer, String> setter) {
 
-
         column.setCellFactory(TextFieldTableCell.forTableColumn());
         column.setOnEditCommit(
                 (TableColumn.CellEditEvent<Customer, String> t) -> {
-                    Customer customer =
-                            t.getTableView().getItems().get(
-                                    t.getTablePosition().getRow()
-                            );
+                    Customer customer
+                    = t.getTableView().getItems().get(
+                            t.getTablePosition().getRow()
+                    );
                     setter.accept(customer, t.getNewValue());
                 }
         );
     }
-
 
     public Stage getStage() {
         return this.userStage;
@@ -207,6 +205,5 @@ public class UserController {
     public void setCustomer(Customer customer) {
         this.customer = customer;
     }
-
 
 }
