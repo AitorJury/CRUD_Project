@@ -185,13 +185,13 @@ public class SignInController {
                     Customer.class, email, password);
 
             // Si t0do es correcto se abrirá la página “Main” y se cerrará la actual.
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("UserControllerWindow.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Accounts.fxml"));
             Parent root = loader.load();
             // Cargamos controlador.
-            UserController controller = loader.getController();
-            controller.setCustomer(customer);
+            AccountsController controller = loader.getController();
+            
             this.stage.hide();
-            controller.initUserStage(root);
+            controller.init(root);
             controller.getStage().setOnHiding(e->{
                 this.stage.show();
             });

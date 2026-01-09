@@ -48,13 +48,13 @@ public class AccountsController {
 
     public void init(Parent root) {
         Scene scene = new Scene(root);
-        stage = new Stage();
-        stage.setScene(scene);
+        this.stage = new Stage();
+        this.stage.setScene(scene);
         stage.setTitle("Account Management");
-        
+
         // Configurar columnas
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
-        
+
         // Columna Descripción
         colDescription.setCellValueFactory(new PropertyValueFactory<>("description"));
         colDescription.setCellFactory(TextFieldTableCell.forTableColumn());
@@ -67,11 +67,11 @@ public class AccountsController {
 
         // Cargar datos
         loadAccountsData();
-        
+
         btnDeleteAccount.setOnAction(this::handleDeleteAccount);
         btnAddAccount.setOnAction(this::handleAddAccount);
 
-        stage.show();
+        this.stage.show();
     }
 
     private void loadAccountsData() {
@@ -89,7 +89,7 @@ public class AccountsController {
 
     private void handleEditCreditLine(TableColumn.CellEditEvent<Account, Double> event) {
         Account acc = event.getRowValue();
-        
+
         // REGLA DE NEGOCIO: Solo si es CREDIT
         if (acc.getType() == AccountType.CREDIT) {
             acc.setCreditLine(event.getNewValue());
@@ -117,5 +117,10 @@ public class AccountsController {
         newAcc.setType(AccountType.STANDARD);
         accountsData.add(newAcc);
         // Aquí llamarías al REST Client (POST)
+    }
+
+    // Este método es el que llama el SignInController
+    public Stage getStage() {
+        return this.stage;
     }
 }
