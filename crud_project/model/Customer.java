@@ -43,7 +43,7 @@ public class Customer implements Serializable {
 
     private static final long serialVersionUID = 1L;
     /**
-     * Identification field for client.
+     * Identification field for a client.
      */
     private Long id;
     /**

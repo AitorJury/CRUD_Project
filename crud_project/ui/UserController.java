@@ -7,24 +7,25 @@ package crud_project.ui;
 
 import java.awt.*;
 import java.util.*;
+
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.logging.Logger;
 
 import crud_project.logic.CustomerRESTClient;
-import crud_project.model.Account;
+
 import crud_project.model.Customer;
+
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.FilteredList;
+
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.*;
 import javafx.scene.control.Button;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
@@ -81,6 +82,10 @@ public class UserController {
     public CustomerRESTClient client = new CustomerRESTClient();
 
     public void initUserStage(Parent root) {
+
+        //Deshabilitar boton de delete
+        fxBtnDelete.setDisable(true);
+
         //Creacion de la nueva ventana para User
         userScene = new Scene(root);
         userStage.setScene(userScene);
@@ -120,38 +125,61 @@ public class UserController {
         fxTcZip.setEditable(true);
 
         //Carga de datos a las columnas
-        client.findAll_XML(customerList.getClass());
+//        client.findAll_XML(customerList.getClass());
+//        customerData = FXCollections.observableArrayList(customerList);
+//        fxTableView.setItems(customerData);
+        //Prueba de carga de datos con Array[]
+        Customer[] response = client.findAll_XML(Customer[].class);
+        customerList = new ArrayList<>(Arrays.asList(response));
+        customerData = FXCollections.observableArrayList(customerList);
 
-        customerData = FXCollections.observableList(customerList);
+        fxTableView.setItems(customerData);
+        fxTableView.getSelectionModel().selectedItemProperty().addListener(this::handleTableSelectionChanged);
 
         fxBtnNewCustomer.setOnAction(this::addCustomer);
         fxBtnDelete.setOnAction(this::handleDeleteCustomerAndRow);
 
     }
 
-    private boolean isRowSelected(TableView table) {
+    private void handleTableSelectionChanged(ObservableValue observable, Object oldValue, Object newValue) {
 
-        return table.getSelectionModel().getSelectedItem() != null;
+        fxBtnDelete.setDisable(newValue == null);
 
     }
 
     private void handleDeleteCustomerAndRow(ActionEvent actionEvent) {
         try {
+
             Customer selectedCustomer = fxTableView.getSelectionModel().getSelectedItem();
-            fxBtnDelete.setDisable(true);
             //Comprobar si esta seleccionado una fila
             if (selectedCustomer != null) {
-                client.remove(selectedCustomer.getId().toString());
 
-                fxTableView.getItems()
-                        .remove(selectedCustomer);
-                fxTableView.refresh();
+                if (selectedCustomer.getFirstName().equals("admin")) {
+                    throw new IllegalArgumentException("No se puede borrar el usuario administrador");
+                }
+
+                Alert deleteAlert = new Alert(
+                        Alert.AlertType.CONFIRMATION,
+                        "Seguro que quieres eliminar al usuario: " + selectedCustomer.getFirstName() + "?",
+                        ButtonType.YES, ButtonType.NO);
+
+                deleteAlert.setTitle("Delete user?");
+                deleteAlert.setHeaderText("Deleting user: " + selectedCustomer.getFirstName());
+                deleteAlert.showAndWait().ifPresent(resp -> {
+                    if (resp == ButtonType.YES) {
+                        //client.remove(selectedCustomer.getId().toString());
+                        fxTableView.getItems().remove(selectedCustomer);
+                        fxTableView.getSelectionModel().clearSelection();
+                        fxTableView.refresh();
+                    }
+                });
+
 
             }
 
         } catch (Exception e) {
 
-            //TODO Mostrar mensaje de error si ha ocurrido al selecciona la fila
+            handleAlertError(e.getMessage());
             LOGGER.warning(e.getMessage());
         }
     }
@@ -186,12 +214,20 @@ public class UserController {
         column.setOnEditCommit(
                 (TableColumn.CellEditEvent<Customer, String> t) -> {
                     Customer customer
-                    = t.getTableView().getItems().get(
+                            = t.getTableView().getItems().get(
                             t.getTablePosition().getRow()
                     );
                     setter.accept(customer, t.getNewValue());
                 }
         );
+    }
+
+    private void handleAlertError(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR, "", ButtonType.OK);
+        alert.setTitle("Error");
+        alert.setContentText(message);
+        alert.showAndWait();
+
     }
 
     public Stage getStage() {

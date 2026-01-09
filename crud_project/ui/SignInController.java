@@ -167,10 +167,12 @@ public class SignInController {
         try {
             // Validar si el correo tiene formato del correo (@ y un dominio).
             String text = txtEmail.getText().trim();
-            if (!text.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")) {
-                // Si no coincide, se lanzará una excepción con el label de error 
-                // y se mostrará un mensaje (“El correo o la contraseña no son correctos”)
-                throw new Exception("The email must have @ an email and a domain");
+            if (!text.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$" )) {
+                if (!text.equals("admin")) {
+                    // Si no coincide, se lanzará una excepción con el label de error
+                    // y se mostrará un mensaje (“El correo o la contraseña no son correctos”)
+                    throw new Exception("The email must have @ an email and a domain");
+                }
             } else {
                 handleLabelError("Checking in the database");
             }
