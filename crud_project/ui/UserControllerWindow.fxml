@@ -7,7 +7,7 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<Pane fx:id="mainPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="576.0" prefWidth="1024.0" stylesheets="@usetstyles.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="crud_project.ui.UserController">
+<Pane fx:id="mainPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="576.0" prefWidth="1024.0" stylesheets="@estilo.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="crud_project.ui.UserController">
    <children>
       <ToolBar layoutY="29.0" maxWidth="1024.0" minWidth="1024.0" prefHeight="64.0" prefWidth="1024.0">
          <items>
@@ -16,6 +16,7 @@
             <Button fx:id="fxBtnNewCustomer" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" prefHeight="27.0" prefWidth="134.0" text="+ New Customer" textAlignment="CENTER" />
             <Button fx:id="fxBtnDelete" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" prefHeight="27.0" prefWidth="134.0" text="- Delete Selected" textAlignment="CENTER" />
             <Button fx:id="fxBtnSaveChanges" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" prefHeight="27.0" prefWidth="134.0" text="Save Changes" textAlignment="CENTER" />
+            <Button fx:id="fxBtnExit" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" prefHeight="27.0" prefWidth="134.0" text="Exit" textAlignment="CENTER" />
          </items>
          <padding>
             <Insets left="20.0" />

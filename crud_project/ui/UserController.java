@@ -5,12 +5,11 @@
  */
 package crud_project.ui;
 
-import java.awt.*;
 import java.util.*;
 
-import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import crud_project.logic.CustomerRESTClient;
 
@@ -21,6 +20,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -45,7 +45,7 @@ public class UserController {
     @FXML
     public TableView<Customer> fxTableView;
     @FXML
-    public TableColumn<Customer, Long> fxTcId;
+    public TableColumn<Customer, String> fxTcId;
     @FXML
     public TableColumn<Customer, String> fxTcFirstName;
     @FXML
@@ -57,7 +57,7 @@ public class UserController {
     @FXML
     public TableColumn<Customer, String> fxTcPassword;
     @FXML
-    public TableColumn<Customer, Long> fxTcPhone;
+    public TableColumn<Customer, String> fxTcPhone;
     @FXML
     public TableColumn<Customer, String> fxTcStreet;
     @FXML
@@ -65,7 +65,7 @@ public class UserController {
     @FXML
     public TableColumn<Customer, String> fxTcState;
     @FXML
-    public TableColumn<Customer, Integer> fxTcZip;
+    public TableColumn<Customer, String> fxTcZip;
     @FXML
     public TextField fxTfSearchBar;
     @FXML
@@ -76,12 +76,17 @@ public class UserController {
     public Button fxBtnDelete;
     @FXML
     public Button fxBtnSaveChanges;
-    private ObservableList<Customer> customerData;
+    @FXML
+    public Button fxBtnExit;
+
+
     ArrayList<Customer> customerList = new ArrayList<>();
 
-    public CustomerRESTClient client = new CustomerRESTClient();
+    public static final CustomerRESTClient client = new CustomerRESTClient();
+    ObservableList<Customer> customersData;
 
     public void initUserStage(Parent root) {
+
 
         //Deshabilitar boton de delete
         fxBtnDelete.setDisable(true);
@@ -101,49 +106,123 @@ public class UserController {
         //Configuracion de columnas
         fxTfSearchBar.setPromptText("Search by name");
         //Columnas editables
+        fxTableView.setEditable(true);
         fxTcId.setCellValueFactory(new PropertyValueFactory<>("id"));
+
         fxTcFirstName.setCellValueFactory(new PropertyValueFactory<>("firstName"));
+        fxTcFirstName.setCellFactory(TextFieldTableCell.forTableColumn());
         fxTcFirstName.setEditable(true);
+
         fxTcLastName.setCellValueFactory(new PropertyValueFactory<>("lastName"));
         fxTcLastName.setEditable(true);
+        fxTcLastName.setCellFactory(TextFieldTableCell.forTableColumn());
+
         fxTcMidName.setCellValueFactory(new PropertyValueFactory<>("middleInitial"));
         fxTcMidName.setEditable(true);
-        fxTableView.setEditable(true);
+        fxTcMidName.setCellFactory(TextFieldTableCell.forTableColumn());
+
         fxTcEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
         fxTcEmail.setEditable(true);
+        fxTcEmail.setCellFactory(TextFieldTableCell.forTableColumn());
+
         fxTcPassword.setCellValueFactory(new PropertyValueFactory<>("password"));
         fxTcPassword.setEditable(true);
+        fxTcPassword.setCellFactory(TextFieldTableCell.forTableColumn());
+
         fxTcPhone.setCellValueFactory(new PropertyValueFactory<>("phone"));
         fxTcPhone.setEditable(true);
+        fxTcPhone.setCellFactory(TextFieldTableCell.forTableColumn());
+
+
         fxTcStreet.setCellValueFactory(new PropertyValueFactory<>("street"));
         fxTcStreet.setEditable(true);
+        fxTcStreet.setCellFactory(TextFieldTableCell.forTableColumn());
+
         fxTcCity.setCellValueFactory(new PropertyValueFactory<>("city"));
         fxTcCity.setEditable(true);
+        fxTcCity.setCellFactory(TextFieldTableCell.forTableColumn());
+
         fxTcState.setCellValueFactory(new PropertyValueFactory<>("state"));
         fxTcState.setEditable(true);
+        fxTcState.setCellFactory(TextFieldTableCell.forTableColumn());
+
         fxTcZip.setCellValueFactory(new PropertyValueFactory<>("zip"));
         fxTcZip.setEditable(true);
+        fxTcPhone.setCellFactory(TextFieldTableCell.forTableColumn());
 
         //Carga de datos a las columnas
 //        client.findAll_XML(customerList.getClass());
 //        customerData = FXCollections.observableArrayList(customerList);
 //        fxTableView.setItems(customerData);
+
         //Prueba de carga de datos con Array[]
         Customer[] response = client.findAll_XML(Customer[].class);
         customerList = new ArrayList<>(Arrays.asList(response));
-        customerData = FXCollections.observableArrayList(customerList);
+        customersData = FXCollections.observableArrayList(customerList);
+        fxTableView.setItems(customersData);
 
-        fxTableView.setItems(customerData);
+
+        userStage.setOnCloseRequest(this::handleOnExitAction);
+
+        //---- Accion de botones
+        fxBtnNewCustomer.setOnAction(this::handleAddCustomerRow);
+        fxBtnDelete.setOnAction(this::handleDeleteCustomerAndRow);
+        fxBtnNewCustomer.setOnAction(this::handleAddCustomerRow);
+        fxBtnSaveChanges.setOnAction(this::handleSaveChanges);
+        fxBtnSaveChanges.setDisable(true);
+        fxBtnExit.setOnAction(this::handleOnExitAction);
+        //-------------------------------------
+
+        //Comprobacion de cambio de fila
         fxTableView.getSelectionModel().selectedItemProperty().addListener(this::handleTableSelectionChanged);
 
-        fxBtnNewCustomer.setOnAction(this::addCustomer);
-        fxBtnDelete.setOnAction(this::handleDeleteCustomerAndRow);
+        //Filtro para la celda, nombre en modo edicion
+        fxTcFirstName.setOnEditCommit(this::handleFirstNameCellEdit);
+        handleEditCellStringValue(fxTcFirstName, Customer::setFirstName);
+
+
+
+    }
+
+
+    public void handleEditCellStringValue(TableColumn<Customer, String> event, BiConsumer<Customer, String> setter) {
+        //TODO implentar logica para manejar edicion de celdas de(Nombre, Apellido,Calle,Ciudad,Estado)
+
+    }
+
+    private void handleSaveChanges(ActionEvent actionEvent) {
+        try {
+
+            List<Customer> newCustomers = customersData.stream()
+                    .filter(newCustomer -> !customerList.contains(newCustomer))
+                    .collect(Collectors.toList());
+
+            if (newCustomers.isEmpty()) {
+                LOGGER.info("No new customers to save");
+                throw new Exception("No new customers to save");
+            }
+            newCustomers.forEach(client::create_XML);
+
+            Customer[] updatedList = client.findAll_XML(Customer[].class);
+            customerList = new ArrayList<>(Arrays.asList(updatedList));
+
+            //Para refrescar la tabla
+            customersData.setAll(updatedList);
+
+
+        } catch (Exception e) {
+            handleAlertError("Error saving the customer " + e.getMessage());
+            LOGGER.warning(e.getMessage());
+        }
+
 
     }
 
     private void handleTableSelectionChanged(ObservableValue observable, Object oldValue, Object newValue) {
 
         fxBtnDelete.setDisable(newValue == null);
+        fxBtnSaveChanges.setDisable(newValue == null);
+
 
     }
 
@@ -167,13 +246,11 @@ public class UserController {
                 deleteAlert.setHeaderText("Deleting user: " + selectedCustomer.getFirstName());
                 deleteAlert.showAndWait().ifPresent(resp -> {
                     if (resp == ButtonType.YES) {
-                        //client.remove(selectedCustomer.getId().toString());
+                        client.remove(selectedCustomer.getId().toString());
                         fxTableView.getItems().remove(selectedCustomer);
                         fxTableView.getSelectionModel().clearSelection();
-                        fxTableView.refresh();
                     }
                 });
-
 
             }
 
@@ -184,43 +261,59 @@ public class UserController {
         }
     }
 
-    public void addCustomer(ActionEvent event) {
+    public void handleAddCustomerRow(ActionEvent event) {
 
-        /*fxTableView.getItems().add(Customer.builder()
-                .id(customer.getId())
-                .firstName("")
-                .lastName("")
-                .middleInitial("")
-                .street("")
-                .city("")
-                .state("")
-                .zip(0)
-                .phone(0L)
-                .email("")
-                .password("")
-                .accounts(customer.getAccounts())
-                .build());
-         */
-        fxTableView.refresh();
+        try {
+
+            Customer newCustomer = new Customer();
+
+            fxTableView.getItems().add(0, newCustomer);
+            fxTableView.getSelectionModel().clearAndSelect(0);
+            fxTableView.requestFocus();
+            fxTableView.scrollTo(0);
+            fxTableView.edit(0, fxTcFirstName);
+
+
+        } catch (Exception e) {
+            handleAlertError("Error saving new customer...");
+            LOGGER.severe("Error saving new customer: " + e.getMessage());
+        }
 
     }
 
     /**
-     * Metodo para la edicion de cada celda de las columnas editables
+     * Metodo para la gestión y validacion de la celda de First Name
+     *
+     * @param event
      */
-    public void editStringCell(TableColumn<Customer, String> column, BiConsumer<Customer, String> setter) {
+    private void handleFirstNameCellEdit(TableColumn.CellEditEvent<Customer, String> event) {
 
-        column.setCellFactory(TextFieldTableCell.forTableColumn());
-        column.setOnEditCommit(
-                (TableColumn.CellEditEvent<Customer, String> t) -> {
-                    Customer customer
-                            = t.getTableView().getItems().get(
-                            t.getTablePosition().getRow()
-                    );
-                    setter.accept(customer, t.getNewValue());
-                }
-        );
+        String newValue = event.getNewValue().trim();
+        Customer myCustomer = event.getRowValue();
+
+        try {
+            if (newValue.isEmpty()) {
+                throw new Exception("The name should be fill");
+            }
+            if (!newValue.matches("[a-zA-Z]+")) {
+                throw new Exception("The name should contain only letters");
+            }
+            if (newValue.length() > 20) {
+                throw new Exception("The name should be less than 20 characters");
+
+            }
+            myCustomer.setFirstName(newValue);
+
+
+        } catch (Exception e) {
+            LOGGER.warning("Error in First Name cell edit: " + e.getMessage());
+            handleAlertError(e.getMessage());
+            fxTableView.refresh();
+        }
+
     }
+
+
 
     private void handleAlertError(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR, "", ButtonType.OK);
@@ -228,6 +321,21 @@ public class UserController {
         alert.setContentText(message);
         alert.showAndWait();
 
+    }
+
+    private void handleOnExitAction(Event event) {
+        try {
+            LOGGER.info("Clicked exit button");
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to exit?", ButtonType.OK, ButtonType.CANCEL);
+            alert.showAndWait();
+            alert.setTitle("Exit Confirmation");
+            if (alert.getResult() == ButtonType.OK) {
+                userStage.close();
+                event.consume();
+            }
+        } catch (Exception e) {
+            handleAlertError("Fail to Close");
+        }
     }
 
     public Stage getStage() {
