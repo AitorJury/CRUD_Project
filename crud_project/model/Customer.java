@@ -5,6 +5,8 @@
  */
 package crud_project.model;
 
+//import lombok.Builder;
+
 import java.io.Serializable;
 import java.util.Set;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -15,12 +17,33 @@ import javax.xml.bind.annotation.XmlTransient;
  * data and relational data for accessing customer accounts data. 
  * @author Javier Martín Uría
  */
+//@Builder
 @XmlRootElement
 public class Customer implements Serializable {
 
+    public Customer(Long id, String firstName, String lastName, String middleInitial, String street, String city, String state, Integer zip, Long phone, String email, String password, Set<Account> accounts) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.middleInitial = middleInitial;
+        this.street = street;
+        this.city = city;
+        this.state = state;
+        this.zip = zip;
+        this.phone = phone;
+        this.email = email;
+        this.password = password;
+        this.accounts = accounts;
+    }
+
+    public Customer() {
+    }
+    
+    
+
     private static final long serialVersionUID = 1L;
     /**
-     * Identification field for client.
+     * Identification field for a client.
      */
     private Long id;
     /**
