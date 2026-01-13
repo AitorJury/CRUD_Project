@@ -10,10 +10,12 @@ import java.util.logging.Logger;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.cell.ChoiceBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
@@ -22,6 +24,7 @@ import javafx.util.converter.DoubleStringConverter;
 import javax.ws.rs.core.GenericType;
 
 public class AccountsController {
+
     private static final Logger LOGGER = Logger.getLogger("crud_project.ui");
 
     @FXML
@@ -45,13 +48,9 @@ public class AccountsController {
     private Stage stage;
     private Customer loggedCustomer;
     private final AccountRESTClient restClient = new AccountRESTClient();
-    
+
     private final ButtonType yes = new ButtonType("Yes", ButtonBar.ButtonData.YES);
     private final ButtonType no = new ButtonType("No", ButtonBar.ButtonData.NO);
-
-    public void setCustomer(Customer customer) {
-        this.loggedCustomer = customer;
-    }
 
     public void init(Parent root) {
         try {
@@ -75,7 +74,7 @@ public class AccountsController {
     }
 
     private void setupTable() {
-        
+
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colDescription.setCellValueFactory(new PropertyValueFactory<>("description"));
         colType.setCellValueFactory(new PropertyValueFactory<>("type"));
@@ -83,31 +82,44 @@ public class AccountsController {
         colCreditLine.setCellValueFactory(new PropertyValueFactory<>("creditLine"));
         colBeginBalance.setCellValueFactory(new PropertyValueFactory<>("beginBalance"));
         colTimestamp.setCellValueFactory(new PropertyValueFactory<>("beginBalanceTimestamp"));
-        
+
         colDescription.setCellFactory(TextFieldTableCell.forTableColumn());
-        colDescription.setOnEditCommit(this::handleEditDescription);
+        colDescription.setOnEditCommit(new EventHandler<CellEditEvent<Account, String>>() {
+            @Override
+            public void handle(CellEditEvent<Account, String> event) {
+                Account acc = event.getRowValue();
+                acc.setDescription(event.getNewValue());
+                saveOrUpdate(acc);
+            }
+        });
 
         colType.setCellFactory(ChoiceBoxTableCell.forTableColumn(AccountType.values()));
-        colType.setOnEditCommit(event -> {
-            Account acc = event.getRowValue();
-            if (acc.getId() == null || acc.getId() <= 0) {
-                acc.setType(event.getNewValue());
-                saveOrUpdate(acc);
-            } else {
-                lblMessage.setText("Cannot change type of an existing account.");
-                tableAccounts.refresh(); 
+        colType.setOnEditCommit(new EventHandler<CellEditEvent<Account, AccountType>>() {
+            @Override
+            public void handle(CellEditEvent<Account, AccountType> event) {
+                Account acc = event.getRowValue();
+                if (acc.getId() == null || acc.getId() <= 0) {
+                    acc.setType(event.getNewValue());
+                    saveOrUpdate(acc);
+                } else {
+                    lblMessage.setText("Cannot change type of an existing account.");
+                    tableAccounts.refresh();
+                }
             }
         });
 
         colCreditLine.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
-        colCreditLine.setOnEditCommit(event -> {
-            Account acc = event.getRowValue();
-            if ((acc.getId() == null || acc.getId() <= 0) && acc.getType() == AccountType.CREDIT) {
-                acc.setCreditLine(event.getNewValue());
-                saveOrUpdate(acc);
-            } else {
-                lblMessage.setText("Credit line only for NEW accounts of type CREDIT.");
-                tableAccounts.refresh();
+        colCreditLine.setOnEditCommit(new EventHandler<CellEditEvent<Account, Double>>() {
+            @Override
+            public void handle(CellEditEvent<Account, Double> event) {
+                Account acc = event.getRowValue();
+                if ((acc.getId() == null || acc.getId() <= 0) && acc.getType() == AccountType.CREDIT) {
+                    acc.setCreditLine(event.getNewValue());
+                    saveOrUpdate(acc);
+                } else {
+                    lblMessage.setText("Credit line only for NEW accounts of type CREDIT.");
+                    tableAccounts.refresh();
+                }
             }
         });
     }
@@ -122,22 +134,27 @@ public class AccountsController {
 
     private void loadAccountsData() {
         try {
-            GenericType<List<Account>> accountListType = new GenericType<List<Account>>() {};
-            List<Account> accounts = (List<Account>) restClient.findAccountsByCustomerId_XML(
-            accountListType.getRawType(), loggedCustomer.getId().toString());
-            
-            accountsData = FXCollections.observableArrayList(accounts);
+            // Pedimos un Array en lugar de una List para evitar el error de Jersey
+            Account[] accountsArray = restClient.findAccountsByCustomerId_XML(
+                    Account[].class,
+                    loggedCustomer.getId().toString()
+            );
+
+            // Convertimos el array a una lista para la TableView
+            accountsData = FXCollections.observableArrayList(accountsArray);
             tableAccounts.setItems(accountsData);
-            lblMessage.setText("Data loaded.");
+
         } catch (Exception e) {
-            lblMessage.setText("Error loading data.");
+            lblMessage.setText(e.getMessage());
+
+            e.printStackTrace();
         }
     }
 
     private void handleAddAccount(ActionEvent event) {
         Account newAcc = new Account(0L, AccountType.STANDARD, "New Description",
                 0.0, 0.0, 0.0, new Date());
-        
+
         accountsData.add(newAcc);
         tableAccounts.getSelectionModel().select(newAcc);
         lblMessage.setText("New row added. Right-click to Save.");
@@ -151,8 +168,10 @@ public class AccountsController {
 
     private void handleDeleteAccount(ActionEvent event) {
         Account selected = tableAccounts.getSelectionModel().getSelectedItem();
-        
-        if (selected == null) return;
+
+        if (selected == null) {
+            return;
+        }
 
         if (selected.getMovements() != null && !selected.getMovements().isEmpty()) {
             showErrorAlert("It cannot be deleted: The account has linked transactions.");
@@ -178,19 +197,19 @@ public class AccountsController {
             alert.setTitle("Log Out");
             alert.setHeaderText("Confirm Log Out");
             alert.setContentText("Are you sure you want to log out?");
-        
+
             alert.getButtonTypes().setAll(yes, no);
             ButtonType result = alert.showAndWait().get();
-        
+
             if (result == yes) {
                 LOGGER.info("User confirmed log out.");
-            
+
                 if (restClient != null) {
                     restClient.close();
                 }
-            
+
                 this.stage.close();
-            
+
             } else {
                 LOGGER.info("Log out cancelled.");
             }
@@ -216,10 +235,16 @@ public class AccountsController {
             tableAccounts.refresh();
         }
     }
-    
+
     private void showErrorAlert(String msg) {
         new Alert(Alert.AlertType.ERROR, msg, ButtonType.OK).showAndWait();
     }
 
-    public Stage getStage() { return this.stage; }
+    public Stage getStage() {
+        return this.stage;
+    }
+
+    void setCustomer(Customer customer) {
+        this.loggedCustomer = customer;
+    }
 }

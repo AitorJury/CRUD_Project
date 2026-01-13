@@ -55,7 +55,6 @@ public class SignInController {
         this.stage = stage;
         stage.setScene(scene);
 
-        
         LOGGER.info("Initializing window");
         // Establecer el título de la ventana.
         stage.setTitle("Sign in");
@@ -81,7 +80,7 @@ public class SignInController {
 
     /**
      * Manejador del mensaje de error.
-     * 
+     *
      * @param message El mensaje a mostrar.
      */
     private void handleLabelError(String message) {
@@ -90,7 +89,7 @@ public class SignInController {
 
     /**
      * Manejador del mensaje del Alert.
-     * 
+     *
      * @param message El mensaje a mostrar.
      */
     private void handleAlertError(String message) {
@@ -116,13 +115,13 @@ public class SignInController {
             SignUpController controller = loader.getController();
             //Ocultar la ventana actual
             this.stage.hide();
-            
+
             controller.init(root);
             //Obetener la stage que se crea en el init para mostrar cuando se cierre la otra ventana
-            controller.getStage().setOnHiding(e->{
+            controller.getStage().setOnHiding(e -> {
                 this.stage.show();
             });
-            
+
             // Obtener el controlador correcto.
             LOGGER.info("Changing to Sign Up Window");
 
@@ -139,7 +138,7 @@ public class SignInController {
     private void handleBtnExitOnAction(ActionEvent event) {
         try {
             // Mostrar alert modal de confirmación para salir de la aplicación.
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, 
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
                     "Do you want to exit?", yes, no);
             alert.setTitle("Exit the application");
             alert.setHeaderText("Departure confirmation");
@@ -173,14 +172,14 @@ public class SignInController {
                 LOGGER.info("Admin login detected. Changing to User Controller Window");
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("UserControllerWindow.fxml"));
                 Parent root = loader.load();
-                
+
                 UserController controller = loader.getController();
                 // Como es admin, puedes pasar un objeto customer vacío o gestionar nulos en el destino
-                controller.setCustomer(new Customer()); 
-                
+                controller.setCustomer(new Customer());
+
                 this.stage.hide();
                 controller.initUserStage(root);
-                controller.getStage().setOnHiding(e -> this.stage.show());                
+                controller.getStage().setOnHiding(e -> this.stage.show());
             } else {
                 if (!email.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")) {
                     // Si no coincide, se lanzará una excepción con el label de error 
@@ -193,17 +192,18 @@ public class SignInController {
                 // Verificar que la contraseña coincida con la del usuario registrado. 
                 // Verificar que el correo y la contraseña existe en la base de datos.
                 Customer customer = client.findCustomerByEmailPassword_XML(
-                    Customer.class, email, password);
+                        Customer.class, email, password);
 
                 // Si t0do es correcto se abrirá la página “Main” y se cerrará la actual.
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("Accounts.fxml"));
                 Parent root = loader.load();
                 // Cargamos controlador.
                 AccountsController controller = loader.getController();
-            
+                controller.setCustomer(customer);
+
                 this.stage.hide();
                 controller.init(root);
-                controller.getStage().setOnHiding(e->{
+                controller.getStage().setOnHiding(e -> {
                     this.stage.show();
                 });
                 LOGGER.info("Changing to User Window");
@@ -234,7 +234,7 @@ public class SignInController {
      * @param oldValue El valor anterior del texto.
      * @param newValue El nuevo valor del texto.
      */
-    private void handeltxtEmailTextChange(ObservableValue observable, 
+    private void handeltxtEmailTextChange(ObservableValue observable,
             String oldValue, String newValue) {
         try {
             if (this.txtEmail.getText().isEmpty()) {
@@ -264,7 +264,7 @@ public class SignInController {
      * @param oldValue El valor anterior del texto.
      * @param newValue El nuevo valor del texto.
      */
-    private void handeltxtPasswordTextChange(ObservableValue observable, 
+    private void handeltxtPasswordTextChange(ObservableValue observable,
             String oldValue, String newValue) {
         try {
             if (this.txtPassword.getText().isEmpty()) {
@@ -288,12 +288,12 @@ public class SignInController {
 
     /**
      * Manejador del cambio de foco del campo Email.
-     * 
+     *
      * @param observable El valor observable que cambia.
      * @param oldValue El valor anterior del foco.
      * @param newValue El nuevo valor del foco.
      */
-    private void handeltxtEmailFocusChange(ObservableValue observable, 
+    private void handeltxtEmailFocusChange(ObservableValue observable,
             Boolean oldValue, Boolean newValue) {
         if (oldValue && !newValue && !txtEmail.getText().isEmpty()) {
             lblError.setText("");
