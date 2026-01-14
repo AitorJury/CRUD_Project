@@ -166,36 +166,48 @@ public class SignInController {
     private void handleBtnSignInOnAction(ActionEvent event) {
         try {
             // Validar si el correo tiene formato del correo (@ y un dominio).
-            String text = txtEmail.getText().trim();
-            if (!text.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")) {
-                // Si no coincide, se lanzará una excepción con el label de error 
-                // y se mostrará un mensaje (“El correo o la contraseña no son correctos”)
-                throw new Exception("The email must have @ an email and a domain");
-            } else {
-                handleLabelError("Checking in the database");
-            }
-
-            // Conectará con la base de datos para validar la contraseña y el correo.
             String email = txtEmail.getText().trim();
             String password = txtPassword.getText().trim();
-            CustomerRESTClient client = new CustomerRESTClient();
-            // Verificar que la contraseña coincida con la del usuario registrado. 
-            // Verificar que el correo y la contraseña existe en la base de datos.
-            Customer customer = client.findCustomerByEmailPassword_XML(
+            // En el caso de ser administrador, se envía a otra ventana distinta.
+            if (email.equals("admin") && password.equals("admin")) {
+                LOGGER.info("Admin login detected. Changing to User Controller Window");
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("UserControllerWindow.fxml"));
+                Parent root = loader.load();
+                
+                UserController controller = loader.getController();
+                // Como es admin, puedes pasar un objeto customer vacío o gestionar nulos en el destino
+                controller.setCustomer(new Customer()); 
+                
+                this.stage.hide();
+                controller.initUserStage(root);
+                controller.getStage().setOnHiding(e -> this.stage.show());                
+            } else {
+                if (!email.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")) {
+                    // Si no coincide, se lanzará una excepción con el label de error 
+                    // y se mostrará un mensaje (“El correo o la contraseña no son correctos”)
+                    throw new Exception("The email must have @ an email and a domain");
+                }
+
+                handleLabelError("Checking in the database...");
+                CustomerRESTClient client = new CustomerRESTClient();
+                // Verificar que la contraseña coincida con la del usuario registrado. 
+                // Verificar que el correo y la contraseña existe en la base de datos.
+                Customer customer = client.findCustomerByEmailPassword_XML(
                     Customer.class, email, password);
 
-            // Si t0do es correcto se abrirá la página “Main” y se cerrará la actual.
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("UserControllerWindow.fxml"));
-            Parent root = loader.load();
-            // Cargamos controlador.
-            UserController controller = loader.getController();
-            controller.setCustomer(customer);
-            this.stage.hide();
-            controller.initUserStage(root);
-            controller.getStage().setOnHiding(e->{
-                this.stage.show();
-            });
-            LOGGER.info("Changing to User Window");
+                // Si t0do es correcto se abrirá la página “Main” y se cerrará la actual.
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("Accounts.fxml"));
+                Parent root = loader.load();
+                // Cargamos controlador.
+                AccountsController controller = loader.getController();
+            
+                this.stage.hide();
+                controller.init(root);
+                controller.getStage().setOnHiding(e->{
+                    this.stage.show();
+                });
+                LOGGER.info("Changing to User Window");
+            }
 
         } catch (NotAuthorizedException e) {
             LOGGER.warning(e.getMessage());

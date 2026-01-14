@@ -10,14 +10,14 @@
        <children>
 
           <Label layoutX="40.0" layoutY="137.0" text="Account" />
-          <ComboBox layoutX="40.0" layoutY="164.0" prefWidth="250.0" />
+          <ComboBox id="combo" layoutX="40.0" layoutY="164.0" prefWidth="250.0" />
           <HBox alignment="CENTER_LEFT" layoutX="303.0" layoutY="164.0" spacing="10.0">
               <children> 
                   <Label style="-fx-font-weight: bold;" text="Filter by date:" /> 
-                  <DatePicker fx:id="datePicker" prefWidth="150.0" promptText="Select a date" /> 
+                  <DatePicker id="datePicker" fx:id="datePicker" prefWidth="150.0" promptText="Select a date" /> 
               </children> 
           </HBox> 
-          <TableView layoutX="40.0" layoutY="221.0" prefHeight="300.0" prefWidth="550.0">
+          <TableView id="tbMovement" layoutX="40.0" layoutY="221.0" prefHeight="300.0" prefWidth="550.0">
             <columns>
               <TableColumn id="clDate" prefWidth="107.0" text="Date" />
             <TableColumn id="clAmount" prefWidth="125.0" text="Amount" />
@@ -30,7 +30,7 @@
           </TableView>
           <Button id="btnDelete" fx:id="btnDelete" layoutX="620.0" layoutY="329.0" prefHeight="30.0" prefWidth="120.0" text="Delete" />
 
-          <Button id="btnBack" fx:id="btnExit" layoutX="620.0" layoutY="530.0" prefHeight="30.0" prefWidth="120.0" text="Back to menu" />
+          <Button id="btnBack" fx:id="btnExit" layoutX="620.0" layoutY="530.0" prefHeight="39.0" prefWidth="150.0" text="Back to menu" />
           <Button id="btnDeposit" fx:id="btnCreate" layoutX="620.0" layoutY="238.0" prefHeight="30.0" prefWidth="120.0" text="Deposit" />
       <ImageView fitHeight="111.0" fitWidth="136.0" layoutX="38.0" layoutY="6.0" pickOnBounds="true" preserveRatio="true">
          <image>
@@ -38,5 +38,7 @@
          </image>
       </ImageView>
       <Button id="btnWithdraw" fx:id="btnCreate1" layoutX="620.0" layoutY="285.0" prefHeight="30.0" prefWidth="120.0" text="Withdraw" />
+      <Label id="lblError" layoutX="40.0" layoutY="530.0" prefHeight="27.0" prefWidth="550.0" />
        </children>
 </Pane>
+

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<!-- Ventana Principal -->
+
+<Pane prefHeight="768.0" prefWidth="1024.0" styleClass="root-pane" stylesheets="@estilo.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="crud_project.ui.AccountsController">
+    <children>
+        <!-- Logo -->
+        <ImageView fitHeight="80.0" fitWidth="100.0" layoutX="50.0" layoutY="30.0" preserveRatio="true">
+            <image>
+                <Image url="@icono_Cynthor_SF.png" />
+            </image>
+        </ImageView>
+      
+        <!-- Título -->
+        <Label layoutX="150.0" layoutY="50.0" styleClass="title-label" text="My Accounts Management" />
+
+        <!-- Tabla -->
+        <TableView fx:id="tableAccounts" editable="true" layoutX="50.0" layoutY="130.0" prefHeight="500.0" prefWidth="924.0" styleClass="text-field">
+            <columns>
+                <TableColumn fx:id="colId" prefWidth="60.0" text="ID" />
+                <TableColumn fx:id="colDescription" prefWidth="250.0" text="Description" />
+                <TableColumn fx:id="colType" prefWidth="120.0" text="Type" />
+                <TableColumn fx:id="colBalance" prefWidth="120.0" text="Balance" />
+                <TableColumn fx:id="colCreditLine" prefWidth="120.0" text="Credit Line" />
+                <TableColumn fx:id="colBeginBalance" prefWidth="120.0" text="Begin Balance" />
+                <TableColumn fx:id="colTimestamp" prefWidth="130.0" text="Date" />
+            </columns>
+        </TableView>
+
+        <!-- Botón de añadir cuenta -->
+        <Button fx:id="btnAddAccount" layoutX="50.0" layoutY="650.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="187.0" styleClass="button-primary" text="Add New Account" />
+        <!-- Botón de recargar -->
+        <Button fx:id="btnRefresh" layoutX="252.0" layoutY="650.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="120.0" styleClass="button-primary" text="Refresh" />
+        <!-- Botón para ir atrás -->
+        <Button fx:id="btnLogOut" layoutX="824.0" layoutY="650.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="150.0" styleClass="button-secondary" text="Log Out" />
+        <!-- Mensaje de error -->
+        <Label fx:id="lblMessage" layoutX="50.0" layoutY="710.0" prefWidth="924.0" styleClass="error-label" text="" />
+    </children>
+</Pane>
