@@ -19,10 +19,10 @@
           </HBox> 
           <TableView layoutX="40.0" layoutY="221.0" prefHeight="300.0" prefWidth="550.0">
             <columns>
-              <TableColumn prefWidth="107.0" text="DateStamp" />
-            <TableColumn prefWidth="125.0" text="Amount" />
-            <TableColumn prefWidth="124.0" text="Description" />
-            <TableColumn prefWidth="193.0" text="Balance" />
+              <TableColumn id="clDate" prefWidth="107.0" text="Date" />
+            <TableColumn id="clAmount" prefWidth="125.0" text="Amount" />
+            <TableColumn id="clDescription" prefWidth="124.0" text="Description" />
+            <TableColumn id="clBalance" prefWidth="193.0" text="Balance" />
             </columns>
              <placeholder>
                 <Label />
