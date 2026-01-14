@@ -40,7 +40,7 @@ public class Customer implements Serializable {
 
 
     public Customer(Long id, String firstName, String lastName, String middleInitial, String street, String city, String state, Integer zip, Long phone, String email, String password, Set<Account> accounts) {
-        this.id = new SimpleLongProperty(id != null ? id : 0L);
+        this.id = new SimpleLongProperty(id);
         this.firstName = new SimpleStringProperty(firstName);
         this.lastName = new SimpleStringProperty(lastName);
         this.middleInitial = new SimpleStringProperty(middleInitial);

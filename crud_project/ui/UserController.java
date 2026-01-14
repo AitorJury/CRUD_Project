@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import crud_project.logic.CustomerRESTClient;
+import crud_project.model.Account;
 
 import crud_project.model.Customer;
 
@@ -30,6 +31,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.stage.Stage;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.GenericType;
 
 /**
  *
@@ -45,7 +48,7 @@ public class UserController {
     @FXML
     public TableView<Customer> fxTableView;
     @FXML
-    public TableColumn<Customer, String> fxTcId;
+    public TableColumn<Customer, Long> fxTcId;
     @FXML
     public TableColumn<Customer, String> fxTcFirstName;
     @FXML
@@ -57,7 +60,7 @@ public class UserController {
     @FXML
     public TableColumn<Customer, String> fxTcPassword;
     @FXML
-    public TableColumn<Customer, String> fxTcPhone;
+    public TableColumn<Customer, Long> fxTcPhone;
     @FXML
     public TableColumn<Customer, String> fxTcStreet;
     @FXML
@@ -65,7 +68,7 @@ public class UserController {
     @FXML
     public TableColumn<Customer, String> fxTcState;
     @FXML
-    public TableColumn<Customer, String> fxTcZip;
+    public TableColumn<Customer, Integer> fxTcZip;
     @FXML
     public TextField fxTfSearchBar;
     @FXML
@@ -79,14 +82,12 @@ public class UserController {
     @FXML
     public Button fxBtnExit;
 
-
     ArrayList<Customer> customerList = new ArrayList<>();
 
     public static final CustomerRESTClient client = new CustomerRESTClient();
     ObservableList<Customer> customersData;
 
     public void initUserStage(Parent root) {
-
 
         //Deshabilitar boton de delete
         fxBtnDelete.setDisable(true);
@@ -131,12 +132,11 @@ public class UserController {
 
         fxTcPhone.setCellValueFactory(new PropertyValueFactory<>("phone"));
         fxTcPhone.setEditable(true);
-        fxTcPhone.setCellFactory(TextFieldTableCell.forTableColumn());
-
+        //fxTcPhone.setCellFactory(TextFieldTableCell.forTableColumn());
 
         fxTcStreet.setCellValueFactory(new PropertyValueFactory<>("street"));
         fxTcStreet.setEditable(true);
-        fxTcStreet.setCellFactory(TextFieldTableCell.forTableColumn());
+        //fxTcStreet.setCellFactory(TextFieldTableCell.forTableColumn());
 
         fxTcCity.setCellValueFactory(new PropertyValueFactory<>("city"));
         fxTcCity.setEditable(true);
@@ -148,27 +148,26 @@ public class UserController {
 
         fxTcZip.setCellValueFactory(new PropertyValueFactory<>("zip"));
         fxTcZip.setEditable(true);
-        fxTcPhone.setCellFactory(TextFieldTableCell.forTableColumn());
+        //fxTcPhone.setCellFactory(TextFieldTableCell.forTableColumn());
 
         //Carga de datos a las columnas
-//        client.findAll_XML(customerList.getClass());
-//        customerData = FXCollections.observableArrayList(customerList);
-//        fxTableView.setItems(customerData);
+        customersData = FXCollections.observableArrayList(client.findAll_XML(new GenericType<List<Customer>>() {
+        }));
+        fxTableView.setItems(customersData);
 
         //Prueba de carga de datos con Array[]
+        /*
         Customer[] response = client.findAll_XML(Customer[].class);
         customerList = new ArrayList<>(Arrays.asList(response));
         customersData = FXCollections.observableArrayList(customerList);
         fxTableView.setItems(customersData);
-
-
+         */
         userStage.setOnCloseRequest(this::handleOnExitAction);
 
         //---- Accion de botones
         fxBtnNewCustomer.setOnAction(this::handleAddCustomerRow);
         fxBtnDelete.setOnAction(this::handleDeleteCustomerAndRow);
-        fxBtnNewCustomer.setOnAction(this::handleAddCustomerRow);
-        fxBtnSaveChanges.setOnAction(this::handleSaveChanges);
+
         fxBtnSaveChanges.setDisable(true);
         fxBtnExit.setOnAction(this::handleOnExitAction);
         //-------------------------------------
@@ -178,43 +177,10 @@ public class UserController {
 
         //Filtro para la celda, nombre en modo edicion
         fxTcFirstName.setOnEditCommit(this::handleFirstNameCellEdit);
-        handleEditCellStringValue(fxTcFirstName, Customer::setFirstName);
-
-
-
-    }
-
-
-    public void handleEditCellStringValue(TableColumn<Customer, String> event, BiConsumer<Customer, String> setter) {
-        //TODO implentar logica para manejar edicion de celdas de(Nombre, Apellido,Calle,Ciudad,Estado)
-
-    }
-
-    private void handleSaveChanges(ActionEvent actionEvent) {
-        try {
-
-            List<Customer> newCustomers = customersData.stream()
-                    .filter(newCustomer -> !customerList.contains(newCustomer))
-                    .collect(Collectors.toList());
-
-            if (newCustomers.isEmpty()) {
-                LOGGER.info("No new customers to save");
-                throw new Exception("No new customers to save");
-            }
-            newCustomers.forEach(client::create_XML);
-
-            Customer[] updatedList = client.findAll_XML(Customer[].class);
-            customerList = new ArrayList<>(Arrays.asList(updatedList));
-
-            //Para refrescar la tabla
-            customersData.setAll(updatedList);
-
-
-        } catch (Exception e) {
-            handleAlertError("Error saving the customer " + e.getMessage());
-            LOGGER.warning(e.getMessage());
-        }
-
+        fxTcLastName.setOnEditCommit(this::handleFirstNameCellEdit);
+        fxTcMidName.setOnEditCommit(this::handleMiddleInitialCellEdit);
+        fxTcStreet.setOnEditCommit(this::handleStreetCellEdit);
+        fxTcCity.setOnEditCommit(this::handleCityCellEdit);
 
     }
 
@@ -223,6 +189,21 @@ public class UserController {
         fxBtnDelete.setDisable(newValue == null);
         fxBtnSaveChanges.setDisable(newValue == null);
 
+        if (newValue != null) {
+            //Obtiene el objeto Customer seleccionado en ese momento
+            Customer currentCustomer = fxTableView.getSelectionModel().getSelectedItem();
+            if (currentCustomer.getId() == 0) {
+                try {
+                    Customer bdCustomer = client.find_XML(Customer.class, currentCustomer.getId().toString());
+                    currentCustomer.setId(bdCustomer.getId());
+
+                } catch (Exception e) {
+
+                    LOGGER.info("Cliente no existe");
+                }
+
+            }
+        }
 
     }
 
@@ -235,6 +216,9 @@ public class UserController {
 
                 if (selectedCustomer.getFirstName().equals("admin")) {
                     throw new IllegalArgumentException("No se puede borrar el usuario administrador");
+                }
+                if (selectedCustomer.getAccounts().size() > 0) {
+                    throw new WebApplicationException("No se puede eliminar un cliente con cuentas");
                 }
 
                 Alert deleteAlert = new Alert(
@@ -254,9 +238,17 @@ public class UserController {
 
             }
 
+        } catch (IllegalArgumentException ex) {
+            LOGGER.warning(ex.getMessage());
+            handleAlertError(ex.getMessage());
+
+        } catch (WebApplicationException web) {
+            LOGGER.warning(web.getMessage());
+            handleAlertError(web.getMessage());
+
         } catch (Exception e) {
 
-            handleAlertError(e.getMessage());
+            handleAlertError("Cannot dele this user");
             LOGGER.warning(e.getMessage());
         }
     }
@@ -266,13 +258,13 @@ public class UserController {
         try {
 
             Customer newCustomer = new Customer();
+            client.create_XML(newCustomer);
 
             fxTableView.getItems().add(0, newCustomer);
             fxTableView.getSelectionModel().clearAndSelect(0);
             fxTableView.requestFocus();
             fxTableView.scrollTo(0);
             fxTableView.edit(0, fxTcFirstName);
-
 
         } catch (Exception e) {
             handleAlertError("Error saving new customer...");
@@ -284,12 +276,12 @@ public class UserController {
     /**
      * Metodo para la gestión y validacion de la celda de First Name
      *
-     * @param event
+     * @param cellName
      */
-    private void handleFirstNameCellEdit(TableColumn.CellEditEvent<Customer, String> event) {
+    private void handleFirstNameCellEdit(TableColumn.CellEditEvent<Customer, String> cellName) {
 
-        String newValue = event.getNewValue().trim();
-        Customer myCustomer = event.getRowValue();
+        String newValue = cellName.getNewValue().trim();
+        Customer myCustomer = cellName.getRowValue();
 
         try {
             if (newValue.isEmpty()) {
@@ -302,8 +294,34 @@ public class UserController {
                 throw new Exception("The name should be less than 20 characters");
 
             }
+            client.edit_XML(myCustomer, myCustomer.getId());
             myCustomer.setFirstName(newValue);
 
+        } catch (Exception e) {
+            LOGGER.warning("Error in First Name cell edit: " + e.getMessage());
+            handleAlertError(e.getMessage());
+            fxTableView.refresh();
+        }
+
+    }
+    private void handleLastNameCellEdit(TableColumn.CellEditEvent<Customer, String> cellName) {
+
+        String newValue = cellName.getNewValue().trim();
+        Customer myCustomer = cellName.getRowValue();
+
+        try {
+            if (newValue.isEmpty()) {
+                throw new Exception("The name should be fill");
+            }
+            if (!newValue.matches("[a-zA-Z]+")) {
+                throw new Exception("The name should contain only letters");
+            }
+            if (newValue.length() > 20) {
+                throw new Exception("The name should be less than 20 characters");
+
+            }
+            client.edit_XML(myCustomer, myCustomer.getId());
+            myCustomer.setLastName(newValue);
 
         } catch (Exception e) {
             LOGGER.warning("Error in First Name cell edit: " + e.getMessage());
@@ -313,7 +331,86 @@ public class UserController {
 
     }
 
+    private void handleMiddleInitialCellEdit(TableColumn.CellEditEvent<Customer, String> cell) {
 
+        //Obetener valor de la celda
+        String newValue = cell.getNewValue().trim().toUpperCase();
+        //Obtener 
+        Customer myCustomer = cell.getRowValue();
+        try {
+
+            if (newValue.isEmpty()) {
+                throw new Exception("The field must be filled");
+            }
+
+            if (newValue.length() > 1) {
+
+                throw new Exception("The initial should be one letter");
+            }
+            if (!newValue.matches("[a-zA-Z]+")) {
+                
+                throw new Exception("The name should contain only letter");
+            }
+            client.edit_XML(myCustomer, myCustomer.getId());
+            myCustomer.middleInitialProperty().set(newValue);
+
+        } catch (Exception e) {
+
+           
+            handleAlertError(e.getMessage());
+            fxTableView.refresh();
+        }
+    }
+
+    private void handleStreetCellEdit(TableColumn.CellEditEvent<Customer, String> streetCell) {
+
+        try {
+
+            String text = streetCell.getNewValue().trim();
+            Customer myCustomer = streetCell.getRowValue();
+            if (text.isEmpty()) {
+                throw new Exception("The field must be filled");
+            }
+            if (!text.matches("[\\p{L}\\p{N}\\s,\\.-/ºª#]+")) {
+                throw new Exception("Street contains invalid characters");
+            }
+            if (text.length() > 50) {
+                throw new Exception("Street cannot exceed length of 50");
+            }
+            client.edit_XML(Customer.class, myCustomer.getId());
+            myCustomer.setStreet(text);
+
+        } catch (Exception e) {
+
+        }
+
+    }
+
+    private void handleCityCellEdit(TableColumn.CellEditEvent<Customer, String> cell) {
+
+        try {
+
+            String text = cell.getNewValue().trim();
+            Customer myCustomer = cell.getRowValue();
+
+            if (text.isEmpty()) {
+                throw new Exception("City must not be empty");
+            }
+            // Si tiene algo distinto a letras y espacios, lanzar excepción.
+            if (!text.matches("[a-zA-Z\\s]+")) {
+                throw new Exception("City must contain only letters and spaces");
+            }
+            // Si tiene más de 20 caracteres lanzar excepcion
+            if (text.length() > 20) {
+
+                throw new Exception("City cannot exceed length of 20");
+            }
+            client.edit_XML(Customer.class, myCustomer.getId());
+
+        } catch (Exception e) {
+        }
+
+    }
 
     private void handleAlertError(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR, "", ButtonType.OK);
