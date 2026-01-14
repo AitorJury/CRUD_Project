@@ -12,6 +12,7 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -40,7 +41,7 @@ public class AccountsController {
     @FXML
     private TableColumn<Account, Date> colTimestamp;
     @FXML
-    private Button btnAddAccount, btnRefresh, btnLogOut;
+    private Button btnAddAccount, btnRefresh, btnLogOut, btnViewMovements;
     @FXML
     private Label lblMessage;
 
@@ -134,15 +135,17 @@ public class AccountsController {
 
     private void loadAccountsData() {
         try {
-            // Pedimos un Array en lugar de una List para evitar el error de Jersey
-            Account[] accountsArray = restClient.findAccountsByCustomerId_XML(
-                    Account[].class,
+            
+            GenericType<List<Account>> accountListType = new GenericType<List<Account>>() {};
+
+            List<Account> accounts = restClient.findAccountsByCustomerId_XML(
+                    accountListType,
                     loggedCustomer.getId().toString()
             );
 
-            // Convertimos el array a una lista para la TableView
-            accountsData = FXCollections.observableArrayList(accountsArray);
+            accountsData = FXCollections.observableArrayList(accounts);
             tableAccounts.setItems(accountsData);
+            lblMessage.setText("Data loaded.");
 
         } catch (Exception e) {
             lblMessage.setText(e.getMessage());
@@ -189,6 +192,36 @@ public class AccountsController {
             }
         }
     }
+
+    @FXML
+    private void handleViewMovements(ActionEvent event) {
+    Account selected = tableAccounts.getSelectionModel().getSelectedItem();
+
+    if (selected != null) {
+        try {
+            // 1. Cargar el FXML de movimientos
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/crud_project/ui/Movements.fxml"));
+            Parent root = loader.load();
+
+            // 2. Obtener el controlador de la nueva ventana
+            MovementController controller = loader.getController();
+
+            // 4. Configurar el Stage (usamos el stage actual o uno nuevo)
+            // Si quieres que sea una ventana nueva sobre la anterior:
+            Stage movementStage = new Stage();
+            controller.initStage(movementStage, root);
+            
+            // Opcional: ocultar la ventana de cuentas
+            this.stage.hide(); 
+
+        } catch (Exception e) {
+            lblMessage.setText("Error opening movements window.");
+            e.printStackTrace();
+        }
+    } else {
+        lblMessage.setText("Please, select an account first.");
+    }
+}
 
     private void handleLogOut(ActionEvent event) {
         try {
@@ -244,7 +277,7 @@ public class AccountsController {
         return this.stage;
     }
 
-    void setCustomer(Customer customer) {
+    public void setCustomer(Customer customer) {
         this.loggedCustomer = customer;
     }
 }
