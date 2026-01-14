@@ -3,6 +3,9 @@ package crud_project.ui;
 // Imports.
 import crud_project.logic.CustomerRESTClient;
 import crud_project.model.Customer;
+import crud_project.model.Movement;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Logger;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -196,11 +199,13 @@ public class SignInController {
                     Customer.class, email, password);
 
                 // Si t0do es correcto se abrirá la página “Main” y se cerrará la actual.
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("Accounts.fxml"));
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("Movement.fxml"));
                 Parent root = loader.load();
                 // Cargamos controlador.
-                AccountsController controller = loader.getController();
-            
+                MovementController controller = loader.getController();
+                controller.setCustomer(customer);
+                
+                //AccountsController controller = loader.getController();
                 this.stage.hide();
                 controller.init(root);
                 controller.getStage().setOnHiding(e->{

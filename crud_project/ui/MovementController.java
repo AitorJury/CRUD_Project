@@ -5,15 +5,14 @@
  */
 package crud_project.ui;
 import crud_project.logic.MovementRESTClient;
+import crud_project.model.Customer;
 import crud_project.model.Movement;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Logger;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.event.EventType;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -27,6 +26,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
+import javax.ws.rs.core.GenericType;
 
 /**
  *
@@ -37,6 +37,7 @@ public class MovementController {
     private Stage stage;
     private Scene scene;
     private Movement movement;
+    private Customer customer;
 
     @FXML
     private TableView<Movement> tbMovement;
@@ -68,35 +69,36 @@ public class MovementController {
     private final ButtonType no = new ButtonType("No");
     MovementRESTClient movementClient = new MovementRESTClient();
 
-    public void initStage(Stage stage, Parent root) {
-        this.stage = stage;
+    public void init(Parent root) {
         Scene scene = new Scene(root);
+        this.stage = new Stage();
         this.stage.setScene(scene);
         LOGGER.info("Initializing Movement Window");
         // Establecer el título de la ventana.
         this.stage.setTitle("Movement page");
         this.stage.setResizable(false);
-
-        stage.show();
+        
+        clDate.setCellValueFactory(new PropertyValueFactory<>("timestamp"));
+        clAmount.setCellValueFactory(new PropertyValueFactory<>("amount"));
+        clDescription.setCellValueFactory(new PropertyValueFactory<>("description"));
+        clBalance.setCellValueFactory(new PropertyValueFactory<>("balance"));
+        loadMovements();
         btnBack.setCancelButton(true);
 
         btnDeposit.setOnAction(this::handleBtnDeposit);
         btnWithdraw.setOnAction(this::handleBtnWithdraw);
         btnDelete.setOnAction(this::handleBtnDelete);
         btnBack.setOnAction(this::handleBtnBack);
-
-        clDate.setCellValueFactory(new PropertyValueFactory<>("timestamp"));
-        clAmount.setCellValueFactory(new PropertyValueFactory<>("amount"));
-        clDescription.setCellValueFactory(new PropertyValueFactory<>("description"));
-        clBalance.setCellValueFactory(new PropertyValueFactory<>("balance"));
-        loadMovements();
+        this.stage.show();    
 
     }
 
     public void loadMovements() {
         try {
-            //El 1 está porque necesito el id que de momento no tengo el id de la cuenta
-            Movement[] movements = movementClient.findMovementByAccount_XML(Movement[].class, "1");
+            //Id de prueba
+             
+            GenericType<List<Movement>> movementListType = new GenericType<List<Movement>>(){};  
+            List<Movement> movements = movementClient.findMovementByAccount_XML(movementListType, "2654785441");
             ObservableList<Movement> dataMovement = FXCollections.observableArrayList(movements);
             tbMovement.setItems(dataMovement);
         } catch (Exception e) {
@@ -110,7 +112,13 @@ public class MovementController {
     }
 
     public void handleBtnDelete(ActionEvent event) {
-
+        try{
+        movementClient.remove("");
+        loadMovements();
+        }
+        catch(Exception e){
+            handlelblError("Cannot delete movement");
+        }
     }
 
     public void handleBtnWithdraw(ActionEvent event) {
@@ -121,4 +129,14 @@ public class MovementController {
     public void handlelblError(String message) {
         lblError.setText(message);
     }
+    public void handleAlert(String message){
+        
+    }
+    public Stage getStage() { 
+        return this.stage; 
+    }
+    public void setCustomer(Customer customer){
+        this.customer = customer;
+    }
+   
 }
