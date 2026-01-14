@@ -31,6 +31,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.stage.Stage;
+
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.GenericType;
 
@@ -177,10 +178,14 @@ public class UserController {
 
         //Filtro para la celda, nombre en modo edicion
         fxTcFirstName.setOnEditCommit(this::handleFirstNameCellEdit);
-        fxTcLastName.setOnEditCommit(this::handleFirstNameCellEdit);
+        fxTcLastName.setOnEditCommit(this::handleLastNameCellEdit);
         fxTcMidName.setOnEditCommit(this::handleMiddleInitialCellEdit);
         fxTcStreet.setOnEditCommit(this::handleStreetCellEdit);
         fxTcCity.setOnEditCommit(this::handleCityCellEdit);
+        fxTcState.setOnEditCommit(this::handleStateCellEdit);
+        fxTcEmail.setOnEditCommit(this::handleEmailCellEdit);
+        fxTcPassword.setOnEditCommit(this::handlePasswordCellEdit);
+
 
     }
 
@@ -217,7 +222,7 @@ public class UserController {
                 if (selectedCustomer.getFirstName().equals("admin")) {
                     throw new IllegalArgumentException("No se puede borrar el usuario administrador");
                 }
-                if (selectedCustomer.getAccounts().size() > 0) {
+                if (!selectedCustomer.getAccounts().isEmpty()) {
                     throw new WebApplicationException("No se puede eliminar un cliente con cuentas");
                 }
 
@@ -238,13 +243,9 @@ public class UserController {
 
             }
 
-        } catch (IllegalArgumentException ex) {
+        } catch (IllegalArgumentException | WebApplicationException ex) {
             LOGGER.warning(ex.getMessage());
             handleAlertError(ex.getMessage());
-
-        } catch (WebApplicationException web) {
-            LOGGER.warning(web.getMessage());
-            handleAlertError(web.getMessage());
 
         } catch (Exception e) {
 
@@ -295,7 +296,7 @@ public class UserController {
 
             }
             client.edit_XML(myCustomer, myCustomer.getId());
-            myCustomer.setFirstName(newValue);
+            myCustomer.firstNameProperty().set(newValue);
 
         } catch (Exception e) {
             LOGGER.warning("Error in First Name cell edit: " + e.getMessage());
@@ -304,6 +305,7 @@ public class UserController {
         }
 
     }
+
     private void handleLastNameCellEdit(TableColumn.CellEditEvent<Customer, String> cellName) {
 
         String newValue = cellName.getNewValue().trim();
@@ -348,7 +350,7 @@ public class UserController {
                 throw new Exception("The initial should be one letter");
             }
             if (!newValue.matches("[a-zA-Z]+")) {
-                
+
                 throw new Exception("The name should contain only letter");
             }
             client.edit_XML(myCustomer, myCustomer.getId());
@@ -356,7 +358,7 @@ public class UserController {
 
         } catch (Exception e) {
 
-           
+
             handleAlertError(e.getMessage());
             fxTableView.refresh();
         }
@@ -364,23 +366,26 @@ public class UserController {
 
     private void handleStreetCellEdit(TableColumn.CellEditEvent<Customer, String> streetCell) {
 
+        String text = streetCell.getNewValue().trim();
+        Customer myCustomer = streetCell.getRowValue();
         try {
 
-            String text = streetCell.getNewValue().trim();
-            Customer myCustomer = streetCell.getRowValue();
             if (text.isEmpty()) {
                 throw new Exception("The field must be filled");
             }
-            if (!text.matches("[\\p{L}\\p{N}\\s,\\.-/ºª#]+")) {
+            if (!text.matches("[\\p{L}\\p{N}\\s,.-/ºª#]+")) {
                 throw new Exception("Street contains invalid characters");
             }
             if (text.length() > 50) {
                 throw new Exception("Street cannot exceed length of 50");
             }
-            client.edit_XML(Customer.class, myCustomer.getId());
-            myCustomer.setStreet(text);
+            client.edit_XML(myCustomer, myCustomer.getId());
+            myCustomer.streetProperty().set(text);
 
         } catch (Exception e) {
+
+            handleAlertError(e.getMessage());
+            fxTableView.refresh();
 
         }
 
@@ -396,20 +401,97 @@ public class UserController {
             if (text.isEmpty()) {
                 throw new Exception("City must not be empty");
             }
-            // Si tiene algo distinto a letras y espacios, lanzar excepción.
+            // Sí tiene algo distinto a letras y espacios, lanzar excepción.
             if (!text.matches("[a-zA-Z\\s]+")) {
                 throw new Exception("City must contain only letters and spaces");
             }
-            // Si tiene más de 20 caracteres lanzar excepcion
+            // Sí tiene más de 20 caracteres lanzar excepcion
             if (text.length() > 20) {
 
                 throw new Exception("City cannot exceed length of 20");
             }
-            client.edit_XML(Customer.class, myCustomer.getId());
+            client.edit_XML(myCustomer, myCustomer.getId());
+            myCustomer.cityProperty().set(text);
 
         } catch (Exception e) {
+            handleAlertError(e.getMessage());
+            fxTableView.refresh();
         }
 
+    }
+
+    private void handleStateCellEdit(TableColumn.CellEditEvent<Customer, String> cell) {
+        try {
+            String text = cell.getNewValue().trim();
+            Customer myCustomer = cell.getRowValue();
+
+            if (text.isEmpty()) {
+                throw new Exception("State must not be empty");
+            }
+            if (!text.matches("[A-Z]+")) {
+                throw new Exception("State must contain only letters");
+            }
+            if (text.length() > 20) {
+                throw new Exception("State cannot exceed length of 20");
+            }
+            client.edit_XML(myCustomer, myCustomer.getId());
+            myCustomer.stateProperty().set(text);
+
+
+        } catch (Exception e) {
+            handleAlertError(e.getMessage());
+            fxTableView.refresh();
+        }
+    }
+
+    private void handleEmailCellEdit(TableColumn.CellEditEvent<Customer, String> cell) {
+        try {
+            String text = cell.getNewValue().trim();
+            Customer myCustomer = cell.getRowValue();
+
+            if (text.isEmpty()) {
+                throw new Exception("Email must not be empty");
+            }
+            if (!text.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")) {
+                throw new Exception("Email format invalid");
+            }
+            if (text.length() > 50) {
+                throw new Exception("Email cannot exceed length of 50");
+            }
+            client.edit_XML(myCustomer, myCustomer.getId());
+            LOGGER.info("Email updated");
+            myCustomer.emailProperty().set(text);
+
+
+        } catch (Exception e) {
+            handleAlertError(e.getMessage());
+            fxTableView.refresh();
+        }
+    }
+
+    private void handlePasswordCellEdit(TableColumn.CellEditEvent<Customer, String> cell) {
+        try {
+            String text = cell.getNewValue().trim();
+            Customer myCustomer = cell.getRowValue();
+
+            if (text.isEmpty()){
+                throw new Exception("Password must not be empty");
+            }
+            if (!text.matches("[a-zA-Z0-9.*!@#$%&\\-_]+")) {
+                throw new Exception("Password contains invalid characters");
+            }
+            if (text.length() < 8) {
+                throw new Exception("Password must be at least 8 characters");
+            }
+            LOGGER.info("Correct Password");
+            client.edit_XML(myCustomer, myCustomer.getId());
+            myCustomer.passwordProperty().set(text);
+
+        } catch (Exception e) {
+            LOGGER.warning("Error in Password cell edit: " + e.getMessage());
+            handleAlertError(e.getMessage());
+            fxTableView.refresh();
+        }
     }
 
     private void handleAlertError(String message) {
