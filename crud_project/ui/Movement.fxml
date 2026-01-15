@@ -8,37 +8,35 @@
 
 <Pane prefHeight="600.0" prefWidth="800.0" style="-fx-background-color: white;" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="crud_project.ui.MovementController">
        <children>
-
-          <Label layoutX="40.0" layoutY="137.0" text="Account" />
-          <ComboBox id="combo" layoutX="40.0" layoutY="164.0" prefWidth="250.0" />
-          <HBox alignment="CENTER_LEFT" layoutX="303.0" layoutY="164.0" spacing="10.0">
-              <children> 
-                  <Label style="-fx-font-weight: bold;" text="Filter by date:" /> 
-                  <DatePicker id="datePicker" fx:id="datePicker" prefWidth="150.0" promptText="Select a date" /> 
-              </children> 
-          </HBox> 
-          <TableView id="tbMovement" layoutX="40.0" layoutY="221.0" prefHeight="300.0" prefWidth="550.0">
+       <ImageView fitHeight="111.0" fitWidth="136.0" layoutX="38.0" layoutY="6.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../../../Escritorio/ProyectoID/logosinfondo.png" />
+         </image>
+      </ImageView>
+          <Label layoutX="40.0" layoutY="110.0" text="Account" />
+          <HBox alignment="CENTER_LEFT" layoutX="303.0" layoutY="139.0" spacing="10.0" /> 
+          <TableView fx:id="tbMovement" layoutX="38.0" layoutY="179.0" prefHeight="300.0" prefWidth="550.0">
             <columns>
-              <TableColumn id="clDate" prefWidth="107.0" text="Date" />
-            <TableColumn id="clAmount" prefWidth="125.0" text="Amount" />
-            <TableColumn id="clDescription" prefWidth="124.0" text="Description" />
-            <TableColumn id="clBalance" prefWidth="193.0" text="Balance" />
+              <TableColumn fx:id="clDate" prefWidth="177.0" text="Date" />
+            <TableColumn fx:id="clDescription" prefWidth="135.0" text="Type" />
+            <TableColumn fx:id="clAmount" prefWidth="126.0" text="Amount" />
+            <TableColumn fx:id="clBalance" prefWidth="111.0" text="Balance" />
             </columns>
              <placeholder>
                 <Label />
              </placeholder>
           </TableView>
-          <Button id="btnDelete" fx:id="btnDelete" layoutX="620.0" layoutY="329.0" prefHeight="30.0" prefWidth="120.0" text="Delete" />
-
-          <Button id="btnBack" fx:id="btnExit" layoutX="620.0" layoutY="530.0" prefHeight="39.0" prefWidth="150.0" text="Back to menu" />
-          <Button id="btnDeposit" fx:id="btnCreate" layoutX="620.0" layoutY="238.0" prefHeight="30.0" prefWidth="120.0" text="Deposit" />
-      <ImageView fitHeight="111.0" fitWidth="136.0" layoutX="38.0" layoutY="6.0" pickOnBounds="true" preserveRatio="true">
-         <image>
-            <Image url="@../../../Escritorio/ProyectoID/logosinfondo.png" />
-         </image>
-      </ImageView>
-      <Button id="btnWithdraw" fx:id="btnCreate1" layoutX="620.0" layoutY="285.0" prefHeight="30.0" prefWidth="120.0" text="Withdraw" />
-      <Label id="lblError" layoutX="40.0" layoutY="530.0" prefHeight="27.0" prefWidth="550.0" />
+          <Button fx:id="btnDelete" layoutX="620.0" layoutY="398.0" prefHeight="30.0" prefWidth="120.0" text="Delete" />
+          <Button fx:id="btnBack" layoutX="620.0" layoutY="440.0" prefHeight="39.0" prefWidth="150.0" text="Back to accounts" />
+      <Label fx:id="lblError" layoutX="40.0" layoutY="530.0" prefHeight="27.0" prefWidth="550.0" />
+      <HBox layoutX="36.0" layoutY="507.0" prefHeight="100.0" prefWidth="535.0">
+         <children>
+            <ComboBox fx:id="comboType" prefHeight="25.0" prefWidth="230.0" promptText="Type" />
+            <TextField fx:id="txtAmount" prefHeight="25.0" prefWidth="313.0" />
+            <Button fx:id="createMovement" mnemonicParsing="false" prefHeight="25.0" prefWidth="208.0" text="Create Movement" />
+         </children>
+      </HBox>
+      <Label layoutX="199.0" layoutY="492.0" prefHeight="15.0" prefWidth="53.0" text="Amount" />
+      <Label id="lblName" layoutX="40.0" layoutY="139.0" text="Label" />
        </children>
 </Pane>
-
