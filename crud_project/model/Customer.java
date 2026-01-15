@@ -7,6 +7,7 @@ package crud_project.model;
 
 //import lombok.Builder;
 import java.io.Serializable;
+import java.util.Random;
 import java.util.Set;
 import javafx.beans.property.*;
 import javafx.beans.value.ObservableValue;
@@ -49,23 +50,24 @@ public class Customer implements Serializable {
         this.state = new SimpleStringProperty(state);
         this.zip = new SimpleIntegerProperty(zip != null ? zip : 0);
         this.phone = new SimpleLongProperty(phone != null ? phone : 0L);
-        this.email = new SimpleStringProperty(email);
+        this.email = new SimpleStringProperty("nam@"+System.currentTimeMillis()+".com");
         this.password = new SimpleStringProperty(password);
         this.accounts = new SimpleObjectProperty<>(accounts);
     }
 
+
     public Customer() {
         this.id = new SimpleLongProperty();
-        this.firstName = new SimpleStringProperty();
-        this.lastName = new SimpleStringProperty();
-        this.middleInitial = new SimpleStringProperty();
-        this.street = new SimpleStringProperty();
-        this.city = new SimpleStringProperty();
-        this.state = new SimpleStringProperty();
+        this.firstName = new SimpleStringProperty("");
+        this.lastName = new SimpleStringProperty("");
+        this.middleInitial = new SimpleStringProperty("");
+        this.street = new SimpleStringProperty("");
+        this.city = new SimpleStringProperty("");
+        this.state = new SimpleStringProperty("");
         this.zip = new SimpleIntegerProperty();
         this.phone = new SimpleLongProperty();
-        this.email = new SimpleStringProperty();
-        this.password = new SimpleStringProperty();
+        this.email = new SimpleStringProperty("name@"+System.currentTimeMillis()+".com");
+        this.password = new SimpleStringProperty("clave$%&");
         this.accounts = new SimpleObjectProperty<>();
     }
 
@@ -73,6 +75,7 @@ public class Customer implements Serializable {
     public Long getId() {
         return id.get();
     }
+
 
     public void setId(Long id) {
         this.id.set(id != null ? id : 0L);

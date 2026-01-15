@@ -7,12 +7,9 @@ package crud_project.ui;
 
 import java.util.*;
 
-import java.util.function.BiConsumer;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 import crud_project.logic.CustomerRESTClient;
-import crud_project.model.Account;
 
 import crud_project.model.Customer;
 
@@ -31,6 +28,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.stage.Stage;
+import javafx.util.converter.IntegerStringConverter;
+import javafx.util.converter.LongStringConverter;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.GenericType;
@@ -83,7 +82,7 @@ public class UserController {
     @FXML
     public Button fxBtnExit;
 
-    ArrayList<Customer> customerList = new ArrayList<>();
+    
 
     public static final CustomerRESTClient client = new CustomerRESTClient();
     ObservableList<Customer> customersData;
@@ -113,6 +112,8 @@ public class UserController {
 
         fxTcFirstName.setCellValueFactory(new PropertyValueFactory<>("firstName"));
         fxTcFirstName.setCellFactory(TextFieldTableCell.forTableColumn());
+
+
         fxTcFirstName.setEditable(true);
 
         fxTcLastName.setCellValueFactory(new PropertyValueFactory<>("lastName"));
@@ -133,11 +134,11 @@ public class UserController {
 
         fxTcPhone.setCellValueFactory(new PropertyValueFactory<>("phone"));
         fxTcPhone.setEditable(true);
-        //fxTcPhone.setCellFactory(TextFieldTableCell.forTableColumn());
+        fxTcPhone.setCellFactory(TextFieldTableCell.forTableColumn(new LongStringConverter()));
 
         fxTcStreet.setCellValueFactory(new PropertyValueFactory<>("street"));
         fxTcStreet.setEditable(true);
-        //fxTcStreet.setCellFactory(TextFieldTableCell.forTableColumn());
+        fxTcStreet.setCellFactory(TextFieldTableCell.forTableColumn());
 
         fxTcCity.setCellValueFactory(new PropertyValueFactory<>("city"));
         fxTcCity.setEditable(true);
@@ -149,20 +150,14 @@ public class UserController {
 
         fxTcZip.setCellValueFactory(new PropertyValueFactory<>("zip"));
         fxTcZip.setEditable(true);
-        //fxTcPhone.setCellFactory(TextFieldTableCell.forTableColumn());
+        fxTcZip.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
 
         //Carga de datos a las columnas
         customersData = FXCollections.observableArrayList(client.findAll_XML(new GenericType<List<Customer>>() {
         }));
         fxTableView.setItems(customersData);
 
-        //Prueba de carga de datos con Array[]
-        /*
-        Customer[] response = client.findAll_XML(Customer[].class);
-        customerList = new ArrayList<>(Arrays.asList(response));
-        customersData = FXCollections.observableArrayList(customerList);
-        fxTableView.setItems(customersData);
-         */
+
         userStage.setOnCloseRequest(this::handleOnExitAction);
 
         //---- Accion de botones
@@ -185,6 +180,8 @@ public class UserController {
         fxTcState.setOnEditCommit(this::handleStateCellEdit);
         fxTcEmail.setOnEditCommit(this::handleEmailCellEdit);
         fxTcPassword.setOnEditCommit(this::handlePasswordCellEdit);
+        fxTcZip.setOnEditCommit(this::handleZipCellEdit);
+        fxTcPhone.setOnEditCommit(this::handlePhoneCellEdit);
 
 
     }
@@ -197,17 +194,19 @@ public class UserController {
         if (newValue != null) {
             //Obtiene el objeto Customer seleccionado en ese momento
             Customer currentCustomer = fxTableView.getSelectionModel().getSelectedItem();
-            if (currentCustomer.getId() == 0) {
-                try {
-                    Customer bdCustomer = client.find_XML(Customer.class, currentCustomer.getId().toString());
-                    currentCustomer.setId(bdCustomer.getId());
 
-                } catch (Exception e) {
+            try {
+                Customer bdCustomer = client.findCustomerByEmailPassword_XML(Customer.class, currentCustomer.emailProperty().get(), "clave$%&");
+                Long idCustomer = bdCustomer.getId();
+                currentCustomer.setId(idCustomer);
 
-                    LOGGER.info("Cliente no existe");
-                }
+            } catch (Exception e) {
 
+                LOGGER.info("Cliente no existe");
+                LOGGER.warning(e.getMessage());
             }
+
+
         }
 
     }
@@ -260,12 +259,14 @@ public class UserController {
 
             Customer newCustomer = new Customer();
             client.create_XML(newCustomer);
-
             fxTableView.getItems().add(0, newCustomer);
-            fxTableView.getSelectionModel().clearAndSelect(0);
+
             fxTableView.requestFocus();
+            fxTableView.getSelectionModel().clearAndSelect(0);
             fxTableView.scrollTo(0);
+
             fxTableView.edit(0, fxTcFirstName);
+
 
         } catch (Exception e) {
             handleAlertError("Error saving new customer...");
@@ -295,8 +296,8 @@ public class UserController {
                 throw new Exception("The name should be less than 20 characters");
 
             }
-            client.edit_XML(myCustomer, myCustomer.getId());
             myCustomer.firstNameProperty().set(newValue);
+            client.edit_XML(myCustomer, myCustomer.getId());
 
         } catch (Exception e) {
             LOGGER.warning("Error in First Name cell edit: " + e.getMessage());
@@ -322,8 +323,8 @@ public class UserController {
                 throw new Exception("The name should be less than 20 characters");
 
             }
+            myCustomer.lastNameProperty().set(newValue);
             client.edit_XML(myCustomer, myCustomer.getId());
-            myCustomer.setLastName(newValue);
 
         } catch (Exception e) {
             LOGGER.warning("Error in First Name cell edit: " + e.getMessage());
@@ -353,8 +354,8 @@ public class UserController {
 
                 throw new Exception("The name should contain only letter");
             }
-            client.edit_XML(myCustomer, myCustomer.getId());
             myCustomer.middleInitialProperty().set(newValue);
+            client.edit_XML(myCustomer, myCustomer.getId());
 
         } catch (Exception e) {
 
@@ -410,8 +411,8 @@ public class UserController {
 
                 throw new Exception("City cannot exceed length of 20");
             }
-            client.edit_XML(myCustomer, myCustomer.getId());
             myCustomer.cityProperty().set(text);
+            client.edit_XML(myCustomer, myCustomer.getId());
 
         } catch (Exception e) {
             handleAlertError(e.getMessage());
@@ -428,14 +429,14 @@ public class UserController {
             if (text.isEmpty()) {
                 throw new Exception("State must not be empty");
             }
-            if (!text.matches("[A-Z]+")) {
+            if (!text.matches("[a-zA-Z\\s]+")) {
                 throw new Exception("State must contain only letters");
             }
             if (text.length() > 20) {
                 throw new Exception("State cannot exceed length of 20");
             }
-            client.edit_XML(myCustomer, myCustomer.getId());
             myCustomer.stateProperty().set(text);
+            client.edit_XML(myCustomer, myCustomer.getId());
 
 
         } catch (Exception e) {
@@ -458,9 +459,9 @@ public class UserController {
             if (text.length() > 50) {
                 throw new Exception("Email cannot exceed length of 50");
             }
+            myCustomer.emailProperty().set(text);
             client.edit_XML(myCustomer, myCustomer.getId());
             LOGGER.info("Email updated");
-            myCustomer.emailProperty().set(text);
 
 
         } catch (Exception e) {
@@ -474,7 +475,7 @@ public class UserController {
             String text = cell.getNewValue().trim();
             Customer myCustomer = cell.getRowValue();
 
-            if (text.isEmpty()){
+            if (text.isEmpty()) {
                 throw new Exception("Password must not be empty");
             }
             if (!text.matches("[a-zA-Z0-9.*!@#$%&\\-_]+")) {
@@ -484,12 +485,69 @@ public class UserController {
                 throw new Exception("Password must be at least 8 characters");
             }
             LOGGER.info("Correct Password");
-            client.edit_XML(myCustomer, myCustomer.getId());
             myCustomer.passwordProperty().set(text);
+            client.edit_XML(myCustomer, myCustomer.getId());
 
         } catch (Exception e) {
             LOGGER.warning("Error in Password cell edit: " + e.getMessage());
             handleAlertError(e.getMessage());
+            fxTableView.refresh();
+        }
+    }
+
+    private void handleZipCellEdit(TableColumn.CellEditEvent<Customer, Integer> cell) {
+        try {
+            Integer text = cell.getNewValue();
+            Customer myCustomer = cell.getRowValue();
+
+            if (text == null) {
+                throw new Exception("Zip code must not be empty");
+            }
+            if (text < 0) {
+                throw new Exception("Zip code must be positive");
+            }
+            myCustomer.zipProperty().set(text);
+            client.edit_XML(myCustomer, myCustomer.getId());
+
+        } catch (NumberFormatException | InputMismatchException e) {
+            handleAlertError("Zip code must be a number");
+            LOGGER.severe("Error in Zip cell edit: " + e.getMessage());
+            fxTableView.refresh();
+
+        } catch (Exception e) {
+            handleAlertError(e.getMessage());
+            LOGGER.severe(e.getMessage());
+            fxTableView.refresh();
+        }
+    }
+
+    private void handlePhoneCellEdit(TableColumn.CellEditEvent<Customer, Long> cell) {
+        try {
+            Long number = cell.getNewValue();
+            Customer myCustomer = cell.getRowValue();
+
+            if (number == null) {
+                throw new Exception("Phone number must not be empty");
+            }
+
+            String text = String.valueOf(number);
+
+            if (text.length() < 7 || text.length() > 11) {
+                throw new Exception("Phone length must be 7-11 digits");
+            }
+
+
+            myCustomer.phoneProperty().set(number);
+            client.edit_XML(myCustomer, myCustomer.getId());
+
+        } catch (NumberFormatException | InputMismatchException e) {
+            handleAlertError("Phone number must be a number");
+            LOGGER.severe("Error in Phone cell edit: " + e.getMessage());
+            fxTableView.refresh();
+        } catch (Exception e) {
+            handleAlertError(e.getMessage());
+            LOGGER.severe(e.getMessage());
+            fxTableView.refresh();
             fxTableView.refresh();
         }
     }
@@ -520,10 +578,7 @@ public class UserController {
     public Stage getStage() {
         return this.userStage;
     }
-
-    public Customer getCustomer() {
-        return this.customer;
-    }
+    
 
     public void setCustomer(Customer customer) {
         this.customer = customer;
