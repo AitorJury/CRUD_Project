@@ -41,7 +41,9 @@ public class AccountsController {
     @FXML
     private TableColumn<Account, Date> colTimestamp;
     @FXML
-    private Button btnAddAccount, btnRefresh, btnLogOut, btnViewMovements;
+    private Button btnRefresh, btnLogOut, btnViewMovements, btnDeleteAccount;
+    @FXML
+    private ToggleButton btnAddAccount;
     @FXML
     private Label lblMessage;
 
@@ -58,15 +60,31 @@ public class AccountsController {
             Scene scene = new Scene(root);
             this.stage = new Stage();
             this.stage.setScene(scene);
-            this.stage.setTitle("Account Management");
+            this.stage.setTitle("My Accounts");
 
+            // FALTA CERRAR LA APP CON LA X DE LA VENTANA
             setupTable();
-            setupContextMenu();
             loadAccountsData();
 
             btnAddAccount.setOnAction(this::handleAddAccount);
             btnRefresh.setOnAction(e -> loadAccountsData());
             btnLogOut.setOnAction(this::handleLogOut);
+            btnViewMovements.setOnAction(this::handleViewMovements);
+            btnDeleteAccount.setOnAction(this::handleDeleteAccount);
+
+            btnViewMovements.setDisable(true);
+            btnDeleteAccount.setDisable(true);
+
+            tableAccounts.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+                boolean disabled;
+                if (newSelection == null) {
+                    disabled = true;
+                } else {
+                    disabled = false;
+                }
+                btnViewMovements.setDisable(disabled);
+                btnDeleteAccount.setDisable(disabled);
+            });
 
             this.stage.show();
         } catch (Exception e) {
@@ -75,7 +93,6 @@ public class AccountsController {
     }
 
     private void setupTable() {
-
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colDescription.setCellValueFactory(new PropertyValueFactory<>("description"));
         colType.setCellValueFactory(new PropertyValueFactory<>("type"));
@@ -123,20 +140,27 @@ public class AccountsController {
                 }
             }
         });
-    }
-
-    private void setupContextMenu() {
-        ContextMenu contextMenu = new ContextMenu();
-        MenuItem delete = new MenuItem("Delete Account");
-        delete.setOnAction(this::handleDeleteAccount);
-        contextMenu.getItems().add(delete);
-        tableAccounts.setContextMenu(contextMenu);
+        
+        colBeginBalance.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
+        colBeginBalance.setOnEditCommit(new EventHandler<CellEditEvent<Account, Double>>() {
+            @Override
+            public void handle(CellEditEvent<Account, Double> event) {
+                Account acc = event.getRowValue();
+                if (acc.getId() == null || acc.getId() <= 0) {
+                    acc.setBeginBalance(event.getNewValue());
+                    saveOrUpdate(acc);
+                } else {
+                    lblMessage.setText("Cannot change begin balance of an existing account.");
+                    tableAccounts.refresh();
+                }
+            }
+        });
     }
 
     private void loadAccountsData() {
         try {
-            
-            GenericType<List<Account>> accountListType = new GenericType<List<Account>>() {};
+            GenericType<List<Account>> accountListType = new GenericType<List<Account>>() {
+            };
 
             List<Account> accounts = restClient.findAccountsByCustomerId_XML(
                     accountListType,
@@ -145,22 +169,26 @@ public class AccountsController {
 
             accountsData = FXCollections.observableArrayList(accounts);
             tableAccounts.setItems(accountsData);
-            lblMessage.setText("Data loaded.");
+            lblMessage.setText("");
+            LOGGER.info("Accounts loaded for customer: " + loggedCustomer.getId());
 
         } catch (Exception e) {
-            lblMessage.setText(e.getMessage());
-
-            e.printStackTrace();
+            lblMessage.setText("Error loading data: " + e.getMessage());
         }
     }
 
     private void handleAddAccount(ActionEvent event) {
-        Account newAcc = new Account(0L, AccountType.STANDARD, "New Description",
-                0.0, 0.0, 0.0, new Date());
+        try {
+            Account newAcc = new Account(0L, AccountType.STANDARD, null,
+                    0.0, 0.0, 0.0, new Date());
 
-        accountsData.add(newAcc);
-        tableAccounts.getSelectionModel().select(newAcc);
-        lblMessage.setText("New row added. Right-click to Save.");
+            restClient.createAccount_XML(newAcc);
+
+            loadAccountsData();
+            lblMessage.setText("Account created successfully.");
+        } catch (Exception e) {
+            showErrorAlert("Could not create account: " + e.getMessage());
+        }
     }
 
     private void handleEditDescription(TableColumn.CellEditEvent<Account, String> event) {
@@ -171,110 +199,76 @@ public class AccountsController {
 
     private void handleDeleteAccount(ActionEvent event) {
         Account selected = tableAccounts.getSelectionModel().getSelectedItem();
-
         if (selected == null) {
             return;
         }
 
         if (selected.getMovements() != null && !selected.getMovements().isEmpty()) {
-            showErrorAlert("It cannot be deleted: The account has linked transactions.");
+            showErrorAlert("Account cannot be deleted: it has linked movements.");
             return;
         }
 
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete this account?", yes, no);
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Delete this account?", yes, no);
         if (alert.showAndWait().get() == yes) {
             try {
                 restClient.removeAccount(selected.getId().toString());
                 accountsData.remove(selected);
-                lblMessage.setText("Account successfully deleted.");
+                lblMessage.setText("Account deleted.");
             } catch (Exception e) {
-                showErrorAlert("Server error while deleting.");
+                showErrorAlert("Error during deletion: " + e.getMessage());
             }
         }
     }
 
     @FXML
     private void handleViewMovements(ActionEvent event) {
-    Account selected = tableAccounts.getSelectionModel().getSelectedItem();
+        Account selected = tableAccounts.getSelectionModel().getSelectedItem();
+        if (selected != null) {
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/crud_project/ui/Movements.fxml"));
+                Parent root = loader.load();
 
-    if (selected != null) {
-        try {
-            // 1. Cargar el FXML de movimientos
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/crud_project/ui/Movements.fxml"));
-            Parent root = loader.load();
+                MovementController controller = loader.getController();
 
-            // 2. Obtener el controlador de la nueva ventana
-            MovementController controller = loader.getController();
-
-            // 4. Configurar el Stage (usamos el stage actual o uno nuevo)
-            // Si quieres que sea una ventana nueva sobre la anterior:
-            Stage movementStage = new Stage();
-            controller.initStage(movementStage, root);
-            
-            // Opcional: ocultar la ventana de cuentas
-            this.stage.hide(); 
-
-        } catch (Exception e) {
-            lblMessage.setText("Error opening movements window.");
-            e.printStackTrace();
-        }
-    } else {
-        lblMessage.setText("Please, select an account first.");
-    }
-}
-
-    private void handleLogOut(ActionEvent event) {
-        try {
-            LOGGER.info("Log out button clicked.");
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("Log Out");
-            alert.setHeaderText("Confirm Log Out");
-            alert.setContentText("Are you sure you want to log out?");
-
-            alert.getButtonTypes().setAll(yes, no);
-            ButtonType result = alert.showAndWait().get();
-
-            if (result == yes) {
-                LOGGER.info("User confirmed log out.");
-
-                if (restClient != null) {
-                    restClient.close();
-                }
+                controller.setAccount(selected);
+                controller.initStage(root);
 
                 this.stage.close();
-
-            } else {
-                LOGGER.info("Log out cancelled.");
+            } catch (Exception e) {
+                showErrorAlert("Error opening movements: " + e.getMessage());
+                e.printStackTrace();
             }
+        }
+    }
 
-        } catch (Exception e) {
-            LOGGER.severe("Error: " + e.getMessage());
-            showErrorAlert("An error occurred during log out.");
+    private void handleLogOut(ActionEvent event) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Do you want to log out?", yes, no);
+        if (alert.showAndWait().get() == yes) {
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/crud_project/ui/SignIn.fxml"));
+                Parent root = loader.load();
+                SignInController controller = loader.getController();
+                controller.initStage(stage, root);
+            } catch (Exception e) {
+                showErrorAlert("Error returning to login.");
+            }
         }
     }
 
     private void saveOrUpdate(Account acc) {
         try {
-            if (acc.getId() == null || acc.getId() <= 0) {
-                restClient.createAccount_XML(acc);
-                lblMessage.setText("New account created.");
-            } else {
+            if (acc.getId() != null && acc.getId() > 0) {
                 restClient.updateAccount_XML(acc);
-                lblMessage.setText("Changes saved.");
+                lblMessage.setText("Account updated.");
             }
-            loadAccountsData();
         } catch (Exception e) {
-            showErrorAlert("Error saving: " + e.getMessage());
+            showErrorAlert("Error updating: " + e.getMessage());
             tableAccounts.refresh();
         }
     }
 
     private void showErrorAlert(String msg) {
         new Alert(Alert.AlertType.ERROR, msg, ButtonType.OK).showAndWait();
-    }
-
-    public Stage getStage() {
-        return this.stage;
     }
 
     public void setCustomer(Customer customer) {

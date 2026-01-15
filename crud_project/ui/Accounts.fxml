@@ -24,21 +24,23 @@
         <TableView fx:id="tableAccounts" editable="true" layoutX="50.0" layoutY="130.0" prefHeight="500.0" prefWidth="924.0" styleClass="text-field">
             <columns>
                 <TableColumn fx:id="colId" prefWidth="132.0" text="ID" />
-                <TableColumn fx:id="colDescription" prefWidth="229.0" text="Description" />
-                <TableColumn fx:id="colType" prefWidth="96.0" text="Type" />
-                <TableColumn fx:id="colBalance" prefWidth="113.0" text="Balance" />
+                <TableColumn fx:id="colDescription" prefWidth="183.0" text="Description" />
+                <TableColumn fx:id="colType" prefWidth="131.0" text="Type" />
+                <TableColumn fx:id="colBalance" prefWidth="124.0" text="Balance" />
                 <TableColumn fx:id="colCreditLine" prefWidth="100.0" text="Credit Line" />
-                <TableColumn fx:id="colBeginBalance" prefWidth="127.0" text="Begin Balance" />
-                <TableColumn fx:id="colTimestamp" prefWidth="123.0" text="Date" />
+                <TableColumn fx:id="colBeginBalance" prefWidth="119.0" text="Begin Balance" />
+                <TableColumn fx:id="colTimestamp" prefWidth="131.0" text="Opening Date" />
             </columns>
         </TableView>
 
         <!-- Botón de añadir cuenta -->
-        <Button fx:id="btnAddAccount" layoutX="50.0" layoutY="650.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="187.0" styleClass="button-primary" text="Add New Account" />
+        <ToogleButton fx:id="btnAddAccount" layoutX="50.0" layoutY="650.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="187.0" styleClass="button-primary" text="Create Account" />
         <!-- Botón de recargar -->
         <Button fx:id="btnRefresh" layoutX="252.0" layoutY="650.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="120.0" styleClass="button-primary" text="Refresh" />
         <!-- Botón para ir a movimientos -->
-        <Button fx:id="btnViewMovements" layoutX="387.0" layoutY="650.0" mnemonicParsing="false" onAction="#handleViewMovements" prefHeight="40.0" prefWidth="180.0" styleClass="button-primary" text="View Movements" />
+        <Button fx:id="btnViewMovements" layoutX="387.0" layoutY="650.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="180.0" styleClass="button-primary" text="View Movements" />
+        <!-- Botón para eliminar cuenta -->
+        <Button fx:id="btnDeleteAccount" layoutX="582.0" layoutY="650.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="150.0" styleClass="button-secondary" text="Delete Account" />
         <!-- Botón para ir atrás -->
         <Button fx:id="btnLogOut" layoutX="824.0" layoutY="650.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="150.0" styleClass="button-secondary" text="Log Out" />
         <!-- Mensaje de error -->

@@ -1,6 +1,7 @@
 package crud_project.ui;
 
 import crud_project.logic.MovementRESTClient;
+import crud_project.model.Account;
 import crud_project.model.Movement;
 import java.util.Date;
 import java.util.List;
@@ -64,30 +65,30 @@ public class MovementController {
     private final ButtonType yes = new ButtonType("Yes");
     private final ButtonType no = new ButtonType("No");
     MovementRESTClient movementClient = new MovementRESTClient();
+    private Account account;
 
-    public void initStage(Stage stage, Parent root) {
-        this.stage = stage;
+    public void initStage(Parent root) {
         Scene scene = new Scene(root);
+        this.stage = new Stage();
         this.stage.setScene(scene);
+        stage.setTitle("Movements");
         LOGGER.info("Initializing Movement Window");
         // Establecer el título de la ventana.
         this.stage.setTitle("Movement page");
         this.stage.setResizable(false);
-
-        stage.show();
-        btnBack.setCancelButton(true);
-
-        btnDeposit.setOnAction(this::handleBtnDeposit);
-        btnWithdraw.setOnAction(this::handleBtnWithdraw);
-        btnDelete.setOnAction(this::handleBtnDelete);
-        btnBack.setOnAction(this::handleBtnBack);
 
         clDate.setCellValueFactory(new PropertyValueFactory<>("timestamp"));
         clAmount.setCellValueFactory(new PropertyValueFactory<>("amount"));
         clDescription.setCellValueFactory(new PropertyValueFactory<>("description"));
         clBalance.setCellValueFactory(new PropertyValueFactory<>("balance"));
         loadMovements();
+        btnBack.setCancelButton(true);
 
+        btnDeposit.setOnAction(this::handleBtnDeposit);
+        btnWithdraw.setOnAction(this::handleBtnWithdraw);
+        btnDelete.setOnAction(this::handleBtnDelete);
+        btnBack.setOnAction(this::handleBtnBack);
+        this.stage.show();
     }
 
     public void loadMovements() {
@@ -112,10 +113,15 @@ public class MovementController {
 
     public void handleBtnWithdraw(ActionEvent event) {
     }
-    public void handleBtnDeposit(ActionEvent event){
+
+    public void handleBtnDeposit(ActionEvent event) {
     }
 
     public void handlelblError(String message) {
         lblError.setText(message);
+    }
+
+    void setAccount(Account account) {
+        this.account = account;
     }
 }
