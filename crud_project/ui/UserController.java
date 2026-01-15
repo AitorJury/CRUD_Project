@@ -13,6 +13,7 @@ import crud_project.logic.CustomerRESTClient;
 
 import crud_project.model.Customer;
 
+import javafx.animation.ScaleTransition;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -28,6 +29,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import javafx.util.converter.IntegerStringConverter;
 import javafx.util.converter.LongStringConverter;
 
@@ -69,8 +71,7 @@ public class UserController {
     public TableColumn<Customer, String> fxTcState;
     @FXML
     public TableColumn<Customer, Integer> fxTcZip;
-    @FXML
-    public TextField fxTfSearchBar;
+
     @FXML
     public Button fxBtnFind;
     @FXML
@@ -82,38 +83,36 @@ public class UserController {
     @FXML
     public Button fxBtnExit;
 
-    
 
     public static final CustomerRESTClient client = new CustomerRESTClient();
     ObservableList<Customer> customersData;
 
     public void initUserStage(Parent root) {
 
-        //Deshabilitar boton de delete
-        fxBtnDelete.setDisable(true);
 
         //Creacion de la nueva ventana para User
         userScene = new Scene(root);
         userStage.setScene(userScene);
         LOGGER.info("Initialization window user");
-        userStage.setTitle("Users management for " + customer.getFirstName());
+        userStage.setTitle("Users management for ADMIN");
         LOGGER.info("Setting title");
         userStage.setResizable(false);
         LOGGER.info("Setting fix size");
         userStage.show();
         LOGGER.info("Showing window");
 
+        //Deshabilitar boton de delete
+        fxBtnDelete.setDisable(true);
+
+
         //Recuperar lista de todos los customers
         //Configuracion de columnas
-        fxTfSearchBar.setPromptText("Search by name");
         //Columnas editables
         fxTableView.setEditable(true);
         fxTcId.setCellValueFactory(new PropertyValueFactory<>("id"));
 
         fxTcFirstName.setCellValueFactory(new PropertyValueFactory<>("firstName"));
         fxTcFirstName.setCellFactory(TextFieldTableCell.forTableColumn());
-
-
         fxTcFirstName.setEditable(true);
 
         fxTcLastName.setCellValueFactory(new PropertyValueFactory<>("lastName"));
@@ -160,13 +159,6 @@ public class UserController {
 
         userStage.setOnCloseRequest(this::handleOnExitAction);
 
-        //---- Accion de botones
-        fxBtnNewCustomer.setOnAction(this::handleAddCustomerRow);
-        fxBtnDelete.setOnAction(this::handleDeleteCustomerAndRow);
-
-        fxBtnSaveChanges.setDisable(true);
-        fxBtnExit.setOnAction(this::handleOnExitAction);
-        //-------------------------------------
 
         //Comprobacion de cambio de fila
         fxTableView.getSelectionModel().selectedItemProperty().addListener(this::handleTableSelectionChanged);
@@ -183,31 +175,19 @@ public class UserController {
         fxTcZip.setOnEditCommit(this::handleZipCellEdit);
         fxTcPhone.setOnEditCommit(this::handlePhoneCellEdit);
 
+        //---- Accion de botones
+        fxBtnNewCustomer.setOnAction(this::handleAddCustomerRow);
+        fxBtnDelete.setOnAction(this::handleDeleteCustomerAndRow);
+        fxBtnExit.setOnAction(this::handleOnExitAction);
+
 
     }
 
     private void handleTableSelectionChanged(ObservableValue observable, Object oldValue, Object newValue) {
 
         fxBtnDelete.setDisable(newValue == null);
-        fxBtnSaveChanges.setDisable(newValue == null);
-
-        if (newValue != null) {
-            //Obtiene el objeto Customer seleccionado en ese momento
-            Customer currentCustomer = fxTableView.getSelectionModel().getSelectedItem();
-
-            try {
-                Customer bdCustomer = client.findCustomerByEmailPassword_XML(Customer.class, currentCustomer.emailProperty().get(), "clave$%&");
-                Long idCustomer = bdCustomer.getId();
-                currentCustomer.setId(idCustomer);
-
-            } catch (Exception e) {
-
-                LOGGER.info("Cliente no existe");
-                LOGGER.warning(e.getMessage());
-            }
 
 
-        }
 
     }
 
@@ -260,6 +240,10 @@ public class UserController {
             Customer newCustomer = new Customer();
             client.create_XML(newCustomer);
             fxTableView.getItems().add(0, newCustomer);
+
+            Customer bdCustomer = client.findCustomerByEmailPassword_XML(Customer.class, newCustomer.emailProperty().get(), "clave$%&");
+            Long idCustomer = bdCustomer.getId();
+            newCustomer.setId(idCustomer);
 
             fxTableView.requestFocus();
             fxTableView.getSelectionModel().clearAndSelect(0);
@@ -578,7 +562,7 @@ public class UserController {
     public Stage getStage() {
         return this.userStage;
     }
-    
+
 
     public void setCustomer(Customer customer) {
         this.customer = customer;
