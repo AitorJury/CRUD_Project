@@ -75,17 +75,7 @@ public class Account implements Serializable {
         this.beginBalanceTimestamp = new SimpleObjectProperty<>();
     }
     
-    // Constructor con parámetros.
-    public Account(Long id, AccountType type, String description, Double balance, 
-                   Double creditLine, Double beginBalance, Date beginBalanceTimestamp) {
-        this.id = new SimpleLongProperty(id);
-        this.type = new SimpleObjectProperty<>(type);
-        this.description = new SimpleStringProperty(description);
-        this.balance = new SimpleDoubleProperty(balance);
-        this.creditLine = new SimpleDoubleProperty(creditLine);
-        this.beginBalance = new SimpleDoubleProperty(beginBalance);
-        this.beginBalanceTimestamp = new SimpleObjectProperty<>(beginBalanceTimestamp);
-    }
+    
     
     /**
      * 

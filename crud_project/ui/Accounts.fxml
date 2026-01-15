@@ -33,8 +33,8 @@
             </columns>
         </TableView>
 
-        <!-- Botón de añadir cuenta -->
-        <ToogleButton fx:id="btnAddAccount" layoutX="50.0" layoutY="650.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="187.0" styleClass="button-primary" text="Create Account" />
+        <!-- Botón toggle de añadir cuenta -->
+        <ToggleButton fx:id="btnAddAccount" layoutX="50.0" layoutY="650.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="187.0" styleClass="button-primary" text="Create Account" />
         <!-- Botón de recargar -->
         <Button fx:id="btnRefresh" layoutX="252.0" layoutY="650.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="120.0" styleClass="button-primary" text="Refresh" />
         <!-- Botón para ir a movimientos -->
