@@ -37,6 +37,6 @@
          </children>
       </HBox>
       <Label layoutX="199.0" layoutY="492.0" prefHeight="15.0" prefWidth="53.0" text="Amount" />
-      <Label id="lblName" layoutX="40.0" layoutY="139.0" text="Label" />
+      <Label id="lblName" layoutX="40.0" layoutY="139.0" prefHeight="27.0" prefWidth="274.0" />
        </children>
 </Pane>
