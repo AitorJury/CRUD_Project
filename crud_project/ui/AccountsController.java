@@ -45,13 +45,13 @@ public class AccountsController {
     @FXML
     private TableColumn<Account, Date> colTimestamp;
     @FXML
-    private Button btnRefresh, btnLogOut, btnViewMovements, btnDeleteAccount;
+    private Button btnRefresh, btnLogOut, btnViewMovements, btnDeleteAccount, btnCancelAccount;
     @FXML
     private ToggleButton btnAddAccount;
     @FXML
     private Label lblMessage;
 
-    private ObservableList<Account> accountsData;
+    private ObservableList<Account> accountsData = FXCollections.observableArrayList();
     private Stage stage;
     private Customer loggedCustomer;
     private final AccountRESTClient restClient = new AccountRESTClient();
@@ -66,11 +66,14 @@ public class AccountsController {
             this.stage = new Stage();
             this.stage.setScene(scene);
             this.stage.setTitle("My Accounts");
+            this.stage.setResizable(false);
 
             setupTable();
+            tableAccounts.setItems(accountsData);
             loadAccountsData();
 
             btnAddAccount.setOnAction(this::handleAddAccount);
+            btnCancelAccount.setOnAction(this::handleCancelAccount);
             btnRefresh.setOnAction(e -> loadAccountsData());
             btnLogOut.setOnAction(this::handleLogOut);
             btnViewMovements.setOnAction(this::handleViewMovements);
@@ -78,6 +81,7 @@ public class AccountsController {
 
             btnViewMovements.setDisable(true);
             btnDeleteAccount.setDisable(true);
+            btnCancelAccount.setDisable(true);
 
             tableAccounts.getSelectionModel().selectedItemProperty().addListener((observableValue, oldSelection, newSelection) -> {
                 boolean disabled = (newSelection == null || btnAddAccount.isSelected());
@@ -102,85 +106,78 @@ public class AccountsController {
             colTimestamp.setCellValueFactory(new PropertyValueFactory<>("beginBalanceTimestamp"));
 
             colDescription.setCellFactory(TextFieldTableCell.forTableColumn());
-            colDescription.setOnEditCommit(new EventHandler<CellEditEvent<Account, String>>() {
-                @Override
-                public void handle(CellEditEvent<Account, String> event) {
-                    Account account = event.getRowValue();
-                    if (btnAddAccount.isSelected() && !account.equals(creatingAccount)) {
-                        showErrorAlert("Cannot edit other accounts while creating a new one.");
-                        tableAccounts.refresh();
-                        return;
-                    }
-                    account.setDescription(event.getNewValue());
-                    if (!btnAddAccount.isSelected()) {
-                        saveOrUpdate(account);
-                    }
+            colDescription.setOnEditCommit(event -> {
+                Account account = event.getRowValue();
+                if (btnAddAccount.isSelected() && !account.equals(creatingAccount)) {
+                    showErrorAlert("Cannot edit other accounts while creating a new one.");
+                    tableAccounts.refresh();
+                    return;
                 }
+                account.setDescription(event.getNewValue());
+                if (!btnAddAccount.isSelected()) {
+                    saveOrUpdate(account);
+                }
+
             });
 
             colType.setCellFactory(ChoiceBoxTableCell.forTableColumn(AccountType.values()));
-            colType.setOnEditCommit(new EventHandler<CellEditEvent<Account, AccountType>>() {
-                @Override
-                public void handle(CellEditEvent<Account, AccountType> event) {
-                    Account account = event.getRowValue();
-                    if (account.getId() != null && account.getId() > 0 && !btnAddAccount.isSelected()) {
-                        lblMessage.setText("Cannot change type of an existing account.");
-                        tableAccounts.refresh();
-                        return;
-                    }
-                    if (btnAddAccount.isSelected() && !account.equals(creatingAccount)) {
-                        tableAccounts.refresh();
-                        return;
-                    }
-                    account.setType(event.getNewValue());
-                    if (account.getType() == AccountType.STANDARD) {
-                        account.setCreditLine(0.0);
-                    }
-                    tableAccounts.refresh();
-                }
-            });
+            colType.setOnEditCommit(event -> {
+            Account account = event.getRowValue();
+            if (btnAddAccount.isSelected() && !account.equals(creatingAccount)) {
+                tableAccounts.refresh();
+                return;
+            }
+            if (account.getId() != null && account.getId() > 0 && !btnAddAccount.isSelected()) {
+                lblMessage.setText("Cannot change type of an existing account.");
+                tableAccounts.refresh();
+                return;
+            }
+            account.setType(event.getNewValue());
+            if (account.getType() == AccountType.STANDARD) account.setCreditLine(0.0);
+            tableAccounts.refresh();
+        });
 
             colCreditLine.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
-            colCreditLine.setOnEditCommit(new EventHandler<CellEditEvent<Account, Double>>() {
-                @Override
-                public void handle(CellEditEvent<Account, Double> event) {
-                    Account account = event.getRowValue();
-                    if (account.getType() != AccountType.CREDIT) {
-                        lblMessage.setText("Credit line only for CREDIT accounts.");
-                        account.setCreditLine(0.0);
-                        tableAccounts.refresh();
-                        return;
-                    }
-                    if (event.getNewValue() < 0) {
-                        lblMessage.setText("Credit line must be >= 0.");
-                        tableAccounts.refresh();
-                        return;
-                    }
-                    account.setCreditLine(event.getNewValue());
-                    if (!btnAddAccount.isSelected()) {
-                        saveOrUpdate(account);
-                    }
-                }
-            });
+            colCreditLine.setOnEditCommit(event -> {
+            Account account = event.getRowValue();
+            if (btnAddAccount.isSelected() && !account.equals(creatingAccount)) {
+                tableAccounts.refresh();
+                return;
+            }
+            if (account.getType() != AccountType.CREDIT) {
+                lblMessage.setText("Credit line only for CREDIT accounts.");
+                account.setCreditLine(0.0);
+                tableAccounts.refresh();
+                return;
+            }
+            if (event.getNewValue() == null || event.getNewValue() < 0) {
+                lblMessage.setText("Credit line must be >= 0.");
+                tableAccounts.refresh();
+                return;
+            }
+            account.setCreditLine(event.getNewValue());
+            if (!btnAddAccount.isSelected()) saveOrUpdate(account);
+        });
 
             colBeginBalance.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
-            colBeginBalance.setOnEditCommit(new EventHandler<CellEditEvent<Account, Double>>() {
-                @Override
-                public void handle(CellEditEvent<Account, Double> event) {
-                    Account account = event.getRowValue();
-                    if (account.getId() != null && account.getId() > 0 && !btnAddAccount.isSelected()) {
-                        lblMessage.setText("Cannot change begin balance of an existing account.");
-                        tableAccounts.refresh();
-                        return;
-                    }
-                    if (event.getNewValue() < 0) {
-                        lblMessage.setText("Begin balance must be >= 0.");
-                        tableAccounts.refresh();
-                        return;
-                    }
-                    account.setBeginBalance(event.getNewValue());
-                }
-            });
+            colBeginBalance.setOnEditCommit(event -> {
+            Account account = event.getRowValue();
+            if (btnAddAccount.isSelected() && !account.equals(creatingAccount)) {
+                tableAccounts.refresh();
+                return;
+            }
+            if (account.getId() != null && account.getId() > 0 && !btnAddAccount.isSelected()) {
+                lblMessage.setText("Cannot change begin balance of an existing account.");
+                tableAccounts.refresh();
+                return;
+            }
+            if (event.getNewValue() == null || event.getNewValue() < 0) {
+                lblMessage.setText("Begin balance must be >= 0.");
+                tableAccounts.refresh();
+                return;
+            }
+            account.setBeginBalance(event.getNewValue());
+        });
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -194,8 +191,9 @@ public class AccountsController {
                     accountListType,
                     loggedCustomer.getId().toString()
             );
-            accountsData = FXCollections.observableArrayList(accounts);
-            tableAccounts.setItems(accountsData);
+            accountsData.clear();
+            accountsData.addAll(accounts);
+            tableAccounts.refresh();
             lblMessage.setText("");
         } catch (Exception e) {
             lblMessage.setText("Error loading data: " + e.getMessage());
@@ -205,7 +203,8 @@ public class AccountsController {
     private void handleAddAccount(ActionEvent event) {
         try {
             if (btnAddAccount.isSelected()) {
-                btnAddAccount.setText("Creating...");
+                btnAddAccount.setText("Create");
+                btnCancelAccount.setDisable(false);
                 toggleControls(true);
 
                 creatingAccount = new Account();
@@ -223,11 +222,7 @@ public class AccountsController {
             } else {
                 if (validateAccount(creatingAccount)) {
                     restClient.createAccount_XML(creatingAccount);
-                    btnAddAccount.setText("Create Account");
-                    toggleControls(false);
-                    loadAccountsData();
-                    creatingAccount = null;
-                    lblMessage.setText("Account created successfully.");
+                    finishCreation("Account created successfully.");
                 } else {
                     btnAddAccount.setSelected(true);
                 }
@@ -242,6 +237,23 @@ public class AccountsController {
             showErrorAlert("Network Error: Could not reach the server to save.");
             btnAddAccount.setSelected(true);
         }
+    }
+
+    private void handleCancelAccount(ActionEvent event) {
+        if (creatingAccount != null) {
+            accountsData.remove(creatingAccount);
+            finishCreation("Creation cancelled.");
+        }
+    }
+
+    private void finishCreation(String message) {
+        btnAddAccount.setText("Create Account");
+        btnAddAccount.setSelected(false);
+        btnCancelAccount.setDisable(true);
+        toggleControls(false);
+        loadAccountsData();
+        creatingAccount = null;
+        lblMessage.setText(message);
     }
 
     private void toggleControls(boolean creating) {
@@ -269,11 +281,11 @@ public class AccountsController {
     }
 
     private Long generateUniqueId() {
-        Random randomNumber = new Random();
+        Random rdm = new Random();
         Long newId;
         boolean exists;
         do {
-            newId = 1000000L + randomNumber.nextInt(9000000);
+            newId = 1000000L + rdm.nextInt(9000000);
             exists = false;
             for (Account account : accountsData) {
                 if (account.getId().equals(newId)) {
@@ -300,9 +312,9 @@ public class AccountsController {
                 restClient.removeAccount(selected.getId().toString());
                 accountsData.remove(selected);
                 lblMessage.setText("Account deleted.");
+                tableAccounts.refresh();
             } catch (NotFoundException e) {
                 showErrorAlert("Sync Error: Account no longer exists on the server.");
-                loadAccountsData();
             } catch (Exception e) {
                 showErrorAlert("Delete Error: Failed to process the request.");
             }
@@ -344,10 +356,10 @@ public class AccountsController {
         }
     }
 
-    private void saveOrUpdate(Account acc) {
+    private void saveOrUpdate(Account account) {
         try {
-            if (acc.getId() != null && acc.getId() > 0) {
-                restClient.updateAccount_XML(acc);
+            if (account.getId() != null && account.getId() > 0) {
+                restClient.updateAccount_XML(account);
                 lblMessage.setText("Account updated.");
             }
         } catch (BadRequestException e) {

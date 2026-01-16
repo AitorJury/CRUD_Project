@@ -35,6 +35,8 @@
 
         <!-- Botón toggle de añadir cuenta -->
         <ToggleButton fx:id="btnAddAccount" layoutX="50.0" layoutY="650.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="187.0" styleClass="button-primary" text="Create Account" />
+        <!-- Botón para cancelar el creado -->
+        <Button fx:id="btnCancelAccount" layoutX="50.0" layoutY="705.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="187.0" styleClass="button-secondary" text="Cancel" />
         <!-- Botón de recargar -->
         <Button fx:id="btnRefresh" layoutX="252.0" layoutY="650.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="120.0" styleClass="button-primary" text="Refresh" />
         <!-- Botón para ir a movimientos -->
@@ -44,6 +46,6 @@
         <!-- Botón para ir atrás -->
         <Button fx:id="btnLogOut" layoutX="824.0" layoutY="650.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="150.0" styleClass="button-secondary" text="Log Out" />
         <!-- Mensaje de error -->
-        <Label fx:id="lblMessage" layoutX="50.0" layoutY="710.0" prefWidth="924.0" styleClass="error-label" text="" />
+        <Label fx:id="lblMessage" layoutX="246.0" layoutY="718.0" prefHeight="15.0" prefWidth="532.0" styleClass="error-label" text="" />
     </children>
 </Pane>
