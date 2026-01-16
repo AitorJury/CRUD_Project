@@ -62,8 +62,8 @@ public class MovementController {
     private TableColumn<Movement, String> clDescription;
     @FXML
     private TableColumn<Movement, Double> clBalance;
-    @FXML
-    private Button btnDelete;
+    @FXML 
+   private Button btnDelete;
     @FXML
     private Button btnBack;
     @FXML
@@ -78,12 +78,15 @@ public class MovementController {
     private Button createMovement;
     @FXML
     private Label lblName;
+    @FXML
+    private TextField txtBalance;
 
     //Se crea los botones para el alert
     private final ButtonType ok = new ButtonType("OK");
     private final ButtonType yes = new ButtonType("Yes");
     private final ButtonType no = new ButtonType("No");
-
+    
+    private int contador=0;
     AccountRESTClient accountClient = new AccountRESTClient();
     MovementRESTClient movementClient = new MovementRESTClient();
 
@@ -106,9 +109,11 @@ public class MovementController {
         //Carga los movimientos de la tabla
         loadMovements();
         buttonEnable();
+        
+        
         btnBack.setCancelButton(true);
         
-        lblName.setText(account.getId());
+       // lblName.setText(account.getId());
         //Se pone los valores en la combo de la description (type)
         ObservableList<String> items = FXCollections.observableArrayList("Deposit", "Payment");
         comboType.setItems(items);
@@ -122,6 +127,8 @@ public class MovementController {
         //Se pone un listener en el TextField y en la ComboBox para ver cuando los valores cambian lleven al método
         txtAmount.textProperty().addListener((observable, oldValue, newValue) -> buttonEnable());
         comboType.valueProperty().addListener((observable, oldValue, newValue) -> buttonEnable());
+        
+        
         this.stage.show();
 
     }
@@ -138,6 +145,10 @@ public class MovementController {
             //Se muestra la lista en la tabla
             LOGGER.info("Showing table of movements");
             tbMovement.setItems(dataMovement);
+            
+            //Hasta que no pasen la cuenta no se puede ver el balance
+            //txtBalance.setText(String.valueOf(movement.getBalance()));
+            
         } catch (Exception e) {
             handlelblError("Error to charge movements");
             LOGGER.info("Error to charge movements");
@@ -147,19 +158,22 @@ public class MovementController {
     public void handleBtnBack(ActionEvent event) {
         try {
             //Se carga el controlador y la vista de la ventana de Accounts
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("AccountsController.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Accounts.fxml"));
             Parent root = loader.load();
+            
             AccountsController controller = loader.getController();
-            controller.setCustomer(new Customer());
+            controller.setCustomer(customer);
+            
+            
             LOGGER.info("Showing accounts page");
-            this.stage.hide();
+            this.stage.close();
             controller.init(root);
             controller.getStage().setOnHiding(e -> this.stage.show());
         } catch (Exception e) {
-            
+            handlelblError("Can't change window");
         }
     }
-
+    //Contador a 1 cuando este a 0 se deshabilite el boton 
     public void handleBtnDelete(ActionEvent event) {
         try {
             /*Coger ultimom ovimiento
@@ -169,6 +183,7 @@ public class MovementController {
             if(tbMovement.getItems().isEmpty()){
              throw new Exception("There are no movements on the account.");
             }
+            
             // Mostrar alert modal de confirmación para borrar el ultimo movimiento.
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
                     "Do you want remove the last movement?", yes, no);
@@ -177,6 +192,7 @@ public class MovementController {
             alert.showAndWait().ifPresent(resp -> {
                 // Si confirma, cerrar la aplicación.
                 if (resp == yes) {
+                    contador++;
                     //Si la respuesta es que si borra el ultimo movimiento
                     Movement lastMovement = tbMovement.getItems().get(tbMovement.getItems().size() - 1);
                     movementClient.remove(lastMovement.getId().toString());
@@ -186,6 +202,9 @@ public class MovementController {
                 } else {
                     alert.close();
                 }
+                if(contador>0){
+                btnDelete.setDisable(true);
+            }
             });
         } catch (Exception e) {
             handlelblError(e.getMessage());
@@ -227,26 +246,30 @@ public class MovementController {
             if (type.equals("Deposit")) {
                 newMovement.setAmount(amount);
                 newMovement.setDescription(type);
+                //Double newBalance = movement.getBalance();
+                //newMovement.setBalance(newBalance+amount);
             } else if (type.equals("Payment")) {
                 //Si es tipo Payment se le pone la cantidad negativa y se establece la descripcion 
                 newMovement.setAmount(-amount);
                 newMovement.setDescription(type);
-
+                //Double newBalance = movement.getBalance();
+                //newMovement.setBalance(newBalance-amount);
+                
             }
             //Se pone la fecha y hora actual 
             Date date = new Date();
             newMovement.setTimestamp(date);
             //Salta un alert para confirmar la creacción del movimiento
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
-                    "Do you create the movement?", yes, no);
+                    "Movement -Type:" +type+". -Amount: "+amount, yes, no);
             alert.setTitle("Alert to create movement");
-            alert.setHeaderText("Departure confirmation");
+            alert.setHeaderText("Create Movement");
             alert.showAndWait().ifPresent(resp -> {
                 // Si confirma, cerrar la aplicación.
                 if (resp == yes) {
                     try {
                         //Se crea el movimiento
-                        movementClient.create_XML(newMovement, String.valueOf(account.getId()));
+                        movementClient.create_XML(newMovement,"2654785441"); //String.valueOf(account.getId()));
                         txtAmount.setText("");
                         loadMovements();
                         LOGGER.info("Movement created");
@@ -262,8 +285,8 @@ public class MovementController {
             handlelblError("Invalid amount format");
         } catch (Exception e) {
             handlelblError(e.getMessage());
-        }
-    }
+        } 
+   }
 
     public void handlelblError(String message) {
         lblError.setText(message);
