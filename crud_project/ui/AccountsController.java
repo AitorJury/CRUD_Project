@@ -193,6 +193,9 @@ public class AccountsController {
             );
             accountsData.clear();
             accountsData.addAll(accounts);
+            
+            if (creatingAccount != null) accountsData.add(creatingAccount);
+
             tableAccounts.refresh();
             lblMessage.setText("");
         } catch (Exception e) {
@@ -242,6 +245,7 @@ public class AccountsController {
     private void handleCancelAccount(ActionEvent event) {
         if (creatingAccount != null) {
             accountsData.remove(creatingAccount);
+            creatingAccount = null;
             finishCreation("Creation cancelled.");
         }
     }
@@ -252,7 +256,6 @@ public class AccountsController {
         btnCancelAccount.setDisable(true);
         toggleControls(false);
         loadAccountsData();
-        creatingAccount = null;
         lblMessage.setText(message);
     }
 
