@@ -140,14 +140,11 @@ public class AccountsController {
                     tableAccounts.refresh();
                     return;
                 }
-                account.setType(event.getNewValue());
-<<<<<<< HEAD
-                if (account.getType() == AccountType.STANDARD) account.setCreditLine(0.0);
-=======
+
                 if (account.getType() == AccountType.STANDARD) {
                     account.setCreditLine(0.0);
                 }
->>>>>>> 9578193 (Intento de solución (fallido).)
+
                 tableAccounts.refresh();
             });
 
@@ -170,13 +167,10 @@ public class AccountsController {
                     return;
                 }
                 account.setCreditLine(event.getNewValue());
-<<<<<<< HEAD
-                if (!btnAddAccount.isSelected()) saveOrUpdate(account);
-=======
+
                 if (!btnAddAccount.isSelected()) {
                     saveOrUpdate(account);
                 }
->>>>>>> 9578193 (Intento de solución (fallido).)
             });
 
             colBeginBalance.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
@@ -205,34 +199,16 @@ public class AccountsController {
 
     private void loadAccountsData() {
         try {
-<<<<<<< HEAD
-            GenericType<List<Account>> accountListType = new GenericType<List<Account>>() {};
-=======
             if (loggedCustomer == null || loggedCustomer.getId() == null) {
                 return;
             }
 
             GenericType<List<Account>> accountListType = new GenericType<List<Account>>() {
             };
->>>>>>> 9578193 (Intento de solución (fallido).)
             List<Account> accounts = restClient.findAccountsByCustomerId_XML(
                     accountListType,
                     loggedCustomer.getId().toString()
             );
-<<<<<<< HEAD
-            
-            accountsData.clear();
-            accountsData.addAll(accounts);
-            
-            if (creatingAccount != null) {
-                boolean exists = false;
-                for(Account a : accountsData) {
-                    if(a.getId().equals(creatingAccount.getId())) { exists = true; break; }
-                }
-                if(!exists) accountsData.add(creatingAccount);
-            }
-            
-=======
 
             accountsData.setAll(accounts);
 
@@ -241,7 +217,6 @@ public class AccountsController {
                 tableAccounts.getSelectionModel().select(creatingAccount);
             }
 
->>>>>>> 9578193 (Intento de solución (fallido).)
             tableAccounts.refresh();
             lblMessage.setText("");
         } catch (Exception e) {
