@@ -7,6 +7,7 @@ package crud_project.model;
 
 //import lombok.Builder;
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 import javafx.beans.property.*;
@@ -68,7 +69,7 @@ public class Customer implements Serializable {
         this.phone = new SimpleLongProperty();
         this.email = new SimpleStringProperty("name@"+System.currentTimeMillis()+".com");
         this.password = new SimpleStringProperty("clave$%&");
-        this.accounts = new SimpleObjectProperty<>();
+        this.accounts = new SimpleObjectProperty<>(new HashSet<>());
     }
 
 

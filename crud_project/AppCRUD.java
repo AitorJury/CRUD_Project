@@ -5,7 +5,6 @@
  */
 package crud_project;
 
-import crud_project.ui.UserController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<HBox xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="crud_project.ui.MenuBarController"
+      stylesheets="@estilo.css"
+      alignment="CENTER_LEFT">
+
+    <children>
+        <MenuBar HBox.hgrow="ALWAYS" maxWidth="1.7976931348623157E308">
+            <menus>
+                <Menu mnemonicParsing="false" text="Session">
+                    <items>
+                        <MenuItem fx:id="fxMenuClose" mnemonicParsing="false" text="Close" />
+                        <MenuItem fx:id="fxMenuSignOut" mnemonicParsing="false" text="Sign out" />
+                    </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="Edit">
+                    <items>
+                        <MenuItem fx:id="fxMenuDelete" mnemonicParsing="false" text="Delete" />
+                    </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="Help">
+                    <items>
+                        <MenuItem fx:id="fxMenuAbout" mnemonicParsing="false" text="About" />
+                        <MenuItem fx:id="fxMenuContent" mnemonicParsing="false" text="Content" />
+                    </items>
+                </Menu>
+            </menus>
+        </MenuBar>
+    </children>
+</HBox>

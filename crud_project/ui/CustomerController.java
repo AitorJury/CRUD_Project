@@ -5,6 +5,7 @@
  */
 package crud_project.ui;
 
+import java.awt.event.MouseEvent;
 import java.util.*;
 
 import java.util.logging.Logger;
@@ -13,7 +14,6 @@ import crud_project.logic.CustomerRESTClient;
 
 import crud_project.model.Customer;
 
-import javafx.animation.ScaleTransition;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -25,11 +25,9 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.stage.Stage;
-import javafx.util.Duration;
 import javafx.util.converter.IntegerStringConverter;
 import javafx.util.converter.LongStringConverter;
 
@@ -40,10 +38,14 @@ import javax.ws.rs.core.GenericType;
  *
  * @author juancaizaduenas
  */
-public class UserController {
+public class CustomerController {
 
     private static final Logger LOGGER = Logger.getLogger("crudbankclientside.ui");
     private final Stage userStage = new Stage();
+
+    public static final String EXIT_CONFIRMATION_TITLE = "Exit Confirmation";
+    public static final String EXIT_CONFIRMATION_MESSAGE = "Are you sure you want to exit?";
+
     private Scene userScene;
     private Customer customer;
 
@@ -82,6 +84,10 @@ public class UserController {
     public Button fxBtnSaveChanges;
     @FXML
     public Button fxBtnExit;
+
+    //Cargar el controlador del topbar
+    @FXML
+    public MenuBarController topMenuController;
 
 
     public static final CustomerRESTClient client = new CustomerRESTClient();
@@ -180,13 +186,14 @@ public class UserController {
         fxBtnDelete.setOnAction(this::handleDeleteCustomerAndRow);
         fxBtnExit.setOnAction(this::handleOnExitAction);
 
+        topMenuController.init(userStage);
+
 
     }
 
     private void handleTableSelectionChanged(ObservableValue observable, Object oldValue, Object newValue) {
 
         fxBtnDelete.setDisable(newValue == null);
-
 
 
     }
@@ -228,7 +235,7 @@ public class UserController {
 
         } catch (Exception e) {
 
-            handleAlertError("Cannot dele this user");
+            //handleAlertError("Cannot dele this user");
             LOGGER.warning(e.getMessage());
         }
     }
@@ -544,19 +551,28 @@ public class UserController {
 
     }
 
-    private void handleOnExitAction(Event event) {
+    public void handleOnExitAction(Event event) {
         try {
             LOGGER.info("Clicked exit button");
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to exit?", ButtonType.OK, ButtonType.CANCEL);
-            alert.showAndWait();
-            alert.setTitle("Exit Confirmation");
-            if (alert.getResult() == ButtonType.OK) {
-                userStage.close();
-                event.consume();
-            }
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, EXIT_CONFIRMATION_MESSAGE,
+                    ButtonType.OK, ButtonType.CANCEL);
+            alert.setTitle(EXIT_CONFIRMATION_TITLE);
+
+            alert.showAndWait().ifPresent(response -> {
+                if (response == ButtonType.OK) {
+                    userStage.close();
+                }
+            });
+
+            event.consume();
         } catch (Exception e) {
             handleAlertError("Fail to Close");
         }
+    }
+
+    public void handleContextMenu(MouseEvent event) {
+        LOGGER.info("Clicked on context menu");
+        final ContextMenu cm = new ContextMenu();
     }
 
     public Stage getStage() {
