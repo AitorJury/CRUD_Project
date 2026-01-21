@@ -69,8 +69,19 @@ public class AccountsController {
             this.stage.setResizable(false);
 
             setupTable();
+            tableAccounts.focusedProperty().addListener((obs, oldVal, newVal) -> {
+                if (!newVal) {
+                    tableAccounts.edit(-1, null);
+                }
+            });
             tableAccounts.setItems(accountsData);
-            loadAccountsData();
+
+            if (loggedCustomer != null) {
+                loadAccountsData();
+            } else {
+                LOGGER.warning("No customer logged in during AccountsController init.");
+                lblMessage.setText("Error: Session not found.");
+            }
 
             btnAddAccount.setOnAction(this::handleAddAccount);
             btnCancelAccount.setOnAction(this::handleCancelAccount);
@@ -130,7 +141,13 @@ public class AccountsController {
                     return;
                 }
                 account.setType(event.getNewValue());
+<<<<<<< HEAD
                 if (account.getType() == AccountType.STANDARD) account.setCreditLine(0.0);
+=======
+                if (account.getType() == AccountType.STANDARD) {
+                    account.setCreditLine(0.0);
+                }
+>>>>>>> 9578193 (Intento de solución (fallido).)
                 tableAccounts.refresh();
             });
 
@@ -153,7 +170,13 @@ public class AccountsController {
                     return;
                 }
                 account.setCreditLine(event.getNewValue());
+<<<<<<< HEAD
                 if (!btnAddAccount.isSelected()) saveOrUpdate(account);
+=======
+                if (!btnAddAccount.isSelected()) {
+                    saveOrUpdate(account);
+                }
+>>>>>>> 9578193 (Intento de solución (fallido).)
             });
 
             colBeginBalance.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
@@ -182,11 +205,21 @@ public class AccountsController {
 
     private void loadAccountsData() {
         try {
+<<<<<<< HEAD
             GenericType<List<Account>> accountListType = new GenericType<List<Account>>() {};
+=======
+            if (loggedCustomer == null || loggedCustomer.getId() == null) {
+                return;
+            }
+
+            GenericType<List<Account>> accountListType = new GenericType<List<Account>>() {
+            };
+>>>>>>> 9578193 (Intento de solución (fallido).)
             List<Account> accounts = restClient.findAccountsByCustomerId_XML(
                     accountListType,
                     loggedCustomer.getId().toString()
             );
+<<<<<<< HEAD
             
             accountsData.clear();
             accountsData.addAll(accounts);
@@ -199,6 +232,16 @@ public class AccountsController {
                 if(!exists) accountsData.add(creatingAccount);
             }
             
+=======
+
+            accountsData.setAll(accounts);
+
+            if (creatingAccount != null && btnAddAccount.isSelected()) {
+                accountsData.add(0, creatingAccount);
+                tableAccounts.getSelectionModel().select(creatingAccount);
+            }
+
+>>>>>>> 9578193 (Intento de solución (fallido).)
             tableAccounts.refresh();
             lblMessage.setText("");
         } catch (Exception e) {
@@ -215,6 +258,7 @@ public class AccountsController {
 
                 creatingAccount = new Account();
                 creatingAccount.setId(generateUniqueId());
+                creatingAccount.setCustomer(loggedCustomer);
                 creatingAccount.setBeginBalanceTimestamp(new Date());
                 creatingAccount.setDescription("");
                 creatingAccount.setType(AccountType.STANDARD);
@@ -255,6 +299,7 @@ public class AccountsController {
         toggleControls(false);
         loadAccountsData();
         lblMessage.setText(message);
+        tableAccounts.refresh();
     }
 
     private void toggleControls(boolean creating) {
@@ -285,10 +330,10 @@ public class AccountsController {
         Long newId;
         boolean exists;
         do {
-            newId = 1000000L + rdm.nextInt(9000000);
+            newId = 1000000000L + (long) (rdm.nextDouble() * 9000000000L);
             exists = false;
             for (Account account : accountsData) {
-                if (account.getId().equals(newId)) {
+                if (account.getId() != null && account.getId().equals(newId)) {
                     exists = true;
                     break;
                 }

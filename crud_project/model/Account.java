@@ -266,5 +266,9 @@ public class Account implements Serializable {
     public String toString() {
         return "serverside.entity.Account[ id=" + id + " ]";
     }
+
+    public void setCustomer(Customer loggedCustomer) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
     
 }
