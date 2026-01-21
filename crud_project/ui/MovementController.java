@@ -8,6 +8,7 @@ package crud_project.ui;
 import crud_project.logic.AccountRESTClient;
 import crud_project.logic.MovementRESTClient;
 import crud_project.model.Account;
+import crud_project.model.AccountType;
 import crud_project.model.Customer;
 import crud_project.model.Movement;
 import java.time.LocalDate;
@@ -15,6 +16,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -50,6 +52,7 @@ public class MovementController {
     private Movement movement;
     private Customer customer;
     private Account account;
+    private AccountType accountType;
 
     //Agregamos los id del fxml al controlador 
     @FXML
@@ -62,8 +65,8 @@ public class MovementController {
     private TableColumn<Movement, String> clDescription;
     @FXML
     private TableColumn<Movement, Double> clBalance;
-    @FXML 
-   private Button btnDelete;
+    @FXML
+    private Button btnDelete;
     @FXML
     private Button btnBack;
     @FXML
@@ -85,12 +88,14 @@ public class MovementController {
     private final ButtonType ok = new ButtonType("OK");
     private final ButtonType yes = new ButtonType("Yes");
     private final ButtonType no = new ButtonType("No");
-    
-    private int contador=0;
+
+    private int contador = 0;
     AccountRESTClient accountClient = new AccountRESTClient();
     MovementRESTClient movementClient = new MovementRESTClient();
 
     public void init(Parent root) {
+        //id de prueba
+         //account.setId(2654785441L);
         //Se muestra la escena
         Scene scene = new Scene(root);
         this.stage = new Stage();
@@ -109,11 +114,10 @@ public class MovementController {
         //Carga los movimientos de la tabla
         loadMovements();
         buttonEnable();
-        
-        
+
         btnBack.setCancelButton(true);
-        
-       // lblName.setText(account.getId());
+
+        // lblName.setText(account.getId());
         //Se pone los valores en la combo de la description (type)
         ObservableList<String> items = FXCollections.observableArrayList("Deposit", "Payment");
         comboType.setItems(items);
@@ -127,8 +131,7 @@ public class MovementController {
         //Se pone un listener en el TextField y en la ComboBox para ver cuando los valores cambian lleven al método
         txtAmount.textProperty().addListener((observable, oldValue, newValue) -> buttonEnable());
         comboType.valueProperty().addListener((observable, oldValue, newValue) -> buttonEnable());
-        
-        
+
         this.stage.show();
 
     }
@@ -144,11 +147,11 @@ public class MovementController {
             ObservableList<Movement> dataMovement = FXCollections.observableArrayList(movements);
             //Se muestra la lista en la tabla
             LOGGER.info("Showing table of movements");
+            FXCollections.sort(dataMovement, (m1, m2) -> m1.getTimestamp().compareTo(m2.getTimestamp()));
             tbMovement.setItems(dataMovement);
-            
+
             //Hasta que no pasen la cuenta no se puede ver el balance
             //txtBalance.setText(String.valueOf(movement.getBalance()));
-            
         } catch (Exception e) {
             handlelblError("Error to charge movements");
             LOGGER.info("Error to charge movements");
@@ -160,11 +163,10 @@ public class MovementController {
             //Se carga el controlador y la vista de la ventana de Accounts
             FXMLLoader loader = new FXMLLoader(getClass().getResource("Accounts.fxml"));
             Parent root = loader.load();
-            
+
             AccountsController controller = loader.getController();
             controller.setCustomer(customer);
-            
-            
+
             LOGGER.info("Showing accounts page");
             this.stage.close();
             controller.init(root);
@@ -173,6 +175,7 @@ public class MovementController {
             handlelblError("Can't change window");
         }
     }
+
     //Contador a 1 cuando este a 0 se deshabilite el boton 
     public void handleBtnDelete(ActionEvent event) {
         try {
@@ -180,10 +183,11 @@ public class MovementController {
             tbMovements.getItems().get(tbMovements.getItems.size()-1)
             borrar por la ultima fecha 
              */
-            if(tbMovement.getItems().isEmpty()){
-             throw new Exception("There are no movements on the account.");
+            loadMovements();
+            if (tbMovement.getItems().isEmpty()) {
+                throw new Exception("There are no movements on the account.");
             }
-            
+
             // Mostrar alert modal de confirmación para borrar el ultimo movimiento.
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
                     "Do you want remove the last movement?", yes, no);
@@ -202,9 +206,9 @@ public class MovementController {
                 } else {
                     alert.close();
                 }
-                if(contador>0){
-                btnDelete.setDisable(true);
-            }
+                if (contador > 0) {
+                    btnDelete.setDisable(true);
+                }
             });
         } catch (Exception e) {
             handlelblError(e.getMessage());
@@ -240,8 +244,23 @@ public class MovementController {
             Double amount = Double.valueOf(txtAmount.getText());
             //Si la cantidad es menor o igual que 0 salta el label de error
             if (amount <= 0) {
-                 throw new Exception("Amount cant be negative");
+                throw new Exception("Amount cant be negative");
             }
+            //Hasta que no tenga la cuenta no funciona
+            /*AccountType accountType = account.getType();
+            //Si el pago es mayor al balance no se puede hacer
+            Double accountBalance = account.getBalance();
+            
+            Double accountCredit = account.getCreditLine();
+            if(type.equals("Payment")&&accountBalance<amount){
+                throw new Exception("The amount cannot be greater than the money in the account");
+            }
+            Double total = amount + accountCredit;
+            
+            if(type.equals("Payment")&& accountType.equals("CREDIT")&& accountBalance<total){
+                throw new Exception("The amount cannot be greater than the money in the account");
+            } */
+
             //Si es tipo deposito se estable la descripcion y la cantidad
             if (type.equals("Deposit")) {
                 newMovement.setAmount(amount);
@@ -254,14 +273,21 @@ public class MovementController {
                 newMovement.setDescription(type);
                 //Double newBalance = movement.getBalance();
                 //newMovement.setBalance(newBalance-amount);
+                /*
+                Validaciones que tengo que hacer
+                -Que la cantidad de sacar dinero que la cantidad sea mayor. Saldo suficiente LISTO
+                -Si es de credito tengo que mirar la linea de credito. 
+                -Si es de credito tambien tengo que mostrar la linea de credito
                 
+                
+                 */
             }
             //Se pone la fecha y hora actual 
             Date date = new Date();
             newMovement.setTimestamp(date);
             //Salta un alert para confirmar la creacción del movimiento
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
-                    "Movement -Type:" +type+". -Amount: "+amount, yes, no);
+                    "Movement Type:" + type + ". Amount: " + amount, yes, no);
             alert.setTitle("Alert to create movement");
             alert.setHeaderText("Create Movement");
             alert.showAndWait().ifPresent(resp -> {
@@ -269,7 +295,7 @@ public class MovementController {
                 if (resp == yes) {
                     try {
                         //Se crea el movimiento
-                        movementClient.create_XML(newMovement,"2654785441"); //String.valueOf(account.getId()));
+                        movementClient.create_XML(newMovement, "2654785441"); //String.valueOf(account.getId()));
                         txtAmount.setText("");
                         loadMovements();
                         LOGGER.info("Movement created");
@@ -285,8 +311,8 @@ public class MovementController {
             handlelblError("Invalid amount format");
         } catch (Exception e) {
             handlelblError(e.getMessage());
-        } 
-   }
+        }
+    }
 
     public void handlelblError(String message) {
         lblError.setText(message);
@@ -310,6 +336,10 @@ public class MovementController {
 
     public void setAccount(Account account) {
         this.account = account;
+    }
+
+    public Account getAccount() {
+        return this.account;
     }
 
 }
