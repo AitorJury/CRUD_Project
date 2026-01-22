@@ -8,12 +8,12 @@
 
 <Pane prefHeight="768.0" prefWidth="1024.0" style="-fx-background-color: white;" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="crud_project.ui.MovementController">
        <children>
-       <ImageView fitHeight="111.0" fitWidth="136.0" layoutX="31.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true">
+       <ImageView fitHeight="92.0" fitWidth="100.0" layoutX="31.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true">
          <image>
             <Image url="@../../../Escritorio/ProyectoID/logosinfondo.png" />
          </image>
       </ImageView>
-          <Label layoutX="40.0" layoutY="113.0" prefHeight="25.0" prefWidth="60.0" text="Account" />
+          <Label layoutX="40.0" layoutY="99.0" prefHeight="39.0" prefWidth="69.0" text="Account" />
           <HBox alignment="CENTER_LEFT" layoutX="303.0" layoutY="139.0" spacing="10.0" /> 
           <TableView fx:id="tbMovement" layoutX="40.0" layoutY="138.0" prefHeight="467.0" prefWidth="779.0">
             <columns>
@@ -36,9 +36,10 @@
          </children>
       </HBox>
       <Label layoutX="261.0" layoutY="617.0" prefHeight="15.0" prefWidth="53.0" text="Amount" />
-      <Label id="lblName" layoutX="40.0" layoutY="139.0" prefHeight="27.0" prefWidth="274.0" />
-      <TextField id="txtBalance" layoutX="830.0" layoutY="565.0" prefHeight="25.0" prefWidth="150.0" />
+      <Label fx:id="lblName" layoutX="40.0" layoutY="139.0" prefHeight="27.0" prefWidth="274.0" />
       <Label layoutX="835.0" layoutY="536.0" prefHeight="15.0" prefWidth="111.0" text="Balance" />
       <Label fx:id="lblError" layoutX="47.0" layoutY="677.0" prefHeight="27.0" prefWidth="550.0" textFill="RED" />
+      <Label fx:id="lblNumAccount" layoutX="109.0" layoutY="111.0" prefHeight="15.0" prefWidth="187.0" />
+      <Label fx:id="lblBalance" layoutX="835.0" layoutY="569.0" prefHeight="30.0" prefWidth="82.0" />
        </children>
 </Pane>

@@ -18,6 +18,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -53,8 +54,11 @@ public class MovementController {
     private Customer customer;
     private Account account;
     private AccountType accountType;
+    private Double finalNewBalance;
 
     //Agregamos los id del fxml al controlador 
+    @FXML
+    private Label lblNumAccount;
     @FXML
     private TableView<Movement> tbMovement;
     @FXML
@@ -82,7 +86,7 @@ public class MovementController {
     @FXML
     private Label lblName;
     @FXML
-    private TextField txtBalance;
+    private Label lblBalance;
 
     //Se crea los botones para el alert
     private final ButtonType ok = new ButtonType("OK");
@@ -95,7 +99,13 @@ public class MovementController {
 
     public void init(Parent root) {
         //id de prueba
-         //account.setId(2654785441L);
+        this.account = new Account();
+        this.account.setId(2654785441L);
+        this.account.setBalance(20000.00);
+        lblNumAccount.setText(String.valueOf(account.getId()));
+
+        //String numAccount = String.valueOf(account.getId());
+        //lblNumAccount.setText(numAccount);
         //Se muestra la escena
         Scene scene = new Scene(root);
         this.stage = new Stage();
@@ -143,13 +153,13 @@ public class MovementController {
             GenericType<List<Movement>> movementListType = new GenericType<List<Movement>>() {
             };
             //id String.valueOf(account.getId())
-            List<Movement> movements = movementClient.findMovementByAccount_XML(movementListType, "2654785441");
+            List<Movement> movements = movementClient.findMovementByAccount_XML(movementListType, String.valueOf(account.getId()));
             ObservableList<Movement> dataMovement = FXCollections.observableArrayList(movements);
             //Se muestra la lista en la tabla
             LOGGER.info("Showing table of movements");
             FXCollections.sort(dataMovement, (m1, m2) -> m1.getTimestamp().compareTo(m2.getTimestamp()));
             tbMovement.setItems(dataMovement);
-
+            lblBalance.setText(String.valueOf(account.getBalance()));
             //Hasta que no pasen la cuenta no se puede ver el balance
             //txtBalance.setText(String.valueOf(movement.getBalance()));
         } catch (Exception e) {
@@ -187,6 +197,11 @@ public class MovementController {
             if (tbMovement.getItems().isEmpty()) {
                 throw new Exception("There are no movements on the account.");
             }
+            Movement lastDate = tbMovement.getItems().stream()
+                    .max((m1, m2) -> m1.getTimestamp().compareTo(m2.getTimestamp()))
+                    .get();
+            //Buscamos el id del utlimo movimiento por fecha
+            String lastDateToId = String.valueOf(lastDate.getId());
 
             // Mostrar alert modal de confirmación para borrar el ultimo movimiento.
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
@@ -198,8 +213,14 @@ public class MovementController {
                 if (resp == yes) {
                     contador++;
                     //Si la respuesta es que si borra el ultimo movimiento
-                    Movement lastMovement = tbMovement.getItems().get(tbMovement.getItems().size() - 1);
-                    movementClient.remove(lastMovement.getId().toString());
+                    //Movement lastMovement = tbMovement.getItems().get(tbMovement.getItems().size() - 1);
+                    //lastMovement.getId().toString()
+                    movementClient.remove(lastDateToId);
+                    Double actualBalance = this.account.getBalance();
+                    Double importDelete = lastDate.getAmount();
+
+                    //Le devuelves el dinero del ultimo movimiento
+                    this.account.setBalance(actualBalance - importDelete);
                     //Se vuelve a cargar la tabla
                     loadMovements();
                     LOGGER.info("Movement deleted");
@@ -224,6 +245,9 @@ public class MovementController {
         String type = (String) comboType.getValue();
         String txt = txtAmount.getText();
 
+        if (!txt.trim().isEmpty()) {
+            lblError.setText("");
+        }
         if (type == null) {
             buttonTy = false;
         }
@@ -246,42 +270,48 @@ public class MovementController {
             if (amount <= 0) {
                 throw new Exception("Amount cant be negative");
             }
+
+            //Ahora si que puedo hacer el balance
             //Hasta que no tenga la cuenta no funciona
-            /*AccountType accountType = account.getType();
+            AccountType accountType = account.getType();
             //Si el pago es mayor al balance no se puede hacer
-            Double accountBalance = account.getBalance();
-            
-            Double accountCredit = account.getCreditLine();
-            if(type.equals("Payment")&&accountBalance<amount){
+            Double newBalance = 0.0;
+            Double accountBalance = this.account.getBalance();
+            /*
+           Double accountCredit = this.account.getCreditLine();
+            if (type.equals("Payment") && accountBalance < amount) {
                 throw new Exception("The amount cannot be greater than the money in the account");
             }
             Double total = amount + accountCredit;
-            
-            if(type.equals("Payment")&& accountType.equals("CREDIT")&& accountBalance<total){
+             */
+ /*
+            if (type.equals("Payment") && accountType.equals("CREDIT") && accountBalance < total) {
                 throw new Exception("The amount cannot be greater than the money in the account");
-            } */
-
+            }
+             */ //label
             //Si es tipo deposito se estable la descripcion y la cantidad
             if (type.equals("Deposit")) {
                 newMovement.setAmount(amount);
                 newMovement.setDescription(type);
+                newBalance = accountBalance + amount;
+
                 //Double newBalance = movement.getBalance();
                 //newMovement.setBalance(newBalance+amount);
             } else if (type.equals("Payment")) {
                 //Si es tipo Payment se le pone la cantidad negativa y se establece la descripcion 
                 newMovement.setAmount(-amount);
                 newMovement.setDescription(type);
-                //Double newBalance = movement.getBalance();
-                //newMovement.setBalance(newBalance-amount);
+                newBalance = accountBalance - amount;
+
                 /*
                 Validaciones que tengo que hacer
                 -Que la cantidad de sacar dinero que la cantidad sea mayor. Saldo suficiente LISTO
-                -Si es de credito tengo que mirar la linea de credito. 
-                -Si es de credito tambien tengo que mostrar la linea de credito
-                
-                
+                -Si es de credito tengo que mirar la linea de credito. LISTO
+                -Si es de credito tambien tengo que mostrar la linea de credito LISTO   
                  */
             }
+            newMovement.setBalance(newBalance);
+            finalNewBalance = newBalance;
             //Se pone la fecha y hora actual 
             Date date = new Date();
             newMovement.setTimestamp(date);
@@ -295,7 +325,8 @@ public class MovementController {
                 if (resp == yes) {
                     try {
                         //Se crea el movimiento
-                        movementClient.create_XML(newMovement, "2654785441"); //String.valueOf(account.getId()));
+                        movementClient.create_XML(newMovement, String.valueOf(account.getId()));
+                        this.account.setBalance(finalNewBalance);
                         txtAmount.setText("");
                         loadMovements();
                         LOGGER.info("Movement created");
