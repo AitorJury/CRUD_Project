@@ -8,8 +8,19 @@ package crud_project.model;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
-import javafx.beans.property.*;
-import javax.xml.bind.annotation.XmlElement;
+import static javax.persistence.CascadeType.MERGE;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import static javax.persistence.FetchType.EAGER;
+import javax.persistence.Id;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
@@ -20,6 +31,11 @@ import javax.xml.bind.annotation.XmlTransient;
  * customers owning the account and movements or transactions made on the account.  
  * @author Javier Martín Uría
  */
+@Entity
+@Table(name="account",schema="bankdb")
+@NamedQuery(name="findAllAccounts",
+            query="SELECT a FROM Account a ORDER BY a.id DESC"
+)
 @XmlRootElement
 public class Account implements Serializable {
 
@@ -27,125 +43,111 @@ public class Account implements Serializable {
     /**
      * Identification field for the account.
      */
-    private final SimpleLongProperty id;
+    @Id
+    private Long id;
     /**
      * Type of the account.
      */
-    private final SimpleObjectProperty<AccountType> type;
+    @Enumerated(EnumType.ORDINAL)
+    private AccountType type;
     /**
      * Description of the account.
      */
-    private final SimpleStringProperty description;
+    private String description;
     /**
      * Current balance of the account.
      */
-    private final SimpleDoubleProperty balance;
+    private Double balance;
     /**
      * Limit for the credit line. The balance can be negative but not below this
      * limit. Do note that the limit is stored always as a positive value. 
      */
-    private final SimpleDoubleProperty creditLine;
+    private Double creditLine;
     /**
      * Begin balance of the account. Normally it is set when opening the account.
      * It is useful to reconcile balance and movements in conjuction with its corresponding
      * timestamp.
      */
-    private final SimpleDoubleProperty beginBalance;
+    private Double beginBalance;
     /**
      * Begin balance timestamp.
      */
-    private final SimpleObjectProperty<Date> beginBalanceTimestamp;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date beginBalanceTimestamp;
     /**
      * Relational field containing Customers owning the account. 
      */
+    @ManyToMany(fetch=EAGER,cascade=MERGE)
+    @JoinTable(schema="bankdb",name="customer_account")
     private Set<Customer> customers;
     /**
      * Relational field containing the list of movements on the account.
      */
+    @OneToMany(mappedBy="account",fetch=EAGER)
     private Set<Movement> movements;
-    
-    // Constructor vacío.
-    public Account() {
-        this.id = new SimpleLongProperty();
-        this.type = new SimpleObjectProperty<>();
-        this.description = new SimpleStringProperty();
-        this.balance = new SimpleDoubleProperty();
-        this.creditLine = new SimpleDoubleProperty();
-        this.beginBalance = new SimpleDoubleProperty();
-        this.beginBalanceTimestamp = new SimpleObjectProperty<>();
-    }
-    
-    
-    
     /**
      * 
      * @return the id
      */
-    @XmlElement
     public Long getId() {
-        return id.get();
+        return id;
     }
     /**
      * 
      * @param id the id to be set
      */
     public void setId(Long id) {
-        this.id.set(id);
+        this.id = id;
     }
 
     /**
      * @return the type
      */
-    @XmlElement
     public AccountType getType() {
-        return type.get();
+        return type;
     }
 
     /**
      * @param type the type to set
      */
     public void setType(AccountType type) {
-        this.type.set(type);
+        this.type = type;
     }
-    
+
     /**
      * @return the description
      */
-    @XmlElement
     public String getDescription() {
-        return description.get();
+        return description;
     }
 
     /**
      * @param description the description to set
      */
     public void setDescription(String description) {
-        this.description.set(description);
+        this.description = description;
     }
-    
+
     /**
      * @return the balance
      */
-    @XmlElement
     public Double getBalance() {
-        return balance.get();
+        return balance;
     }
 
     /**
      * @param balance the balance to set
      */
     public void setBalance(Double balance) {
-        this.balance.set(balance);
+        this.balance = balance;
     }
-    
     /**
      * Limit for the credit line. The balance can be negative but not below this
      * limit. Do note that the limit is stored always as a positive value.
      * @return the creditLine
      */
-    @XmlElement
     public Double getCreditLine() {
-        return creditLine.get();
+        return creditLine;
     }
 
     /**
@@ -154,7 +156,7 @@ public class Account implements Serializable {
      * @param creditLine the creditLine to set
      */
     public void setCreditLine(Double creditLine) {
-        this.creditLine.set(creditLine);
+        this.creditLine = creditLine;
     }
 
     /**
@@ -163,11 +165,9 @@ public class Account implements Serializable {
      * timestamp.
      * @return the beginBalance
      */
-    @XmlElement
     public Double getBeginBalance() {
-        return beginBalance.get();
+        return beginBalance;
     }
-    
     /**
      * Begin balance of the account. Normally it is set when opening the account.
      * It is useful to reconcile balance and movements in conjuction with its corresponding
@@ -175,35 +175,29 @@ public class Account implements Serializable {
      * @param beginBalance the beginBalance to set
      */
     public void setBeginBalance(Double beginBalance) {
-        this.beginBalance.set(beginBalance);
+        this.beginBalance = beginBalance;
     }
-    
     /**
      * Begin balance timestamp.
      * @return the beginBalanceTimestamp
      */
-    @XmlElement
     public Date getBeginBalanceTimestamp() {
-        return beginBalanceTimestamp.get();
+        return beginBalanceTimestamp;
     }
-    
     /**
      * Begin balance timestamp.
      * @param beginBalanceTimestamp the beginBalanceTimestamp to set
      */
     public void setBeginBalanceTimestamp(Date beginBalanceTimestamp) {
-        this.beginBalanceTimestamp.set(beginBalanceTimestamp);
+        this.beginBalanceTimestamp = beginBalanceTimestamp;
     }
-    
     /**
      * Relational field containing Customers owning the account.
      * @return the customers
      */
-    @XmlTransient
     public Set<Customer> getCustomers() {
         return customers;
     }
-    
     /**
      * Relational field containing Customers owning the account.
      * @param customers the customers to set
@@ -216,7 +210,6 @@ public class Account implements Serializable {
      * Relational field containing the list of movements on the account.
      * @return the movements
      */
-    @XmlTransient
     public Set<Movement> getMovements() {
         return movements;
     }
@@ -228,7 +221,6 @@ public class Account implements Serializable {
     public void setMovements(Set<Movement> movements) {
         this.movements = movements;
     }
-    
     /**
      * Integer representation for Account instance.
      * @return 
@@ -239,7 +231,6 @@ public class Account implements Serializable {
         hash += (id != null ? id.hashCode() : 0);
         return hash;
     }
-    
     /**
      * Compares two Account objects for equality. This method consider a Account 
      * equal to another Account if their id fields have the same value. 
@@ -265,10 +256,6 @@ public class Account implements Serializable {
     @Override
     public String toString() {
         return "serverside.entity.Account[ id=" + id + " ]";
-    }
-
-    public void setCustomer(Customer loggedCustomer) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
 }

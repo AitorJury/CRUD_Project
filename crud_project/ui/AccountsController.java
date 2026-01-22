@@ -5,32 +5,28 @@ import crud_project.model.Account;
 import crud_project.model.AccountType;
 import crud_project.model.Customer;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
-import java.util.logging.Logger;
+import java.util.Set;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.cell.ChoiceBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import javafx.util.converter.DoubleStringConverter;
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.GenericType;
 
 public class AccountsController {
-
-    private static final Logger LOGGER = Logger.getLogger("crud_project.ui");
 
     @FXML
     private TableView<Account> tableAccounts;
@@ -62,25 +58,24 @@ public class AccountsController {
 
     public void init(Parent root) {
         try {
-            Scene scene = new Scene(root);
             this.stage = new Stage();
-            this.stage.setScene(scene);
+            this.stage.setScene(new Scene(root));
             this.stage.setTitle("My Accounts");
             this.stage.setResizable(false);
+            this.stage.setOnCloseRequest(this::handleWindowClose);
 
             setupTable();
-            tableAccounts.focusedProperty().addListener((obs, oldVal, newVal) -> {
-                if (!newVal) {
+            tableAccounts.setItems(accountsData);
+
+            // Mejora: Guardar automáticamente al cambiar de foco
+            tableAccounts.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
+                if (!isNowFocused && tableAccounts.getEditingCell() != null) {
                     tableAccounts.edit(-1, null);
                 }
             });
-            tableAccounts.setItems(accountsData);
 
             if (loggedCustomer != null) {
                 loadAccountsData();
-            } else {
-                LOGGER.warning("No customer logged in during AccountsController init.");
-                lblMessage.setText("Error: Session not found.");
             }
 
             btnAddAccount.setOnAction(this::handleAddAccount);
@@ -90,117 +85,106 @@ public class AccountsController {
             btnViewMovements.setOnAction(this::handleViewMovements);
             btnDeleteAccount.setOnAction(this::handleDeleteAccount);
 
-            btnViewMovements.setDisable(true);
-            btnDeleteAccount.setDisable(true);
-            btnCancelAccount.setDisable(true);
-
-            tableAccounts.getSelectionModel().selectedItemProperty().addListener((obs, old, n) -> {
-                boolean disabled = (n == null || btnAddAccount.isSelected());
-                btnViewMovements.setDisable(disabled);
-                btnDeleteAccount.setDisable(disabled);
-            });
-
             this.stage.show();
         } catch (Exception e) {
-            showErrorAlert("Error initializing: " + e.getMessage());
+            new Alert(Alert.AlertType.ERROR, "Initialization Error: " + e.getMessage()).showAndWait();
         }
     }
 
     private void setupTable() {
-        try {
-            colId.setCellValueFactory(new PropertyValueFactory<>("id"));
-            colDescription.setCellValueFactory(new PropertyValueFactory<>("description"));
-            colType.setCellValueFactory(new PropertyValueFactory<>("type"));
-            colBalance.setCellValueFactory(new PropertyValueFactory<>("balance"));
-            colCreditLine.setCellValueFactory(new PropertyValueFactory<>("creditLine"));
-            colBeginBalance.setCellValueFactory(new PropertyValueFactory<>("beginBalance"));
-            colTimestamp.setCellValueFactory(new PropertyValueFactory<>("beginBalanceTimestamp"));
+        tableAccounts.setEditable(true);
 
-            colDescription.setCellFactory(TextFieldTableCell.forTableColumn());
-            colDescription.setOnEditCommit(event -> {
-                Account account = event.getRowValue();
-                if (btnAddAccount.isSelected() && !account.equals(creatingAccount)) {
-                    showErrorAlert("Cannot edit other accounts while creating a new one.");
-                    tableAccounts.refresh();
-                    return;
-                }
-                account.setDescription(event.getNewValue());
-                if (!btnAddAccount.isSelected()) saveOrUpdate(account);
-            });
+        colId.setCellValueFactory(new PropertyValueFactory<>("id"));
+        colDescription.setCellValueFactory(new PropertyValueFactory<>("description"));
+        colType.setCellValueFactory(new PropertyValueFactory<>("type"));
+        colBalance.setCellValueFactory(new PropertyValueFactory<>("balance"));
+        colCreditLine.setCellValueFactory(new PropertyValueFactory<>("creditLine"));
+        colBeginBalance.setCellValueFactory(new PropertyValueFactory<>("beginBalance"));
+        colTimestamp.setCellValueFactory(new PropertyValueFactory<>("beginBalanceTimestamp"));
 
-            colType.setCellFactory(ChoiceBoxTableCell.forTableColumn(AccountType.values()));
-            colType.setOnEditCommit(event -> {
-                Account account = event.getRowValue();
-                if (btnAddAccount.isSelected() && !account.equals(creatingAccount)) {
-                    tableAccounts.refresh();
-                    return;
-                }
-                if (account.getId() != null && account.getId() > 0 && !btnAddAccount.isSelected()) {
-                    lblMessage.setText("Cannot change type of an existing account.");
-                    tableAccounts.refresh();
-                    return;
-                }
-
-                if (account.getType() == AccountType.STANDARD) {
-                    account.setCreditLine(0.0);
-                }
-
+        colDescription.setCellFactory(TextFieldTableCell.forTableColumn());
+        colDescription.setOnEditCommit(event -> {
+            Account a = event.getRowValue();
+            if (btnAddAccount.isSelected() && !a.equals(creatingAccount)) {
+                showWarning("Finish creating the new account first.");
                 tableAccounts.refresh();
-            });
-
-            colCreditLine.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
-            colCreditLine.setOnEditCommit(event -> {
-                Account account = event.getRowValue();
-                if (btnAddAccount.isSelected() && !account.equals(creatingAccount)) {
-                    tableAccounts.refresh();
-                    return;
-                }
-                if (account.getType() != AccountType.CREDIT) {
-                    lblMessage.setText("Credit line only for CREDIT accounts.");
-                    account.setCreditLine(0.0);
-                    tableAccounts.refresh();
-                    return;
-                }
-                if (event.getNewValue() == null || event.getNewValue() < 0) {
-                    lblMessage.setText("Credit line must be >= 0.");
-                    tableAccounts.refresh();
-                    return;
-                }
-                account.setCreditLine(event.getNewValue());
-
+                return;
+            }
+            if (event.getNewValue() == null || event.getNewValue().trim().isEmpty()) {
+                showWarning("Description cannot be empty.");
+                tableAccounts.refresh();
+            } else {
+                a.setDescription(event.getNewValue());
                 if (!btnAddAccount.isSelected()) {
-                    saveOrUpdate(account);
+                    saveOrUpdate(a);
                 }
-            });
+            }
+        });
 
-            colBeginBalance.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
-            colBeginBalance.setOnEditCommit(event -> {
-                Account account = event.getRowValue();
-                if (btnAddAccount.isSelected() && !account.equals(creatingAccount)) {
-                    tableAccounts.refresh();
-                    return;
-                }
-                if (account.getId() != null && account.getId() > 0 && !btnAddAccount.isSelected()) {
-                    lblMessage.setText("Cannot change begin balance of an existing account.");
-                    tableAccounts.refresh();
-                    return;
-                }
-                if (event.getNewValue() == null || event.getNewValue() < 0) {
-                    lblMessage.setText("Begin balance must be >= 0.");
-                    tableAccounts.refresh();
-                    return;
-                }
-                account.setBeginBalance(event.getNewValue());
-            });
+        colType.setCellFactory(ChoiceBoxTableCell.forTableColumn(AccountType.values()));
+        colType.setOnEditCommit(event -> {
+            Account a = event.getRowValue();
+            if (!btnAddAccount.isSelected() || !a.equals(creatingAccount)) {
+                showWarning("Type can only be modified for new accounts.");
+                tableAccounts.refresh();
+                return;
+            }
+            a.setType(event.getNewValue());
+            if (a.getType() == AccountType.STANDARD) {
+                a.setCreditLine(0.0);
+            }
+            updateBalance(a);
+            tableAccounts.refresh();
+        });
 
-            tableAccounts.editingCellProperty().addListener((obs, oldCell, newCell) -> {
-                if (newCell == null && oldCell != null) {
-                    // Cuando dejas de editar una celda, forzamos el refresco de los datos
-                    tableAccounts.refresh();
+        colCreditLine.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
+        colCreditLine.setOnEditCommit(event -> {
+            Account a = event.getRowValue();
+            if (btnAddAccount.isSelected() && !a.equals(creatingAccount)) {
+                tableAccounts.refresh();
+                return;
+            }
+            if (a.getType() != AccountType.CREDIT) {
+                showWarning("Credit Line is only for CREDIT accounts.");
+                a.setCreditLine(0.0);
+            } else if (event.getNewValue() < 0) {
+                showWarning("Credit Line must be positive.");
+            } else {
+                a.setCreditLine(event.getNewValue());
+                updateBalance(a);
+                if (!btnAddAccount.isSelected()) {
+                    saveOrUpdate(a);
                 }
-            });
-        } catch (Exception e) {
-            e.printStackTrace();
+            }
+            tableAccounts.refresh();
+        });
+
+        colBeginBalance.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
+        colBeginBalance.setOnEditCommit(event -> {
+            Account a = event.getRowValue();
+            if (!btnAddAccount.isSelected() || !a.equals(creatingAccount)) {
+                showWarning("Begin Balance is read-only for existing accounts.");
+                tableAccounts.refresh();
+                return;
+            }
+            if (event.getNewValue() < 0) {
+                showWarning("Balance cannot be negative.");
+            } else {
+                a.setBeginBalance(event.getNewValue());
+                updateBalance(a);
+            }
+            tableAccounts.refresh();
+        });
+    }
+
+    private void showWarning(String msg) {
+        lblMessage.setText(msg);
+        lblMessage.setStyle("-fx-text-fill: red;");
+    }
+
+    private void updateBalance(Account a) {
+        if (btnAddAccount.isSelected() && a.equals(creatingAccount)) {
+            a.setBalance(a.getBeginBalance() + a.getCreditLine());
         }
     }
 
@@ -209,25 +193,16 @@ public class AccountsController {
             if (loggedCustomer == null || loggedCustomer.getId() == null) {
                 return;
             }
-
-            GenericType<List<Account>> accountListType = new GenericType<List<Account>>() {
-            };
             List<Account> accounts = restClient.findAccountsByCustomerId_XML(
-                    accountListType,
+                    new GenericType<List<Account>>() {
+            },
                     loggedCustomer.getId().toString()
             );
-
             accountsData.setAll(accounts);
-
-            if (creatingAccount != null && btnAddAccount.isSelected()) {
-                accountsData.add(0, creatingAccount);
-                tableAccounts.getSelectionModel().select(creatingAccount);
-            }
-
             tableAccounts.refresh();
-            lblMessage.setText("");
         } catch (Exception e) {
-            lblMessage.setText("Error loading data: " + e.getMessage());
+            lblMessage.setText("Sync error.");
+            accountsData.clear();
         }
     }
 
@@ -236,75 +211,49 @@ public class AccountsController {
             if (btnAddAccount.isSelected()) {
                 btnAddAccount.setText("Confirm");
                 btnCancelAccount.setDisable(false);
-                toggleControls(true);
+                setButtonsCreating(true);
 
                 creatingAccount = new Account();
                 creatingAccount.setId(generateUniqueId());
-                creatingAccount.setCustomer(loggedCustomer);
+                Set<Customer> c = new HashSet<>();
+                c.add(loggedCustomer);
+                creatingAccount.setCustomers(c);
                 creatingAccount.setBeginBalanceTimestamp(new Date());
-                creatingAccount.setDescription("New Account");
+                creatingAccount.setDescription("");
                 creatingAccount.setType(AccountType.STANDARD);
                 creatingAccount.setBalance(0.0);
                 creatingAccount.setCreditLine(0.0);
                 creatingAccount.setBeginBalance(0.0);
 
                 accountsData.add(creatingAccount);
-                tableAccounts.getSelectionModel().select(creatingAccount);
-                tableAccounts.scrollTo(creatingAccount);
+
+                // HACK DE UI: Forzar a la tabla a reconocer la fila antes de editar
+                tableAccounts.layout();
+                int idx = accountsData.size() - 1;
+                tableAccounts.getSelectionModel().select(idx);
+                tableAccounts.scrollTo(idx);
+
+                Platform.runLater(() -> {
+                    tableAccounts.requestFocus();
+                    tableAccounts.edit(idx, colDescription);
+                });
+
             } else {
-                if (validateAccount(creatingAccount)) {
+                if (creatingAccount.getDescription() == null || creatingAccount.getDescription().trim().isEmpty()) {
+                    showWarning("Description is mandatory.");
+                    btnAddAccount.setSelected(true);
+                } else {
                     restClient.createAccount_XML(creatingAccount);
                     creatingAccount = null;
-                    finishCreation("Account created successfully.");
-                } else {
-                    btnAddAccount.setSelected(true);
+                    finishCreation();
+                    lblMessage.setText("Account saved.");
+                    lblMessage.setStyle("-fx-text-fill: green;");
                 }
             }
         } catch (Exception e) {
-            showErrorAlert("Error saving account: " + e.getMessage());
+            showWarning("Error: " + e.getMessage());
             btnAddAccount.setSelected(true);
         }
-    }
-
-    private void handleCancelAccount(ActionEvent event) {
-        if (creatingAccount != null) {
-            accountsData.remove(creatingAccount);
-            creatingAccount = null;
-            finishCreation("Creation cancelled.");
-        }
-    }
-
-    private void finishCreation(String message) {
-        btnAddAccount.setText("Create Account");
-        btnAddAccount.setSelected(false);
-        btnCancelAccount.setDisable(true);
-        toggleControls(false);
-        loadAccountsData();
-        lblMessage.setText(message);
-        tableAccounts.refresh();
-    }
-
-    private void toggleControls(boolean creating) {
-        btnRefresh.setDisable(creating);
-        btnLogOut.setDisable(creating);
-        btnViewMovements.setDisable(creating);
-        btnDeleteAccount.setDisable(creating);
-    }
-
-    private boolean validateAccount(Account account) {
-        if (account.getDescription() == null || account.getDescription().trim().isEmpty()) {
-            showErrorAlert("Validation Error: Description is mandatory.");
-            return false;
-        }
-        if (account.getBeginBalance() < 0) {
-            showErrorAlert("Validation Error: Begin Balance cannot be negative.");
-            return false;
-        }
-        if (account.getType() == AccountType.CREDIT && account.getCreditLine() < 0) {
-            showErrorAlert("Validation Error: Credit Line must be 0 or positive.");
-            return false;
-        }
-        return true;
     }
 
     private Long generateUniqueId() {
@@ -312,10 +261,10 @@ public class AccountsController {
         Long newId;
         boolean exists;
         do {
-            newId = 1000000000L + (long) (rdm.nextDouble() * 9000000000L);
+            newId = 1000000000L + (long) (rdm.nextDouble() * 8999999999L);
             exists = false;
-            for (Account account : accountsData) {
-                if (account.getId() != null && account.getId().equals(newId)) {
+            for (Account a : accountsData) {
+                if (a.getId() != null && a.getId().equals(newId)) {
                     exists = true;
                     break;
                 }
@@ -324,77 +273,97 @@ public class AccountsController {
         return newId;
     }
 
+    private void handleCancelAccount(ActionEvent event) {
+        if (creatingAccount != null) {
+            accountsData.remove(creatingAccount);
+        }
+        creatingAccount = null;
+        finishCreation();
+    }
+
+    private void finishCreation() {
+        btnAddAccount.setText("Create Account");
+        btnAddAccount.setSelected(false);
+        btnCancelAccount.setDisable(true);
+        setButtonsCreating(false);
+        loadAccountsData();
+    }
+
+    private void setButtonsCreating(boolean creating) {
+        btnRefresh.setDisable(creating);
+        btnLogOut.setDisable(creating);
+        btnViewMovements.setDisable(creating);
+        btnDeleteAccount.setDisable(creating);
+    }
+
+    private void saveOrUpdate(Account a) {
+        try {
+            restClient.updateAccount_XML(a);
+            lblMessage.setText("Saved.");
+            lblMessage.setStyle("-fx-text-fill: green;");
+        } catch (Exception e) {
+            loadAccountsData();
+        }
+    }
+
+    private void handleWindowClose(WindowEvent event) {
+        Alert a = new Alert(Alert.AlertType.CONFIRMATION, "Close application?", yes, no);
+        if (a.showAndWait().get() == yes) {
+            Platform.exit();
+            System.exit(0);
+        } else {
+            event.consume();
+        }
+    }
+
     private void handleDeleteAccount(ActionEvent event) {
-        Account selected = tableAccounts.getSelectionModel().getSelectedItem();
-        if (selected == null || btnAddAccount.isSelected()) return;
-        if (selected.getMovements() != null && !selected.getMovements().isEmpty()) {
-            showErrorAlert("Account cannot be deleted: it has linked movements.");
+        Account s = tableAccounts.getSelectionModel().getSelectedItem();
+        if (s == null) {
             return;
         }
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Delete this account?", yes, no);
-        if (alert.showAndWait().get() == yes) {
+        if (new Alert(Alert.AlertType.CONFIRMATION, "Delete this account?", yes, no).showAndWait().get() == yes) {
             try {
-                restClient.removeAccount(selected.getId().toString());
-                accountsData.remove(selected);
-                lblMessage.setText("Account deleted.");
-                tableAccounts.refresh();
+                restClient.removeAccount(s.getId().toString());
+                loadAccountsData();
             } catch (Exception e) {
-                showErrorAlert("Delete Error: " + e.getMessage());
+                showWarning("Delete failed.");
             }
         }
     }
 
     @FXML
     private void handleViewMovements(ActionEvent event) {
-        Account selected = tableAccounts.getSelectionModel().getSelectedItem();
-        if (selected != null && !btnAddAccount.isSelected()) {
-            try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/crud_project/ui/Movements.fxml"));
-                Parent root = loader.load();
-                MovementController controller = loader.getController();
-                controller.setAccount(selected);
-                controller.initStage(root);
-                this.stage.close();
-            } catch (Exception e) {
-                showErrorAlert("Error opening movements: " + e.getMessage());
-            }
+        Account s = tableAccounts.getSelectionModel().getSelectedItem();
+        if (s == null) {
+            return;
+        }
+        try {
+            FXMLLoader l = new FXMLLoader(getClass().getResource("/crud_project/ui/Movements.fxml"));
+            Parent r = l.load();
+            MovementController c = l.getController();
+            c.setAccount(s);
+            c.initStage(r);
+            this.stage.close();
+        } catch (Exception e) {
+            showWarning("Navigation Error.");
         }
     }
 
     private void handleLogOut(ActionEvent event) {
-        if (btnAddAccount.isSelected()) return;
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Do you want to log out?", yes, no);
-        if (alert.showAndWait().get() == yes) {
+        if (new Alert(Alert.AlertType.CONFIRMATION, "Logout?", yes, no).showAndWait().get() == yes) {
             try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/crud_project/ui/SignIn.fxml"));
-                Parent root = loader.load();
-                SignInController controller = loader.getController();
-                controller.initStage(stage, root);
+                FXMLLoader l = new FXMLLoader(getClass().getResource("/crud_project/ui/SignIn.fxml"));
+                Parent r = l.load();
+                SignInController c = l.getController();
+                c.initStage(this.stage, r);
                 restClient.close();
             } catch (Exception e) {
-                showErrorAlert("Error returning to sign in.");
             }
         }
     }
 
-    private void saveOrUpdate(Account account) {
-        try {
-            if (account.getId() != null && account.getId() > 0) {
-                restClient.updateAccount_XML(account);
-                lblMessage.setText("Account updated.");
-            }
-        } catch (Exception e) {
-            showErrorAlert("Update Error: " + e.getMessage());
-            loadAccountsData();
-        }
-    }
-
-    private void showErrorAlert(String message) {
-        new Alert(Alert.AlertType.ERROR, message, ButtonType.OK).showAndWait();
-    }
-
-    public void setCustomer(Customer customer) {
-        this.loggedCustomer = customer;
+    public void setCustomer(Customer c) {
+        this.loggedCustomer = c;
     }
 
     public Stage getStage() {
