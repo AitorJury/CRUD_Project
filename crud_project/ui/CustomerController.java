@@ -28,6 +28,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.stage.Stage;
+import javafx.util.StringConverter;
+import javafx.util.converter.DefaultStringConverter;
 import javafx.util.converter.IntegerStringConverter;
 import javafx.util.converter.LongStringConverter;
 
@@ -92,6 +94,8 @@ public class CustomerController {
 
     public static final CustomerRESTClient client = new CustomerRESTClient();
     ObservableList<Customer> customersData;
+
+    private TextField currentEditingTextField;
 
     public void initUserStage(Parent root) {
 
@@ -235,7 +239,7 @@ public class CustomerController {
 
         } catch (Exception e) {
 
-            //handleAlertError("Cannot dele this user");
+            handleAlertError("Cannot dele this user");
             LOGGER.warning(e.getMessage());
         }
     }
@@ -252,10 +256,9 @@ public class CustomerController {
             Long idCustomer = bdCustomer.getId();
             newCustomer.setId(idCustomer);
 
-            fxTableView.requestFocus();
             fxTableView.getSelectionModel().clearAndSelect(0);
             fxTableView.scrollTo(0);
-
+            fxTableView.requestFocus();
             fxTableView.edit(0, fxTcFirstName);
 
 
