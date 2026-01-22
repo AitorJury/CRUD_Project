@@ -67,7 +67,6 @@ public class AccountsController {
             setupTable();
             tableAccounts.setItems(accountsData);
 
-            // Mejora: Guardar automáticamente al cambiar de foco
             tableAccounts.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
                 if (!isNowFocused && tableAccounts.getEditingCell() != null) {
                     tableAccounts.edit(-1, null);
@@ -105,7 +104,7 @@ public class AccountsController {
         colDescription.setCellFactory(TextFieldTableCell.forTableColumn());
         colDescription.setOnEditCommit(event -> {
             Account a = event.getRowValue();
-            if (btnAddAccount.isSelected() && !a.equals(creatingAccount)) {
+            if (btnAddAccount.isSelected() && a != creatingAccount) {
                 showWarning("Finish creating the new account first.");
                 tableAccounts.refresh();
                 return;
@@ -175,6 +174,12 @@ public class AccountsController {
             }
             tableAccounts.refresh();
         });
+
+        tableAccounts.editingCellProperty().addListener((obs, oldCell, newCell) -> {
+            if (newCell == null && oldCell != null) {
+                tableAccounts.refresh();
+            }
+        });
     }
 
     private void showWarning(String msg) {
@@ -227,7 +232,6 @@ public class AccountsController {
 
                 accountsData.add(creatingAccount);
 
-                // HACK DE UI: Forzar a la tabla a reconocer la fila antes de editar
                 tableAccounts.layout();
                 int idx = accountsData.size() - 1;
                 tableAccounts.getSelectionModel().select(idx);
@@ -235,7 +239,12 @@ public class AccountsController {
 
                 Platform.runLater(() -> {
                     tableAccounts.requestFocus();
-                    tableAccounts.edit(idx, colDescription);
+
+                    tableAccounts.getSelectionModel().clearAndSelect(idx);
+
+                    Platform.runLater(() -> {
+                        tableAccounts.edit(idx, colDescription);
+                    });
                 });
 
             } else {
@@ -286,7 +295,9 @@ public class AccountsController {
         btnAddAccount.setSelected(false);
         btnCancelAccount.setDisable(true);
         setButtonsCreating(false);
+        lblMessage.setText("");
         loadAccountsData();
+        tableAccounts.refresh();
     }
 
     private void setButtonsCreating(boolean creating) {
