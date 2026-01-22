@@ -192,6 +192,13 @@ public class AccountsController {
                 }
                 account.setBeginBalance(event.getNewValue());
             });
+
+            tableAccounts.editingCellProperty().addListener((obs, oldCell, newCell) -> {
+                if (newCell == null && oldCell != null) {
+                    // Cuando dejas de editar una celda, forzamos el refresco de los datos
+                    tableAccounts.refresh();
+                }
+            });
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -227,7 +234,7 @@ public class AccountsController {
     private void handleAddAccount(ActionEvent event) {
         try {
             if (btnAddAccount.isSelected()) {
-                btnAddAccount.setText("Create");
+                btnAddAccount.setText("Confirm");
                 btnCancelAccount.setDisable(false);
                 toggleControls(true);
 
@@ -235,7 +242,7 @@ public class AccountsController {
                 creatingAccount.setId(generateUniqueId());
                 creatingAccount.setCustomer(loggedCustomer);
                 creatingAccount.setBeginBalanceTimestamp(new Date());
-                creatingAccount.setDescription("");
+                creatingAccount.setDescription("New Account");
                 creatingAccount.setType(AccountType.STANDARD);
                 creatingAccount.setBalance(0.0);
                 creatingAccount.setCreditLine(0.0);

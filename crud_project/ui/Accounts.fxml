@@ -10,6 +10,7 @@
 
 <Pane prefHeight="768.0" prefWidth="1024.0" styleClass="root-pane" stylesheets="@estilo.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="crud_project.ui.AccountsController">
     <children>
+        <fx:include fx:id="hBoxMenu" source="Menu.fxml"/>
         <!-- Logo -->
         <ImageView fitHeight="80.0" fitWidth="100.0" layoutX="50.0" layoutY="30.0" preserveRatio="true">
             <image>
