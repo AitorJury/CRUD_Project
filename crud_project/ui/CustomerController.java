@@ -119,6 +119,7 @@ public class CustomerController {
         //Configuracion de columnas
         //Columnas editables
         fxTableView.setEditable(true);
+
         fxTcId.setCellValueFactory(new PropertyValueFactory<>("id"));
 
         fxTcFirstName.setCellValueFactory(new PropertyValueFactory<>("firstName"));

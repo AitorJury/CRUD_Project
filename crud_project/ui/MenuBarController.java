@@ -2,12 +2,10 @@ package crud_project.ui;
 
 import javafx.event.Event;
 import javafx.fxml.FXML;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.MenuItem;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
@@ -38,7 +36,7 @@ public class MenuBarController {
         fxMenuClose.setOnAction(e -> System.exit(0));
         fxMenuSignOut.setOnAction(this::handleOnExitAction);
         fxMenuAbout.setOnAction(this::handleAboutWindow);
-        fxMenuContent.setOnAction(this::handleAboutWindowv2);
+       // fxMenuContent.setOnAction(this::handleAboutWindowv2);
 
 
     }
@@ -58,7 +56,7 @@ public class MenuBarController {
 
             event.consume();
         } catch (Exception e) {
-            handleAlertError("Fail to Close");
+            handleAlertError();
         }
     }
 
@@ -83,20 +81,13 @@ public class MenuBarController {
 
     }
 
-    private void handleAboutWindowv2(Event event) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("About");
-        alert.setHeaderText("Cynthor Bank Application");
-        alert.setContentText("This is a simple bank application made by group 3\n" +
-                "Members: Aitor, Cynthia and Juan");
-        alert.showAndWait();
-    }
 
 
-    private void handleAlertError(String message) {
+
+    private void handleAlertError() {
         Alert alert = new Alert(Alert.AlertType.ERROR, "", ButtonType.OK);
         alert.setTitle("Error");
-        alert.setContentText(message);
+        alert.setContentText("Fail to Close");
         alert.showAndWait();
 
     }
