@@ -189,6 +189,7 @@ public class MovementController {
     //Contador a 1 cuando este a 0 se deshabilite el boton 
     public void handleBtnDelete(ActionEvent event) {
         try {
+            //Activar el puto boton CUADNO SEA EL ULTIMO MOVIMIENTO
             /*Coger ultimom ovimiento
             tbMovements.getItems().get(tbMovements.getItems.size()-1)
             borrar por la ultima fecha 
@@ -197,10 +198,11 @@ public class MovementController {
             if (tbMovement.getItems().isEmpty()) {
                 throw new Exception("There are no movements on the account.");
             }
+            //Coge el ultimo movimiento de la fecha más alta
             Movement lastDate = tbMovement.getItems().stream()
                     .max((m1, m2) -> m1.getTimestamp().compareTo(m2.getTimestamp()))
                     .get();
-            //Buscamos el id del utlimo movimiento por fecha
+            //Buscamos el id del utlimo movimiento por fecha mas alta
             String lastDateToId = String.valueOf(lastDate.getId());
 
             // Mostrar alert modal de confirmación para borrar el ultimo movimiento.
@@ -214,14 +216,14 @@ public class MovementController {
                     contador++;
                     //Si la respuesta es que si borra el ultimo movimiento
                     //Movement lastMovement = tbMovement.getItems().get(tbMovement.getItems().size() - 1);
-                    //lastMovement.getId().toString()
-                    movementClient.remove(lastDateToId);
+
                     Double actualBalance = this.account.getBalance();
                     Double importDelete = lastDate.getAmount();
 
                     //Le devuelves el dinero del ultimo movimiento
                     this.account.setBalance(actualBalance - importDelete);
                     //Se vuelve a cargar la tabla
+                    movementClient.remove(lastDateToId);
                     loadMovements();
                     LOGGER.info("Movement deleted");
                 } else {
@@ -270,33 +272,28 @@ public class MovementController {
             if (amount <= 0) {
                 throw new Exception("Amount cant be negative");
             }
-
-            //Ahora si que puedo hacer el balance
-            //Hasta que no tenga la cuenta no funciona
             AccountType accountType = account.getType();
             //Si el pago es mayor al balance no se puede hacer
             Double newBalance = 0.0;
             Double accountBalance = this.account.getBalance();
-            /*
-           Double accountCredit = this.account.getCreditLine();
+
+            Double accountCredit = this.account.getCreditLine();
+
             if (type.equals("Payment") && accountBalance < amount) {
                 throw new Exception("The amount cannot be greater than the money in the account");
             }
             Double total = amount + accountCredit;
-             */
- /*
+
+            /*
             if (type.equals("Payment") && accountType.equals("CREDIT") && accountBalance < total) {
                 throw new Exception("The amount cannot be greater than the money in the account");
-            }
-             */ //label
+            } */
+            //label
             //Si es tipo deposito se estable la descripcion y la cantidad
             if (type.equals("Deposit")) {
                 newMovement.setAmount(amount);
                 newMovement.setDescription(type);
                 newBalance = accountBalance + amount;
-
-                //Double newBalance = movement.getBalance();
-                //newMovement.setBalance(newBalance+amount);
             } else if (type.equals("Payment")) {
                 //Si es tipo Payment se le pone la cantidad negativa y se establece la descripcion 
                 newMovement.setAmount(-amount);
