@@ -68,7 +68,7 @@ public class AccountsController {
 
             tableAccounts.focusedProperty().addListener((obs, oldV, newV) -> {
                 if (!newV && tableAccounts.getEditingCell() != null) {
-                    tableAccounts.edit(-1, null);
+                    // tableAccounts.edit(-1, null);
                 }
             });
 
