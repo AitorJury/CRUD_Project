@@ -5,7 +5,7 @@
  */
 package crud_project.ui;
 
-import java.awt.event.MouseEvent;
+
 import java.util.*;
 
 import java.util.logging.Logger;
@@ -14,6 +14,7 @@ import crud_project.logic.CustomerRESTClient;
 
 import crud_project.model.Customer;
 
+import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -27,9 +28,8 @@ import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
-import javafx.util.StringConverter;
-import javafx.util.converter.DefaultStringConverter;
 import javafx.util.converter.IntegerStringConverter;
 import javafx.util.converter.LongStringConverter;
 
@@ -47,56 +47,120 @@ public class CustomerController {
 
     public static final String EXIT_CONFIRMATION_TITLE = "Exit Confirmation";
     public static final String EXIT_CONFIRMATION_MESSAGE = "Are you sure you want to exit?";
+    public static final String BASIC_MATCHER = "[a-zA-Z]+";
 
     private Scene userScene;
-    private Customer customer;
+    public Customer customer;
 
+    /**
+     * Tabla que muestra la lista de clientes
+     */
     @FXML
     public TableView<Customer> fxTableView;
+    /**
+     * Columna para el ID del cliente
+     */
     @FXML
     public TableColumn<Customer, Long> fxTcId;
+    /**
+     * Columna para el nombre del cliente
+     */
     @FXML
     public TableColumn<Customer, String> fxTcFirstName;
+    /**
+     * Columna para el apellido del cliente
+     */
     @FXML
     public TableColumn<Customer, String> fxTcLastName;
+    /**
+     * Columna para la inicial del segundo nombre
+     */
     @FXML
     public TableColumn<Customer, String> fxTcMidName;
+    /**
+     * Columna para el correo electrónico del cliente
+     */
     @FXML
     public TableColumn<Customer, String> fxTcEmail;
+    /**
+     * Columna para la contraseña del cliente
+     */
     @FXML
     public TableColumn<Customer, String> fxTcPassword;
+    /**
+     * Columna para el teléfono del cliente
+     */
     @FXML
     public TableColumn<Customer, Long> fxTcPhone;
+    /**
+     * Columna para la calle de la dirección del cliente
+     */
     @FXML
     public TableColumn<Customer, String> fxTcStreet;
+    /**
+     * Columna para la ciudad del cliente
+     */
     @FXML
     public TableColumn<Customer, String> fxTcCity;
+    /**
+     * Columna para el estado/provincia del cliente
+     */
     @FXML
     public TableColumn<Customer, String> fxTcState;
+    /**
+     * Columna para el código postal del cliente
+     */
     @FXML
     public TableColumn<Customer, Integer> fxTcZip;
 
+    /**
+     * Botón para buscar clientes
+     */
     @FXML
     public Button fxBtnFind;
+    /**
+     * Botón para crear un nuevo cliente
+     */
     @FXML
     public Button fxBtnNewCustomer;
+    /**
+     * Botón para eliminar un cliente
+     */
     @FXML
     public Button fxBtnDelete;
+    /**
+     * Botón para guardar cambios realizados
+     */
     @FXML
     public Button fxBtnSaveChanges;
+    /**
+     * Botón para salir de la ventana
+     */
     @FXML
     public Button fxBtnExit;
 
-    //Cargar el controlador del topbar
+    /**
+     * Controlador del menú superior
+     */
     @FXML
     public MenuBarController topMenuController;
 
 
+    /**
+     * Inicializacion del cliente REST para comunicacion con la BD
+     */
     public static final CustomerRESTClient client = new CustomerRESTClient();
+
+    /**
+     * Lista de clientes
+     */
     ObservableList<Customer> customersData;
 
-    private TextField currentEditingTextField;
-
+    /**
+     * Inicializa la ventana del usuario con los componentes de la interfaz.
+     *
+     * @param root El nodo raíz de la escena.
+     */
     public void initUserStage(Parent root) {
 
 
@@ -115,16 +179,18 @@ public class CustomerController {
         fxBtnDelete.setDisable(true);
 
 
-        //Recuperar lista de todos los customers
-        //Configuracion de columnas
-        //Columnas editables
+        //Configuracion de la tabla a modo editable
         fxTableView.setEditable(true);
+
+        // setCellValueFactory define cómo extraer el valor de la propiedad del objeto de modelo para mostrarlo en la celda.
+
+        // setCellFactory define cómo se renderiza la celda y permite que sea editable, por ejemplo, usando un TextField.
 
         fxTcId.setCellValueFactory(new PropertyValueFactory<>("id"));
 
         fxTcFirstName.setCellValueFactory(new PropertyValueFactory<>("firstName"));
-        fxTcFirstName.setCellFactory(TextFieldTableCell.forTableColumn());
         fxTcFirstName.setEditable(true);
+        fxTcFirstName.setCellFactory(TextFieldTableCell.forTableColumn());
 
         fxTcLastName.setCellValueFactory(new PropertyValueFactory<>("lastName"));
         fxTcLastName.setEditable(true);
@@ -165,16 +231,18 @@ public class CustomerController {
         //Carga de datos a las columnas
         customersData = FXCollections.observableArrayList(client.findAll_XML(new GenericType<List<Customer>>() {
         }));
+        //Inserta los datos cargados en la tabla
         fxTableView.setItems(customersData);
 
-
+        //metodo para cuando el usuario quiere cerrar la aplicacion
         userStage.setOnCloseRequest(this::handleOnExitAction);
 
 
         //Comprobacion de cambio de fila
         fxTableView.getSelectionModel().selectedItemProperty().addListener(this::handleTableSelectionChanged);
 
-        //Filtro para la celda, nombre en modo edicion
+        //Filtro para cada celda, se acciona en el evento de commit (en este caso al pulsar enter)
+        //Cada celda tiene sus propias validaciones
         fxTcFirstName.setOnEditCommit(this::handleFirstNameCellEdit);
         fxTcLastName.setOnEditCommit(this::handleLastNameCellEdit);
         fxTcMidName.setOnEditCommit(this::handleMiddleInitialCellEdit);
@@ -186,16 +254,31 @@ public class CustomerController {
         fxTcZip.setOnEditCommit(this::handleZipCellEdit);
         fxTcPhone.setOnEditCommit(this::handlePhoneCellEdit);
 
-        //---- Accion de botones
+        //---- Accion de botones ----//
+        /* Añade una fila y llama al metodo create_XML del RESTClient para crear un nuevo cliente*/
         fxBtnNewCustomer.setOnAction(this::handleAddCustomerRow);
+        /* Borra una fila y llama al metodo delete_XML del RESTClient para eliminar el cliente*/
         fxBtnDelete.setOnAction(this::handleDeleteCustomerAndRow);
+        /* Salir de la aplicacion a traves del boton Exit creado*/
         fxBtnExit.setOnAction(this::handleOnExitAction);
 
+        /*
+         * Import del componente reutilizable de MenuBarController
+         */
         topMenuController.init(userStage);
+
+        //setupTableContextMenu();
 
 
     }
 
+    /**
+     * Maneja el cambio de selección de filas en la tabla de clientes.
+     *
+     * @param observable El valor observable.
+     * @param oldValue   El valor antiguo.
+     * @param newValue   El nuevo valor seleccionado.
+     */
     private void handleTableSelectionChanged(ObservableValue observable, Object oldValue, Object newValue) {
 
         fxBtnDelete.setDisable(newValue == null);
@@ -203,6 +286,13 @@ public class CustomerController {
 
     }
 
+    /**
+     * Maneja la acción de eliminar un cliente seleccionado y su fila correspondiente.
+     * Si no hay un cliente seleccionado, no realiza ninguna acción.
+     * Si falla la eliminación, muestra un mensaje de error.
+     *
+     * @param actionEvent El evento de acción.
+     */
     private void handleDeleteCustomerAndRow(ActionEvent actionEvent) {
         try {
 
@@ -245,6 +335,11 @@ public class CustomerController {
         }
     }
 
+    /**
+     * Maneja la acción de añadir una nueva fila de clientes a la tabla ademas de crearlo en la BD.
+     *
+     * @param event El evento de acción.
+     */
     public void handleAddCustomerRow(ActionEvent event) {
 
         try {
@@ -257,10 +352,15 @@ public class CustomerController {
             Long idCustomer = bdCustomer.getId();
             newCustomer.setId(idCustomer);
 
-            fxTableView.getSelectionModel().clearAndSelect(0);
-            fxTableView.scrollTo(0);
-            fxTableView.requestFocus();
-            fxTableView.edit(0, fxTcFirstName);
+            //Se usa para que de tiempo a cargar la logica antes de cargar toda la UI y no haya desfases de que cargue
+            //primero la UI antes que la logica
+            Platform.runLater(() -> {
+
+                fxTableView.requestFocus();
+                fxTableView.getSelectionModel().select(0);
+                fxTableView.scrollTo(0);
+                fxTableView.edit(0, fxTcFirstName);
+            });
 
 
         } catch (Exception e) {
@@ -271,9 +371,9 @@ public class CustomerController {
     }
 
     /**
-     * Metodo para la gestión y validacion de la celda de First Name
+     * Método para la gestión y validación de la edición de la celda del nombre.
      *
-     * @param cellName
+     * @param cellName El evento de edición de celda.
      */
     private void handleFirstNameCellEdit(TableColumn.CellEditEvent<Customer, String> cellName) {
 
@@ -284,7 +384,7 @@ public class CustomerController {
             if (newValue.isEmpty()) {
                 throw new Exception("The name should be fill");
             }
-            if (!newValue.matches("[a-zA-Z]+")) {
+            if (!newValue.matches(BASIC_MATCHER)) {
                 throw new Exception("The name should contain only letters");
             }
             if (newValue.length() > 20) {
@@ -302,6 +402,11 @@ public class CustomerController {
 
     }
 
+    /**
+     * Maneja la edición de la celda del apellido.
+     *
+     * @param cellName El evento de edición de celda.
+     */
     private void handleLastNameCellEdit(TableColumn.CellEditEvent<Customer, String> cellName) {
 
         String newValue = cellName.getNewValue().trim();
@@ -311,7 +416,7 @@ public class CustomerController {
             if (newValue.isEmpty()) {
                 throw new Exception("The name should be fill");
             }
-            if (!newValue.matches("[a-zA-Z]+")) {
+            if (!newValue.matches(BASIC_MATCHER)) {
                 throw new Exception("The name should contain only letters");
             }
             if (newValue.length() > 20) {
@@ -329,6 +434,11 @@ public class CustomerController {
 
     }
 
+    /**
+     * Maneja la edición de la celda de la inicial del segundo nombre.
+     *
+     * @param cell El evento de edición de celda.
+     */
     private void handleMiddleInitialCellEdit(TableColumn.CellEditEvent<Customer, String> cell) {
 
         //Obetener valor de la celda
@@ -345,7 +455,7 @@ public class CustomerController {
 
                 throw new Exception("The initial should be one letter");
             }
-            if (!newValue.matches("[a-zA-Z]+")) {
+            if (!newValue.matches(BASIC_MATCHER)) {
 
                 throw new Exception("The name should contain only letter");
             }
@@ -360,6 +470,11 @@ public class CustomerController {
         }
     }
 
+    /**
+     * Maneja la edición de la celda de la calle.
+     *
+     * @param streetCell El evento de edición de celda.
+     */
     private void handleStreetCellEdit(TableColumn.CellEditEvent<Customer, String> streetCell) {
 
         String text = streetCell.getNewValue().trim();
@@ -387,6 +502,11 @@ public class CustomerController {
 
     }
 
+    /**
+     * Maneja la edición de la celda de la ciudad.
+     *
+     * @param cell El evento de edición de celda.
+     */
     private void handleCityCellEdit(TableColumn.CellEditEvent<Customer, String> cell) {
 
         try {
@@ -416,6 +536,11 @@ public class CustomerController {
 
     }
 
+    /**
+     * Maneja la edición de la celda del estado.
+     *
+     * @param cell El evento de edición de celda.
+     */
     private void handleStateCellEdit(TableColumn.CellEditEvent<Customer, String> cell) {
         try {
             String text = cell.getNewValue().trim();
@@ -440,6 +565,11 @@ public class CustomerController {
         }
     }
 
+    /**
+     * Maneja la edición de la celda del correo electrónico.
+     *
+     * @param cell El evento de edición de celda.
+     */
     private void handleEmailCellEdit(TableColumn.CellEditEvent<Customer, String> cell) {
         try {
             String text = cell.getNewValue().trim();
@@ -465,6 +595,11 @@ public class CustomerController {
         }
     }
 
+    /**
+     * Maneja la edición de la celda de la contraseña.
+     *
+     * @param cell El evento de edición de celda.
+     */
     private void handlePasswordCellEdit(TableColumn.CellEditEvent<Customer, String> cell) {
         try {
             String text = cell.getNewValue().trim();
@@ -490,6 +625,11 @@ public class CustomerController {
         }
     }
 
+    /**
+     * Maneja la edición de la celda del código postal.
+     *
+     * @param cell El evento de edición de celda.
+     */
     private void handleZipCellEdit(TableColumn.CellEditEvent<Customer, Integer> cell) {
         try {
             Integer text = cell.getNewValue();
@@ -516,6 +656,11 @@ public class CustomerController {
         }
     }
 
+    /**
+     * Maneja la edición de la celda del teléfono.
+     *
+     * @param cell El evento de edición de celda.
+     */
     private void handlePhoneCellEdit(TableColumn.CellEditEvent<Customer, Long> cell) {
         try {
             Long number = cell.getNewValue();
@@ -547,6 +692,11 @@ public class CustomerController {
         }
     }
 
+    /**
+     * Muestra una alerta de error con el mensaje especificado.
+     *
+     * @param message El mensaje de error a mostrar.
+     */
     private void handleAlertError(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR, "", ButtonType.OK);
         alert.setTitle("Error");
@@ -555,6 +705,11 @@ public class CustomerController {
 
     }
 
+    /**
+     * Maneja la acción de salida de la aplicación, pidiendo confirmación.
+     *
+     * @param event El evento que dispara la acción.
+     */
     public void handleOnExitAction(Event event) {
         try {
             LOGGER.info("Clicked exit button");
@@ -574,16 +729,37 @@ public class CustomerController {
         }
     }
 
-    public void handleContextMenu(MouseEvent event) {
-        LOGGER.info("Clicked on context menu");
-        final ContextMenu cm = new ContextMenu();
+
+    private void setupTableContextMenu() {
+        ContextMenu contextMenu = new ContextMenu();
+
+        MenuItem editItem = new MenuItem("Editar");
+        MenuItem deleteItem = new MenuItem("Eliminar");
+
+        // Reutilizamos tus métodos de lógica
+        editItem.setOnAction(e -> fxTableView.edit(fxTableView.getSelectionModel().getSelectedIndex(), fxTcFirstName));
+        deleteItem.setOnAction(this::handleDeleteCustomerAndRow);
+
+        contextMenu.getItems().addAll(editItem, new SeparatorMenuItem(), deleteItem);
+
+        // Asignar el menú a la tabla de forma permanente
+        fxTableView.setContextMenu(contextMenu);
     }
 
+    /**
+     * Obtiene la etapa (Stage) actual.
+     *
+     * @return El Stage del usuario.
+     */
     public Stage getStage() {
         return this.userStage;
     }
 
-
+    /**
+     * Establece el cliente actual.
+     *
+     * @param customer El objeto Customer a establecer.
+     */
     public void setCustomer(Customer customer) {
         this.customer = customer;
     }
