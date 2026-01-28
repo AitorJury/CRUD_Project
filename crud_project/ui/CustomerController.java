@@ -35,7 +35,7 @@ import javafx.stage.Stage;
  *
  * @author juancaizaduenas
  */
-public class UserController {
+public class CustomerController {
 
     private static final Logger LOGGER = Logger.getLogger("crudbankclientside.ui");
     private final Stage userStage = new Stage();

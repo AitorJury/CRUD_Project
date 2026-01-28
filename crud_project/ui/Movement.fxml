@@ -41,5 +41,7 @@
       <Label fx:id="lblError" layoutX="47.0" layoutY="677.0" prefHeight="27.0" prefWidth="550.0" textFill="RED" />
       <Label fx:id="lblNumAccount" layoutX="109.0" layoutY="111.0" prefHeight="15.0" prefWidth="187.0" />
       <Label fx:id="lblBalance" layoutX="835.0" layoutY="569.0" prefHeight="30.0" prefWidth="82.0" />
+      <Label layoutX="835.0" layoutY="474.0" prefHeight="15.0" prefWidth="111.0" text="CreditLine" />
+      <Label fx:id="lblCreditLine" layoutX="835.0" layoutY="496.0" prefHeight="15.0" prefWidth="82.0" />
        </children>
 </Pane>

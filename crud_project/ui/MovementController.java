@@ -55,8 +55,11 @@ public class MovementController {
     private Account account;
     private AccountType accountType;
     private Double finalNewBalance;
+    private Double finalNewCredit;
 
     //Agregamos los id del fxml al controlador 
+    @FXML
+    private Label lblCreditLine;
     @FXML
     private Label lblNumAccount;
     @FXML
@@ -99,10 +102,11 @@ public class MovementController {
 
     public void init(Parent root) {
         //id de prueba
-        this.account = new Account();
-        this.account.setId(2654785441L);
-        this.account.setBalance(20000.00);
-        lblNumAccount.setText(String.valueOf(account.getId()));
+        //this.account = new Account();
+        //this.account.setId(3252214522L);
+        //this.account.setBalance(20000.00);
+        //this.account.setCreditLine(500.00);
+        lblNumAccount.setText(account.getId().toString());
 
         //String numAccount = String.valueOf(account.getId());
         //lblNumAccount.setText(numAccount);
@@ -124,10 +128,12 @@ public class MovementController {
         //Carga los movimientos de la tabla
         loadMovements();
         buttonEnable();
-
+        
+        
+        //Creamos variable que necesitaremos para el delete
+        Double creditNow= 0.0;
         btnBack.setCancelButton(true);
 
-        // lblName.setText(account.getId());
         //Se pone los valores en la combo de la description (type)
         ObservableList<String> items = FXCollections.observableArrayList("Deposit", "Payment");
         comboType.setItems(items);
@@ -153,13 +159,14 @@ public class MovementController {
             GenericType<List<Movement>> movementListType = new GenericType<List<Movement>>() {
             };
             //id String.valueOf(account.getId())
-            List<Movement> movements = movementClient.findMovementByAccount_XML(movementListType, String.valueOf(account.getId()));
+            List<Movement> movements = movementClient.findMovementByAccount_XML(movementListType, account.getId().toString());
             ObservableList<Movement> dataMovement = FXCollections.observableArrayList(movements);
             //Se muestra la lista en la tabla
             LOGGER.info("Showing table of movements");
             FXCollections.sort(dataMovement, (m1, m2) -> m1.getTimestamp().compareTo(m2.getTimestamp()));
             tbMovement.setItems(dataMovement);
-            lblBalance.setText(String.valueOf(account.getBalance()));
+            lblBalance.setText(account.getBalance().toString());
+            lblCreditLine.setText(account.getCreditLine().toString());
             //Hasta que no pasen la cuenta no se puede ver el balance
             //txtBalance.setText(String.valueOf(movement.getBalance()));
         } catch (Exception e) {
@@ -189,11 +196,6 @@ public class MovementController {
     //Contador a 1 cuando este a 0 se deshabilite el boton 
     public void handleBtnDelete(ActionEvent event) {
         try {
-            //Activar el puto boton CUADNO SEA EL ULTIMO MOVIMIENTO
-            /*Coger ultimom ovimiento
-            tbMovements.getItems().get(tbMovements.getItems.size()-1)
-            borrar por la ultima fecha 
-             */
             loadMovements();
             if (tbMovement.getItems().isEmpty()) {
                 throw new Exception("There are no movements on the account.");
@@ -204,7 +206,7 @@ public class MovementController {
                     .get();
             //Buscamos el id del utlimo movimiento por fecha mas alta
             String lastDateToId = String.valueOf(lastDate.getId());
-
+            
             // Mostrar alert modal de confirmación para borrar el ultimo movimiento.
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
                     "Do you want remove the last movement?", yes, no);
@@ -214,14 +216,18 @@ public class MovementController {
                 // Si confirma, cerrar la aplicación.
                 if (resp == yes) {
                     contador++;
+                    LOGGER.info("" + contador);
                     //Si la respuesta es que si borra el ultimo movimiento
                     //Movement lastMovement = tbMovement.getItems().get(tbMovement.getItems().size() - 1);
 
                     Double actualBalance = this.account.getBalance();
+                   // Double actualCredit = this.account.getCreditLine();
+                    //Double importCredit = finalNewCredit;
                     Double importDelete = lastDate.getAmount();
 
                     //Le devuelves el dinero del ultimo movimiento
                     this.account.setBalance(actualBalance - importDelete);
+                    //this.account.setCreditLine(actualCredit - importCredit);
                     //Se vuelve a cargar la tabla
                     movementClient.remove(lastDateToId);
                     loadMovements();
@@ -273,42 +279,49 @@ public class MovementController {
                 throw new Exception("Amount cant be negative");
             }
             AccountType accountType = account.getType();
-            //Si el pago es mayor al balance no se puede hacer
+
+            //Creamos el nuevo balance
             Double newBalance = 0.0;
+            //Asignamos a la variable el balance que hay
             Double accountBalance = this.account.getBalance();
-
+            //Asignamos a la variable la linea de credito que tiene
             Double accountCredit = this.account.getCreditLine();
+            finalNewCredit = accountCredit;
+            
 
-            if (type.equals("Payment") && accountBalance < amount) {
-                throw new Exception("The amount cannot be greater than the money in the account");
+            if (type.equals("Payment")) {
+
+                // Validamos el credito y el balance que tiene
+                if (amount > (accountBalance + accountCredit)) {
+                    throw new Exception("The balance and the credit are insuficient");
+                }
+
+                if (accountBalance >= amount) {
+                    //Validamos si el balance llega sin necesitar la linea de credito
+                    newBalance = accountBalance - amount;
+                } else {
+                    //Calculamos cuanto falta para cubrir con el credito
+                    Double restateAmount = amount - accountBalance; // Lo que falta por cubrir
+                    // Restamos lo que falta de la línea de crédito
+                    Double newCredit = accountCredit - restateAmount;
+                    this.account.setCreditLine(newCredit);
+
+                }
+
+                newMovement.setAmount(-amount);
+                newMovement.setDescription(type);
             }
-            Double total = amount + accountCredit;
 
-            /*
-            if (type.equals("Payment") && accountType.equals("CREDIT") && accountBalance < total) {
-                throw new Exception("The amount cannot be greater than the money in the account");
-            } */
-            //label
-            //Si es tipo deposito se estable la descripcion y la cantidad
             if (type.equals("Deposit")) {
                 newMovement.setAmount(amount);
                 newMovement.setDescription(type);
                 newBalance = accountBalance + amount;
-            } else if (type.equals("Payment")) {
-                //Si es tipo Payment se le pone la cantidad negativa y se establece la descripcion 
-                newMovement.setAmount(-amount);
-                newMovement.setDescription(type);
-                newBalance = accountBalance - amount;
-
-                /*
-                Validaciones que tengo que hacer
-                -Que la cantidad de sacar dinero que la cantidad sea mayor. Saldo suficiente LISTO
-                -Si es de credito tengo que mirar la linea de credito. LISTO
-                -Si es de credito tambien tengo que mostrar la linea de credito LISTO   
-                 */
             }
             newMovement.setBalance(newBalance);
+           // account.setBalance(newBalance);
+            //Metemos el newBalance en la variable final para poder mostrarla
             finalNewBalance = newBalance;
+            
             //Se pone la fecha y hora actual 
             Date date = new Date();
             newMovement.setTimestamp(date);
@@ -322,12 +335,14 @@ public class MovementController {
                 if (resp == yes) {
                     try {
                         //Se crea el movimiento
-                        movementClient.create_XML(newMovement, String.valueOf(account.getId()));
+                        movementClient.create_XML(newMovement, account.getId().toString());
                         this.account.setBalance(finalNewBalance);
+                        lblCreditLine.setText(accountCredit.toString());
                         txtAmount.setText("");
                         loadMovements();
                         LOGGER.info("Movement created");
                         buttonEnable();
+                        btnDelete.setDisable(false);
                     } catch (Exception e) {
                         handlelblError("The movement cant be created");
                     }

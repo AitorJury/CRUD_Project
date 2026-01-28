@@ -2,6 +2,7 @@ package crud_project.ui;
 
 // Imports.
 import crud_project.logic.CustomerRESTClient;
+import crud_project.model.Account;
 import crud_project.model.Customer;
 import crud_project.model.Movement;
 import java.util.HashSet;
@@ -176,7 +177,7 @@ public class SignInController {
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("UserControllerWindow.fxml"));
                 Parent root = loader.load();
 
-                UserController controller = loader.getController();
+                CustomerController controller = loader.getController();
                 // Como es admin, puedes pasar un objeto customer vacío o gestionar nulos en el destino
                 controller.setCustomer(new Customer());
 
@@ -203,6 +204,9 @@ public class SignInController {
                 // Cargamos controlador.
                 MovementController controller = loader.getController();
                 controller.setCustomer(customer);
+                Account account = new Account();
+                account.setId(2654785441L);
+                controller.setAccount(account);
 
                 //AccountsController controller = loader.getController();
                 this.stage.hide();
