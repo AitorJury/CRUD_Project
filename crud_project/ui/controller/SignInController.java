@@ -112,7 +112,7 @@ public class SignInController {
         try {
             // Cerrar la ventana actual.
             // Abrir la ventana de registro de nuevo usuario.
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("SignUp.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("../view/SignUp.fxml"));
             Parent root = loader.load();
 
             SignUpController controller = loader.getController();
@@ -173,7 +173,7 @@ public class SignInController {
             // En el caso de ser administrador, se envía a otra ventana distinta.
             if (email.equals("admin") && password.equals("admin")) {
                 LOGGER.info("Admin login detected. Changing to User Controller Window");
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("CustomerController.fxml"));
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("../view/CustomerController.fxml"));
                 Parent root = loader.load();
                 
                 CustomerController controller = loader.getController();
@@ -198,7 +198,7 @@ public class SignInController {
                     Customer.class, email, password);
 
                 // Si t0do es correcto se abrirá la página “Main” y se cerrará la actual.
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("Accounts.fxml"));
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("../view/Accounts.fxml"));
                 Parent root = loader.load();
                 // Cargamos controlador.
                 AccountsController controller = loader.getController();
@@ -222,6 +222,7 @@ public class SignInController {
             // y se mostrará un mensaje.(“No se puede acceder al servidor”).
             handleAlertError("It cannot connect to the server.");
         } catch (Exception e) {
+            e.printStackTrace();
             LOGGER.warning(e.getMessage());
             handleLabelError(e.getMessage());
         } finally {

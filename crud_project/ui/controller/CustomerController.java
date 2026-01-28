@@ -308,7 +308,7 @@ public class CustomerController {
 
                 Alert deleteAlert = new Alert(
                         Alert.AlertType.CONFIRMATION,
-                        "Seguro que quieres eliminar al usuario: " + selectedCustomer.getFirstName() + "?",
+                        "Are you sure you want to delete the user: " + selectedCustomer.getFirstName() + "?",
                         ButtonType.YES, ButtonType.NO);
 
                 deleteAlert.setTitle("Delete user?");
