@@ -1,4 +1,4 @@
-package crud_project.ui;
+package crud_project.ui.controller;
 
 import javafx.event.Event;
 import javafx.fxml.FXML;
@@ -15,13 +15,16 @@ import javafx.stage.Stage;
 
 import java.util.logging.Logger;
 
-import static crud_project.ui.CustomerController.EXIT_CONFIRMATION_MESSAGE;
-import static crud_project.ui.CustomerController.EXIT_CONFIRMATION_TITLE;
+import static crud_project.ui.controller.CustomerController.EXIT_CONFIRMATION_MESSAGE;
+import static crud_project.ui.controller.CustomerController.EXIT_CONFIRMATION_TITLE;
 
 /**
- * The MenuBarController class manages the behavior of the menu bar in a JavaFX application.
- * It handles user actions associated with menu items and provides functionality such as
- * closing the application, showing an "About" window, logging out, and displaying a help page.
+ * La clase {@code MenuBarController} gestiona el comportamiento de la barra de menú
+ * en una aplicación JavaFX.
+ *
+ * Se encarga de manejar las acciones del usuario asociadas a los distintos elementos
+ * del menú, como cerrar la aplicación, mostrar la ventana "Acerca de", cerrar sesión
+ * y mostrar la página de ayuda.
  */
 public class MenuBarController {
 
@@ -29,30 +32,35 @@ public class MenuBarController {
     private Stage userStage;
 
     /**
-     * MenuItem contains a button to close the application
+     * Elemento de menú que permite cerrar la aplicación.
      */
     @FXML
     public MenuItem fxMenuClose;
+
     /**
-     * MenuItem contains a button to show the about page of the application
+     * Elemento de menú que muestra la ventana "Acerca de" de la aplicación.
      */
     @FXML
     public MenuItem fxMenuAbout;
+
     /**
-     * MenuItem contains a button to sign out of the application. It sends you to the login window
+     * Elemento de menú que permite cerrar sesión y volver a la ventana de inicio de sesión.
      */
     @FXML
     public MenuItem fxMenuSignOut;
+
     /**
-     * MenuItem contains a button to show the help page of the application
+     * Elemento de menú que muestra la página de ayuda de la aplicación.
      */
     @FXML
     public MenuItem fxMenuContent;
 
     /**
-     * Initializes the menu-related functionality and sets up event handling for the menu items.
+     * Inicializa la funcionalidad de la barra de menú y configura
+     * los manejadores de eventos para cada elemento del menú.
      *
-     * @param stage the primary stage for this application, used to manage application windows
+     * @param stage escenario principal de la aplicación, utilizado para
+     *              gestionar las ventanas de la aplicación
      */
     public void init(Stage stage) {
         this.userStage = stage;
@@ -65,11 +73,12 @@ public class MenuBarController {
     }
 
     /**
-     * Handles the action performed when the exit button is clicked. This method displays
-     * a confirmation dialog to the user, and if the user confirms, it closes the application
-     * window. If an error occurs during the operation, an alert is shown to notify the user.
+     * Maneja la acción de cerrar sesión.
+     * <p>
+     * Muestra un cuadro de diálogo de confirmación al usuario y, si este confirma,
+     * cierra la ventana actual. En caso de error, se muestra un mensaje de alerta.
      *
-     * @param event the event object associated with the exit button action
+     * @param event evento asociado a la acción del menú
      */
     public void handleOnExitAction(Event event) {
         try {
@@ -92,12 +101,13 @@ public class MenuBarController {
     }
 
     /**
-     * Handles the showing of the help window triggered by an event.
-     * This method creates a new stage displaying an embedded HTML file
-     * (help.html), which contains help documentation for the application.
-     * If the help file cannot be found, it displays an error alert to notify the user.
+     * Maneja la visualización de la ventana de ayuda.
+     * <p>
+     * Crea una nueva ventana que muestra un archivo HTML embebido
+     * ({@code help.html}) con la documentación de ayuda del sistema.
+     * Si el archivo no se encuentra, se muestra una alerta de error.
      *
-     * @param event the event that triggers the help window to be displayed
+     * @param event evento que desencadena la apertura de la ventana de ayuda
      */
     private void handleWindowShowing(Event event) {
         WebView webView = new WebView();
@@ -105,7 +115,7 @@ public class MenuBarController {
         WebEngine webEngine = webView.getEngine();
 
         try {
-            String url = getClass().getResource("/crud_project/ui/help.html").toExternalForm();
+            String url = getClass().getResource("/crud_project/ui/res/help.html").toExternalForm();
             webEngine.load(url);
 
             //Crear ventana para mostrar la help al igual que el about
@@ -128,7 +138,10 @@ public class MenuBarController {
     }
 
     /**
-     * Shows a non-resizable "about" window with credits
+     * Muestra una ventana "Acerca de" no redimensionable con
+     * información y créditos de la aplicación.
+     *
+     * @param event evento que desencadena la apertura de la ventana
      */
     private void handleAboutWindow(Event event) {
 
@@ -152,10 +165,11 @@ public class MenuBarController {
     }
 
     /**
-     * Displays an error alert dialog with the provided message.
-     * The dialog contains a title, the error message, and an "OK" button.
+     * Muestra un cuadro de diálogo de error con el mensaje indicado.
+     * <p>
+     * El diálogo contiene un título, el mensaje de error y un botón "OK".
      *
-     * @param message the error message to display in the alert dialog
+     * @param message mensaje de error que se mostrará al usuario
      */
     private void handleAlertError(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR, "", ButtonType.OK);

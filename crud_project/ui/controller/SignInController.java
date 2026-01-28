@@ -1,4 +1,4 @@
-package crud_project.ui;
+package crud_project.ui.controller;
 
 // Imports.
 import crud_project.logic.CustomerRESTClient;

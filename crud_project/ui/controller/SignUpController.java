@@ -1,4 +1,4 @@
-package crud_project.ui;
+package crud_project.ui.controller;
 
 // Imports.
 import crud_project.model.Customer;
@@ -6,7 +6,7 @@ import crud_project.logic.CustomerRESTClient;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
-import javafx.beans.property.StringProperty;
+
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -17,11 +17,9 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.InternalServerErrorException;
