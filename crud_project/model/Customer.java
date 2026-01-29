@@ -6,9 +6,12 @@
 package crud_project.model;
 
 //import lombok.Builder;
+
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
+
+import crud_project.logic.CustomerRESTClient;
 import javafx.beans.property.*;
 
 import javax.xml.bind.annotation.XmlRootElement;
@@ -17,6 +20,7 @@ import javax.xml.bind.annotation.XmlTransient;
 /**
  * Entity representing bank customers. Contains personal data, identification
  * data and relational data for accessing customer accounts data.
+ *
  * @author Javier Martín Uría
  */
 //@Builder
@@ -36,10 +40,10 @@ public class Customer implements Serializable {
     private final LongProperty phone;
     private final StringProperty email;
     private final StringProperty password;
-    private final ObjectProperty<Set<Account>> accounts;
+    private Set<Account> accounts;
 
 
-    public Customer(Long id, String firstName, String lastName, String middleInitial, String street, String city, String state, Integer zip, Long phone, String email, String password, Set<Account> accounts) {
+    public Customer(Long id, String firstName, String lastName, String middleInitial, String street, String city, String state, Integer zip, Long phone, String email, String password) {
         this.id = new SimpleLongProperty(id);
         this.firstName = new SimpleStringProperty(firstName);
         this.lastName = new SimpleStringProperty(lastName);
@@ -51,7 +55,7 @@ public class Customer implements Serializable {
         this.phone = new SimpleLongProperty(phone != null ? phone : 0L);
         this.email = new SimpleStringProperty(email);
         this.password = new SimpleStringProperty(password);
-        this.accounts = new SimpleObjectProperty<>(accounts);
+
     }
 
 
@@ -65,11 +69,26 @@ public class Customer implements Serializable {
         this.state = new SimpleStringProperty("");
         this.zip = new SimpleIntegerProperty();
         this.phone = new SimpleLongProperty();
-        this.email = new SimpleStringProperty("name@"+System.currentTimeMillis()+".com");
+        this.email = new SimpleStringProperty("name@" + System.currentTimeMillis() + ".com");
         this.password = new SimpleStringProperty("clave$%&");
-        this.accounts = new SimpleObjectProperty<>(new HashSet<>());
+
+
     }
 
+
+    /**
+     * @return the accounts
+     */
+
+    public Set<Account> getAccounts() {
+        return accounts;
+    }
+    /**
+     * @param accounts the accounts to set
+     */
+    public void setAccounts(Set<Account> accounts) {
+        this.accounts = accounts;
+    }
 
     public Long getId() {
         return id.get();
@@ -204,18 +223,6 @@ public class Customer implements Serializable {
         return password;
     }
 
-    @XmlTransient
-    public Set<Account> getAccounts() {
-        return accounts.get();
-    }
-
-    public void setAccounts(Set<Account> accounts) {
-        this.accounts.set(accounts);
-    }
-
-    public ObjectProperty<Set<Account>> accountsProperty() {
-        return accounts;
-    }
 
     @Override
     public int hashCode() {

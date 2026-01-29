@@ -10,8 +10,10 @@ import java.util.*;
 
 import java.util.logging.Logger;
 
+import crud_project.logic.AccountRESTClient;
 import crud_project.logic.CustomerRESTClient;
 
+import crud_project.model.Account;
 import crud_project.model.Customer;
 
 import javafx.application.Platform;
@@ -32,6 +34,7 @@ import javafx.stage.Stage;
 import javafx.util.converter.IntegerStringConverter;
 import javafx.util.converter.LongStringConverter;
 
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.GenericType;
 
@@ -295,35 +298,42 @@ public class CustomerController {
     private void handleDeleteCustomerAndRow(ActionEvent actionEvent) {
         try {
 
+            AccountRESTClient accClient = new AccountRESTClient();
+
             Customer selectedCustomer = fxTableView.getSelectionModel().getSelectedItem();
             //Comprobar si esta seleccionado una fila
-            if (selectedCustomer != null) {
 
-                if (selectedCustomer.getFirstName().equals("admin")) {
-                    throw new IllegalArgumentException("No se puede borrar el usuario administrador");
-                }
-                if (!selectedCustomer.getAccounts().isEmpty()) {
-                    throw new WebApplicationException("No se puede eliminar un cliente con cuentas");
-                }
 
-                Alert deleteAlert = new Alert(
-                        Alert.AlertType.CONFIRMATION,
-                        "Are you sure you want to delete the user: " + selectedCustomer.getFirstName() + "?",
-                        ButtonType.YES, ButtonType.NO);
-
-                deleteAlert.setTitle("Delete user?");
-                deleteAlert.setHeaderText("Deleting user: " + selectedCustomer.getFirstName());
-                deleteAlert.showAndWait().ifPresent(resp -> {
-                    if (resp == ButtonType.YES) {
-                        client.remove(selectedCustomer.getId().toString());
-                        fxTableView.getItems().remove(selectedCustomer);
-                        fxTableView.getSelectionModel().clearSelection();
-                    }
-                });
-
+            if (selectedCustomer.getFirstName().equals("admin")) {
+                throw new IllegalArgumentException("No se puede borrar el usuario administrador");
             }
 
-        } catch (IllegalArgumentException | WebApplicationException ex) {
+            Account account = accClient.find_XML(Account.class, selectedCustomer.getId().toString());
+            if (account != null ) {
+                throw new InternalServerErrorException("No se puede borrar el usuario porque tiene una cuenta asociada");
+            }
+
+            Alert deleteAlert = new Alert(
+                    Alert.AlertType.CONFIRMATION,
+                    "Are you sure you want to delete the user: " + selectedCustomer.getFirstName() + "?",
+                    ButtonType.YES, ButtonType.NO);
+
+            deleteAlert.setTitle("Delete user?");
+            deleteAlert.setHeaderText("Deleting user: " + selectedCustomer.getFirstName());
+            deleteAlert.showAndWait().ifPresent(resp -> {
+                if (resp == ButtonType.YES) {
+
+
+                    client.remove(selectedCustomer.getId().toString());
+                    fxTableView.getItems().remove(selectedCustomer);
+                    fxTableView.getSelectionModel().clearSelection();
+                }
+            });
+
+
+        } catch (InternalServerErrorException ex) {
+            LOGGER.warning("No borrado puto");
+        } catch (IllegalArgumentException ex) {
             LOGGER.warning(ex.getMessage());
             handleAlertError(ex.getMessage());
 
@@ -331,6 +341,7 @@ public class CustomerController {
 
             handleAlertError("Cannot dele this user");
             LOGGER.warning(e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -351,15 +362,10 @@ public class CustomerController {
             Long idCustomer = bdCustomer.getId();
             newCustomer.setId(idCustomer);
 
-            //Se usa para que de tiempo a cargar la logica antes de cargar toda la UI y no haya desfases de que cargue
-            //primero la UI antes que la logica
-            Platform.runLater(() -> {
-
-                fxTableView.requestFocus();
-                fxTableView.getSelectionModel().select(0);
-                fxTableView.scrollTo(0);
-                fxTableView.edit(0, fxTcFirstName);
-            });
+            fxTableView.requestFocus();
+            fxTableView.getSelectionModel().select(0);
+            fxTableView.scrollTo(0);
+            fxTableView.edit(0, fxTcFirstName);
 
 
         } catch (Exception e) {

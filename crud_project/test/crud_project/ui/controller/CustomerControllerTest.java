@@ -1,13 +1,16 @@
 package crud_project.ui.controller;
 
 import crud_project.AppCRUD;
+import crud_project.logic.CustomerRESTClient;
 import crud_project.model.Customer;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
+import org.glassfish.jersey.internal.inject.Custom;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -17,6 +20,13 @@ import static org.junit.Assert.*;
 import static org.testfx.api.FxAssert.verifyThat;
 
 import org.testfx.framework.junit.ApplicationTest;
+
+import javax.ws.rs.core.GenericType;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
+import java.util.stream.Collectors;
 
 import static org.testfx.matcher.base.NodeMatchers.*;
 import static org.testfx.matcher.control.ButtonMatchers.isDefaultButton;
@@ -37,7 +47,7 @@ public class CustomerControllerTest extends ApplicationTest {
     public void start(Stage stage) throws Exception {
         //Method to start the application
         //new AppCRUD().start(stage);
-        new crud_project.AppCRUD().start(stage);
+        new AppCRUD().start(stage);
 
     }
 
@@ -63,12 +73,23 @@ public class CustomerControllerTest extends ApplicationTest {
     @Test
     public void test_delete_customer_success() {
 
-
-        verifyThat("#fxBtnDelete", isDisabled());
-        //Size of the table
+        // 1. Buscar el índice del primer cliente que se pueda borrar que no tenga cuentas para que no falle el test
+        int rowIndex = 0;
+        for (int i = 0; i < table.getItems().size(); i++) {
+            Customer customer = table.getItems().get(i);
+            //No es admin Y no tiene cuentas (o la lista está vacía)
+            if (!customer.getFirstName().equalsIgnoreCase("admin") &&
+                    (customer.getAccounts() == null || customer.getAccounts().isEmpty())) {
+                rowIndex = i;
+                break;
+            }
+        }
+        verifyThat(btnDelete, isDisabled());
+        //Tamaño de la tabla
         int rowsCount = table.getItems().size();
         assertNotEquals("Table has no data: Cannot test", 0, rowsCount);
-        Node row = lookup(".table-row-cell").nth(2).query();
+        //se usa rowIndex para asegurar que haga clic en un customer que no tenga cuentas
+        Node row = lookup(".table-row-cell").nth(rowIndex).query();
         assertNotNull("Row is null: table has not that row. ", row);
         clickOn(row);
 
@@ -76,11 +97,121 @@ public class CustomerControllerTest extends ApplicationTest {
         String firstName = selected.getFirstName();
 
         verifyThat("#fxBtnDelete", isEnabled());
-        clickOn("#fxBtnDelete");
-        verifyThat("Deleting user: " + firstName , isVisible());
+        clickOn(btnDelete);
+        verifyThat("Deleting user: " + firstName, isVisible());
 
         clickOn("Sí");
-        //assertEquals("The row has not been deleted", rowsCount - 1, table.getItems().size());
+        assertEquals("The row has not been deleted", rowsCount - 1, table.getItems().size());
+
+    }
+
+    @Test
+    public void test_add_customer_success() {
+
+        Customer customer = new Customer(
+                new Random().nextLong(),
+                "Paco",
+                "Perez",
+                "M",
+                "Avenida America",
+                "Madrid",
+                "Madrid",
+                28052,
+                615487796L,
+                "name@" + System.currentTimeMillis() + ".com",
+                "clave$%&",
+                new HashSet<>()
+        );
+
+
+        String[] datos = {
+                customer.getFirstName(),
+                customer.getLastName(),
+                customer.getMiddleInitial(),
+                customer.getEmail(),
+                customer.getPassword(),
+                customer.getPhone().toString(),
+                customer.getStreet(),
+                customer.getCity(),
+                customer.getState(),
+                customer.getZip().toString(),
+
+        };
+        int cellIndex = 1;
+        int rowsCount = table.getItems().size();
+        clickOn(isDefaultButton());
+        for (String dato : datos) {
+            Node cell = lookup(".table-cell").nth(cellIndex).query();
+            assertNotNull(cell);
+            clickOn(cell);
+            //Escribe el dato en el orden de la lista y borra lo que haya dentro del campo antes de escribir
+            write(dato).push(KeyCode.ENTER);
+            cellIndex++;
+        }
+        assertEquals("The row has not been added!!!", rowsCount + 1, table.getItems().size());
+
+
+    }
+    @Test
+    public void test_update_customer_success(){
+
+        List<String>datos = new ArrayList<>(9);
+        datos.add("NameTest");
+        datos.add("LastNameTest");
+        datos.add("T");
+        datos.add("email@Test.com");
+        datos.add("claveTest");
+        datos.add("615487796");
+        datos.add("StreetTest");
+        datos.add("CityTest");
+        datos.add("StateTest");
+        datos.add("12345");
+
+        verifyThat("#fxBtnDelete",isDisabled());
+        for (int i = 0; i < datos.size(); i++) {
+
+            Node cell = lookup(".table-cell").nth(i+1).query();
+
+            doubleClickOn(cell);
+            //Pulsar el Ctrl+A para seleccionar toda la celda
+            push(KeyCode.SHORTCUT, KeyCode.A);
+            //Pulsa el espacio para borrarlo
+            push(KeyCode.SPACE);
+            //Se escribe el dato
+            write(datos.get(i)).push(KeyCode.ENTER);
+        }
+
+    }
+
+    @Test
+    public void test_delete_customer_fail(){
+
+        // 1. Buscar el índice del primer cliente que se pueda borrar que tenga cuentas para que salte el mensaje de fallo
+        int rowIndex = 0;
+        for (int i = 0; i < table.getItems().size(); i++) {
+            Customer customer = table.getItems().get(i);
+            //No es admin Y no tiene cuentas (o la lista está vacía)
+            if (!customer.getFirstName().equalsIgnoreCase("admin") &&
+                    (customer.getAccounts() != null && !customer.getAccounts().isEmpty())) {
+                rowIndex = i;
+                break;
+            }
+        }
+        verifyThat(btnDelete, isDisabled());
+        int rowsCount = table.getItems().size();
+        assertNotEquals("Table has no data: Cannot test", 0, rowsCount);
+        Node row = lookup(".table-row-cell").nth(rowIndex).query();
+
+        assertNotNull("Row is null: table has not that row. ", row);
+        clickOn(row);
+
+        Customer selected = table.getSelectionModel().getSelectedItem();
+
+        clickOn(btnDelete);
+
+
+
+        verifyThat("#fxBtnDelete", isDisabled());
 
     }
 }
