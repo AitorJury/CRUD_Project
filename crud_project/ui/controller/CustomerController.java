@@ -34,6 +34,7 @@ import javafx.stage.Stage;
 import javafx.util.converter.IntegerStringConverter;
 import javafx.util.converter.LongStringConverter;
 
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.GenericType;
@@ -303,14 +304,18 @@ public class CustomerController {
             Customer selectedCustomer = fxTableView.getSelectionModel().getSelectedItem();
             //Comprobar si esta seleccionado una fila
 
+            Set<Account> account = accClient.findAccountsByCustomerId_XML(
+                    new GenericType<Set<Account>>() {
+                    },
+                    selectedCustomer.getId().toString()
+            );
 
             if (selectedCustomer.getFirstName().equals("admin")) {
                 throw new IllegalArgumentException("No se puede borrar el usuario administrador");
             }
 
-            Account account = accClient.find_XML(Account.class, selectedCustomer.getId().toString());
-            if (account != null ) {
-                throw new InternalServerErrorException("No se puede borrar el usuario porque tiene una cuenta asociada");
+            if (account != null && !account.isEmpty()) {
+                throw new InternalServerErrorException("The user cannot be deleted because they have associated accounts or data.");
             }
 
             Alert deleteAlert = new Alert(
@@ -331,17 +336,12 @@ public class CustomerController {
             });
 
 
-        } catch (InternalServerErrorException ex) {
-            LOGGER.warning("No borrado puto");
-        } catch (IllegalArgumentException ex) {
-            LOGGER.warning(ex.getMessage());
+        } catch (InternalServerErrorException | IllegalArgumentException ex) {
             handleAlertError(ex.getMessage());
-
+            LOGGER.severe(ex.getMessage());
         } catch (Exception e) {
-
-            handleAlertError("Cannot dele this user");
-            LOGGER.warning(e.getMessage());
-            e.printStackTrace();
+            handleAlertError("Error while deleting this user, please try again.");
+            LOGGER.severe(e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
         }
     }
 
@@ -362,10 +362,12 @@ public class CustomerController {
             Long idCustomer = bdCustomer.getId();
             newCustomer.setId(idCustomer);
 
-            fxTableView.requestFocus();
-            fxTableView.getSelectionModel().select(0);
-            fxTableView.scrollTo(0);
-            fxTableView.edit(0, fxTcFirstName);
+            Platform.runLater(() -> {
+                fxTableView.requestFocus();
+                fxTableView.getSelectionModel().select(0);
+                fxTableView.scrollTo(0);
+                fxTableView.edit(0, fxTcFirstName);
+            });
 
 
         } catch (Exception e) {
@@ -576,25 +578,32 @@ public class CustomerController {
      * @param cell El evento de edición de celda.
      */
     private void handleEmailCellEdit(TableColumn.CellEditEvent<Customer, String> cell) {
+        String newEmail = cell.getNewValue().trim();
+        String oldEmail = cell.getOldValue();
+        Customer myCustomer = cell.getRowValue();
         try {
-            String text = cell.getNewValue().trim();
-            Customer myCustomer = cell.getRowValue();
 
-            if (text.isEmpty()) {
+            if (newEmail.isEmpty()) {
                 throw new Exception("Email must not be empty");
             }
-            if (!text.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")) {
+            if (!newEmail.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")) {
                 throw new Exception("Email format invalid");
             }
-            if (text.length() > 50) {
+            if (newEmail.length() > 50) {
                 throw new Exception("Email cannot exceed length of 50");
             }
-            myCustomer.emailProperty().set(text);
+            myCustomer.setEmail(newEmail);
             client.edit_XML(myCustomer, myCustomer.getId());
             LOGGER.info("Email updated");
 
 
+        } catch (InternalServerErrorException ex) {
+            LOGGER.severe("Error the email already exists");
+            myCustomer.setEmail(oldEmail);
+            handleAlertError("Error the email already exists");
+            fxTableView.refresh();
         } catch (Exception e) {
+            myCustomer.setEmail(oldEmail);
             handleAlertError(e.getMessage());
             fxTableView.refresh();
         }

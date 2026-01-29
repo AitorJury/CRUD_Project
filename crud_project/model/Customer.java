@@ -55,7 +55,7 @@ public class Customer implements Serializable {
         this.phone = new SimpleLongProperty(phone != null ? phone : 0L);
         this.email = new SimpleStringProperty(email);
         this.password = new SimpleStringProperty(password);
-
+        this.accounts = new HashSet<>();
     }
 
 
@@ -71,7 +71,7 @@ public class Customer implements Serializable {
         this.phone = new SimpleLongProperty();
         this.email = new SimpleStringProperty("name@" + System.currentTimeMillis() + ".com");
         this.password = new SimpleStringProperty("clave$%&");
-
+        this.accounts = new HashSet<>();
 
     }
 

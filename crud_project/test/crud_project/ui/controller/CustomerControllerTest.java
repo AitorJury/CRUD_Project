@@ -9,6 +9,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.MouseButton;
 import javafx.stage.Stage;
 import org.glassfish.jersey.internal.inject.Custom;
 import org.junit.Before;
@@ -96,7 +97,7 @@ public class CustomerControllerTest extends ApplicationTest {
         Customer selected = table.getSelectionModel().getSelectedItem();
         String firstName = selected.getFirstName();
 
-        verifyThat("#fxBtnDelete", isEnabled());
+        verifyThat(btnDelete, isEnabled());
         clickOn(btnDelete);
         verifyThat("Deleting user: " + firstName, isVisible());
 
@@ -119,8 +120,7 @@ public class CustomerControllerTest extends ApplicationTest {
                 28052,
                 615487796L,
                 "name@" + System.currentTimeMillis() + ".com",
-                "clave$%&",
-                new HashSet<>()
+                "clave$%&"
         );
 
 
@@ -152,10 +152,11 @@ public class CustomerControllerTest extends ApplicationTest {
 
 
     }
-    @Test
-    public void test_update_customer_success(){
 
-        List<String>datos = new ArrayList<>(9);
+    @Test
+    public void test_update_customer_success() {
+
+        List<String> datos = new ArrayList<>(9);
         datos.add("NameTest");
         datos.add("LastNameTest");
         datos.add("T");
@@ -167,10 +168,10 @@ public class CustomerControllerTest extends ApplicationTest {
         datos.add("StateTest");
         datos.add("12345");
 
-        verifyThat("#fxBtnDelete",isDisabled());
+        verifyThat("#fxBtnDelete", isDisabled());
         for (int i = 0; i < datos.size(); i++) {
 
-            Node cell = lookup(".table-cell").nth(i+1).query();
+            Node cell = lookup(".table-cell").nth(i + 1).query();
 
             doubleClickOn(cell);
             //Pulsar el Ctrl+A para seleccionar toda la celda
@@ -184,13 +185,15 @@ public class CustomerControllerTest extends ApplicationTest {
     }
 
     @Test
-    public void test_delete_customer_fail(){
+    public void test_delete_customer_fail() {
 
         // 1. Buscar el índice del primer cliente que se pueda borrar que tenga cuentas para que salte el mensaje de fallo
-        int rowIndex = 0;
+        int rowIndex = 1;
         for (int i = 0; i < table.getItems().size(); i++) {
             Customer customer = table.getItems().get(i);
             //No es admin Y no tiene cuentas (o la lista está vacía)
+            System.out.println("Cliente: " + customer.getFirstName() + " Cuentas: " + customer.getAccounts().size());
+            // Selects row index based on customer properties
             if (!customer.getFirstName().equalsIgnoreCase("admin") &&
                     (customer.getAccounts() != null && !customer.getAccounts().isEmpty())) {
                 rowIndex = i;
@@ -205,12 +208,31 @@ public class CustomerControllerTest extends ApplicationTest {
         assertNotNull("Row is null: table has not that row. ", row);
         clickOn(row);
 
-        Customer selected = table.getSelectionModel().getSelectedItem();
 
+        verifyThat(btnDelete, isEnabled());
         clickOn(btnDelete);
 
+        //Verificar que aparece el alert
+        Node dialogPane = lookup(".dialog-pane").query();
+        verifyThat(dialogPane, isVisible());
 
+        //Verificar que es alert de tipo error a traves de la etiqueta css
+        assertTrue("The alert is not an error", dialogPane.getStyleClass().contains("error"));
 
+        //Verificar el texto de error es que queremos
+        verifyThat("The user cannot be deleted because they have associated accounts or data.", isVisible());
+
+        //Pulsar el boton de aceptar
+        Node button = from(dialogPane).lookup(".button").query();
+        clickOn(button);
+
+        //Presiona la tecla Ctrl
+        press(KeyCode.CONTROL);
+        //Presiona nuevamente en la fila con el Ctrl pulsado
+        clickOn(row);
+        //Libera la tecla Ctrl
+        release(KeyCode.CONTROL);
+        //Verificar que se ha deshabilitado el boton de eliminar
         verifyThat("#fxBtnDelete", isDisabled());
 
     }
