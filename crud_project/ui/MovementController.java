@@ -11,12 +11,14 @@ import crud_project.model.Account;
 import crud_project.model.AccountType;
 import crud_project.model.Customer;
 import crud_project.model.Movement;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -160,9 +162,14 @@ public class MovementController {
             //Id de prueba idAccount
             //Se crea una lista de movimientos
             GenericType<List<Movement>> movementListType = new GenericType<List<Movement>>() {
-            };
-            //id String.valueOf(account.getId())
+            };  
+            
             List<Movement> movements = movementClient.findMovementByAccount_XML(movementListType, account.getId().toString());
+            //Si la tabla esta vacia lanzamos excepcion de que no hay datos que cargar
+            if (movements == null || movements.isEmpty()) {
+                LOGGER.info("No movements found ");
+                throw new Exception("No movements found for this account"); 
+            }
             ObservableList<Movement> dataMovement = FXCollections.observableArrayList(movements);
             //Se muestra la lista en la tabla
             LOGGER.info("Showing table of movements");
@@ -175,28 +182,45 @@ public class MovementController {
                 lblCreditLine.setText(account.getCreditLine().toString());
             }
         } catch (Exception e) {
-            handlelblError("Error to charge movements");
+            handlelblError(e.toString());
             LOGGER.info("Error to charge movements");
         }
     }
 
     public void handleBtnBack(ActionEvent event) {
         try {
+            // Mostrar alert modal de confirmación para salir de la aplicación.
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
+                    "Do you want to go to manage your accounts?", yes, no);
+            alert.setTitle("Exit to Accounts");
+            alert.setHeaderText("Departure confirmation");
+            alert.showAndWait().ifPresent(resp -> {
+                // Si confirma, cerrar la aplicación.
+                if (resp == yes) {
+                    try {
+                        FXMLLoader loader = new FXMLLoader(getClass().getResource("Accounts.fxml"));
+                        Parent root = loader.load();
+                        //Cargamos controlador
+                        AccountsController controller = loader.getController();
+                        controller.setCustomer(customer);
+                        
+                        //Iniciamos la pagina y cerramos la mia
+                        LOGGER.info("Showing accounts page");
+                        this.stage.close();
+                        controller.init(root);
+                        controller.getStage().setOnHiding(e -> this.stage.show());
+                    } catch (IOException ex) {
+                        Logger.getLogger(MovementController.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+                // Si no confirma, la ventana permanecerá abierta.
+            });
             //Se carga el controlador y la vista de la ventana de Accounts
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("Accounts.fxml"));
-            Parent root = loader.load();
-            //Cargamos controlador
-            AccountsController controller = loader.getController();
-            controller.setCustomer(customer);
-
-            //Iniciamos la pagina y cerramos la mia
-            LOGGER.info("Showing accounts page");
-            this.stage.close();
-            controller.init(root);
-            controller.getStage().setOnHiding(e -> this.stage.show());
         } catch (Exception e) {
-            handlelblError("Can't change window");
+            LOGGER.warning(e.getMessage());
+            e.printStackTrace();
         }
+
     }
 
     //Contador a 1 cuando este a 0 se deshabilite el boton 
@@ -223,7 +247,6 @@ public class MovementController {
                 // Si confirma, cerrar la aplicación.
                 if (resp == yes) {
                     contador++;
-                    LOGGER.info("" + contador);
                     //Si la respuesta es que si borra el ultimo movimiento
                     //Asignamos el balance para devolver el dinero
                     Double actualBalance = this.account.getBalance();
@@ -248,7 +271,7 @@ public class MovementController {
                 }
             });
         } catch (Exception e) {
-            handlelblError(e.getMessage());
+            handlelblError("Could not delete movement");
             e.printStackTrace();
         }
     }
