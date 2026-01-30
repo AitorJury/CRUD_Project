@@ -8,226 +8,78 @@ package crud_project.model;
 //import lombok.Builder;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
+
+import crud_project.logic.CustomerRESTClient;
+import javafx.beans.property.*;
+
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 /**
- * Entity representing bank customers. Contains personal data, identification 
- * data and relational data for accessing customer accounts data. 
+ * Entity representing bank customers. Contains personal data, identification
+ * data and relational data for accessing customer accounts data.
+ *
  * @author Javier Martín Uría
  */
 //@Builder
 @XmlRootElement
 public class Customer implements Serializable {
 
-    public Customer(Long id, String firstName, String lastName, String middleInitial, String street, String city, String state, Integer zip, Long phone, String email, String password, Set<Account> accounts) {
-        this.id = id;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.middleInitial = middleInitial;
-        this.street = street;
-        this.city = city;
-        this.state = state;
-        this.zip = zip;
-        this.phone = phone;
-        this.email = email;
-        this.password = password;
-        this.accounts = accounts;
+    private static final long serialVersionUID = 1L;
+
+    private final LongProperty id;
+    private final StringProperty firstName;
+    private final StringProperty lastName;
+    private final StringProperty middleInitial;
+    private final StringProperty street;
+    private final StringProperty city;
+    private final StringProperty state;
+    private final IntegerProperty zip;
+    private final LongProperty phone;
+    private final StringProperty email;
+    private final StringProperty password;
+    private Set<Account> accounts;
+
+
+    public Customer(Long id, String firstName, String lastName, String middleInitial, String street, String city, String state, Integer zip, Long phone, String email, String password) {
+        this.id = new SimpleLongProperty(id);
+        this.firstName = new SimpleStringProperty(firstName);
+        this.lastName = new SimpleStringProperty(lastName);
+        this.middleInitial = new SimpleStringProperty(middleInitial);
+        this.street = new SimpleStringProperty(street);
+        this.city = new SimpleStringProperty(city);
+        this.state = new SimpleStringProperty(state);
+        this.zip = new SimpleIntegerProperty(zip != null ? zip : 0);
+        this.phone = new SimpleLongProperty(phone != null ? phone : 0L);
+        this.email = new SimpleStringProperty(email);
+        this.password = new SimpleStringProperty(password);
+        this.accounts = new HashSet<>();
     }
+
 
     public Customer() {
-    }
-    
-    
+        this.id = new SimpleLongProperty();
+        this.firstName = new SimpleStringProperty("");
+        this.lastName = new SimpleStringProperty("");
+        this.middleInitial = new SimpleStringProperty("");
+        this.street = new SimpleStringProperty("");
+        this.city = new SimpleStringProperty("");
+        this.state = new SimpleStringProperty("");
+        this.zip = new SimpleIntegerProperty();
+        this.phone = new SimpleLongProperty();
+        this.email = new SimpleStringProperty("name@" + System.currentTimeMillis() + ".com");
+        this.password = new SimpleStringProperty("clave$%&");
+        this.accounts = new HashSet<>();
 
-    private static final long serialVersionUID = 1L;
-    /**
-     * Identification field for a client.
-     */
-    private Long id;
-    /**
-     * First name of the customer.
-     */
-    private String firstName;
-    /**
-     * Customer's last name.
-     */
-    private String lastName;
-    /**
-     * Customer's middle name initial.
-     */
-    private String middleInitial;
-    /**
-     * Customer's address street.
-     */
-    private String street;
-    /**
-     * Customer's address city.
-     */
-    private String city;
-    /**
-     * Customer's address state.
-     */
-    private String state;
-        /**
-     * Customer's address zip.
-     */
-    private Integer zip;
-    /**
-     * Customer's phone.
-     */
-    private Long phone;
-    /**
-     * Customer's email.
-     */
-    private String email;
-    /**
-     * Customer's password for basic authentication.
-     */
-    private String password;
-    /**
-     * Relational field for customer's accounts.
-     */
-    private Set<Account> accounts;
-    /**
-     * 
-     * @return the id of the customer.
-     */
-    public Long getId() {
-        return id;
     }
-    /**
-     * 
-     * @param id Customer's id.
-     */
-    public void setId(Long id) {
-        this.id = id;
-    }
-    /**
-     * @return the firstName
-     */
-    public String getFirstName() {
-        return firstName;
-    }
-    /**
-     * @param firstName the firstName to set
-     */
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-    /**
-     * @return the lastName
-     */
-    public String getLastName() {
-        return lastName;
-    }
-    /**
-     * @param lastName the lastName to set
-     */
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-    /**
-     * @return the middleInitial
-     */
-    public String getMiddleInitial() {
-        return middleInitial;
-    }
-    /**
-     * @param middleInitial the middleInitial to set
-     */
-    public void setMiddleInitial(String middleInitial) {
-        this.middleInitial = middleInitial;
-    }
-    /**
-     * @return the street
-     */
-    public String getStreet() {
-        return street;
-    }
-    /**
-     * @param street the street to set
-     */
-    public void setStreet(String street) {
-        this.street = street;
-    }
-    /**
-     * @return the city
-     */
-    public String getCity() {
-        return city;
-    }
-    /**
-     * @param city the city to set
-     */
-    public void setCity(String city) {
-        this.city = city;
-    }
-    /**
-     * @return the state
-     */
-    public String getState() {
-        return state;
-    }
-    /**
-     * @param state the state to set
-     */
-    public void setState(String state) {
-        this.state = state;
-    }
-    /**
-     * @return the zip
-     */
-    public Integer getZip() {
-        return zip;
-    }
-    /**
-     * @param zip the zip to set
-     */
-    public void setZip(Integer zip) {
-        this.zip = zip;
-    }
-    /**
-     * @return the phone
-     */
-    public Long getPhone() {
-        return phone;
-    }
-    /**
-     * @param phone the phone to set
-     */
-    public void setPhone(Long phone) {
-        this.phone = phone;
-    }
-    /**
-     * @return the email
-     */
-    public String getEmail() {
-        return email;
-    }
-    /**
-     * @param email the email to set
-     */
-    public void setEmail(String email) {
-        this.email = email;
-    }
-    /**
-     * @return the password
-     */
-    public String getPassword() {
-        return password;
-    }
-    /**
-     * @param password the password to set
-     */
-    public void setPassword(String password) {
-        this.password = password;
-    }
+
+
     /**
      * @return the accounts
      */
-    @XmlTransient
+
     public Set<Account> getAccounts() {
         return accounts;
     }
@@ -237,40 +89,157 @@ public class Customer implements Serializable {
     public void setAccounts(Set<Account> accounts) {
         this.accounts = accounts;
     }
-    /**
-     * Integer representation for Customer instance.
-     * @return 
-     */
+
+    public Long getId() {
+        return id.get();
+    }
+
+
+    public void setId(Long id) {
+        this.id.set(id != null ? id : 0L);
+    }
+
+    public ObjectProperty<Long> idProperty() {
+        return id.asObject();
+    }
+
+    public String getFirstName() {
+        return firstName.get();
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName.set(firstName);
+    }
+
+    public StringProperty firstNameProperty() {
+        return firstName;
+    }
+
+    public String getLastName() {
+        return lastName.get();
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName.set(lastName);
+    }
+
+    public StringProperty lastNameProperty() {
+        return lastName;
+    }
+
+    public String getMiddleInitial() {
+        return middleInitial.get();
+    }
+
+    public void setMiddleInitial(String middleInitial) {
+        this.middleInitial.set(middleInitial);
+    }
+
+    public StringProperty middleInitialProperty() {
+        return middleInitial;
+    }
+
+    public String getStreet() {
+        return street.get();
+    }
+
+    public void setStreet(String street) {
+        this.street.set(street);
+    }
+
+    public StringProperty streetProperty() {
+        return street;
+    }
+
+    public String getCity() {
+        return city.get();
+    }
+
+    public void setCity(String city) {
+        this.city.set(city);
+    }
+
+    public StringProperty cityProperty() {
+        return city;
+    }
+
+    public String getState() {
+        return state.get();
+    }
+
+    public void setState(String state) {
+        this.state.set(state);
+    }
+
+    public StringProperty stateProperty() {
+        return state;
+    }
+
+    public Integer getZip() {
+        return zip.get();
+    }
+
+    public void setZip(Integer zip) {
+        this.zip.set(zip != null ? zip : 0);
+    }
+
+    public IntegerProperty zipProperty() {
+        return zip;
+    }
+
+    public Long getPhone() {
+        return phone.get();
+    }
+
+    public void setPhone(Long phone) {
+        this.phone.set(phone != null ? phone : 0L);
+    }
+
+    public LongProperty phoneProperty() {
+        return phone;
+    }
+
+    public String getEmail() {
+        return email.get();
+    }
+
+    public void setEmail(String email) {
+        this.email.set(email);
+    }
+
+    public StringProperty emailProperty() {
+        return email;
+    }
+
+    public String getPassword() {
+        return password.get();
+    }
+
+    public void setPassword(String password) {
+        this.password.set(password);
+    }
+
+    public StringProperty passwordProperty() {
+        return password;
+    }
+
+
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (id != null ? id.hashCode() : 0);
-        return hash;
+        return Long.hashCode(getId());
     }
-    /**
-     * Compares two Customer objects for equality. This method consider a Customer 
-     * equal to another Customer if their id fields have the same value. 
-     * @param object The other Customer object to compare to.
-     * @return true if ids are equals.
-     */
+
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
         if (!(object instanceof Customer)) {
             return false;
         }
         Customer other = (Customer) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
+        return this.getId().equals(other.getId());
     }
-    /**
-     * Obtains a string representation of the Customer.
-     * @return The String representing the Customer.
-     */
+
     @Override
     public String toString() {
-        return "Customer[ name="+ firstName+" "+lastName+" "+" id=" + id + " ]";
+        return "Customer[ name=" + getFirstName() + " " + getLastName() + " id=" + getId() + " ]";
     }
 }

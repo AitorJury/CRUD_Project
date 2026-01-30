@@ -1,4 +1,4 @@
-package crud_project.ui;
+package crud_project.ui.controller;
 
 // Imports.
 import crud_project.logic.CustomerRESTClient;
@@ -6,6 +6,7 @@ import crud_project.model.Customer;
 import java.util.logging.Logger;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -63,6 +64,7 @@ public class SignInController {
         stage.setResizable(false);
         // Asociar eventos a manejadores.
         btnExit.setOnAction(this::handleBtnExitOnAction);
+        stage.setOnCloseRequest(this::handleBtnExitOnAction);
         btnSignIn.setOnAction(this::handleBtnSignInOnAction);
         linkSignUp.setOnAction(this::handleLinkOnAction);
 
@@ -110,7 +112,7 @@ public class SignInController {
         try {
             // Cerrar la ventana actual.
             // Abrir la ventana de registro de nuevo usuario.
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("SignUp.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("../view/SignUp.fxml"));
             Parent root = loader.load();
 
             SignUpController controller = loader.getController();
@@ -136,7 +138,7 @@ public class SignInController {
      *
      * @param event El evento de acción generado por el botón.
      */
-    private void handleBtnExitOnAction(ActionEvent event) {
+    private void handleBtnExitOnAction(Event event) {
         try {
             // Mostrar alert modal de confirmación para salir de la aplicación.
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION, 
@@ -171,10 +173,10 @@ public class SignInController {
             // En el caso de ser administrador, se envía a otra ventana distinta.
             if (email.equals("admin") && password.equals("admin")) {
                 LOGGER.info("Admin login detected. Changing to User Controller Window");
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("UserControllerWindow.fxml"));
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("../view/CustomerController.fxml"));
                 Parent root = loader.load();
                 
-                UserController controller = loader.getController();
+                CustomerController controller = loader.getController();
                 // Como es admin, puedes pasar un objeto customer vacío o gestionar nulos en el destino
                 controller.setCustomer(new Customer()); 
                 
@@ -196,7 +198,7 @@ public class SignInController {
                     Customer.class, email, password);
 
                 // Si t0do es correcto se abrirá la página “Main” y se cerrará la actual.
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("Accounts.fxml"));
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("../view/Accounts.fxml"));
                 Parent root = loader.load();
                 // Cargamos controlador.
                 AccountsController controller = loader.getController();
@@ -220,6 +222,7 @@ public class SignInController {
             // y se mostrará un mensaje.(“No se puede acceder al servidor”).
             handleAlertError("It cannot connect to the server.");
         } catch (Exception e) {
+            e.printStackTrace();
             LOGGER.warning(e.getMessage());
             handleLabelError(e.getMessage());
         } finally {

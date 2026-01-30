@@ -1,4 +1,4 @@
-package crud_project.ui;
+package crud_project.ui.controller;
 
 import crud_project.logic.AccountRESTClient;
 import crud_project.model.Account;
@@ -122,13 +122,13 @@ public class AccountsController {
 
     private void loadAccountsData() {
         try {
-            GenericType<List<Account>> accountListType = new GenericType<List<Account>>() {};
-            List<Account> accounts = (List<Account>) restClient.findAccountsByCustomerId_XML(
-            accountListType.getRawType(), loggedCustomer.getId().toString());
-            
-            accountsData = FXCollections.observableArrayList(accounts);
-            tableAccounts.setItems(accountsData);
-            lblMessage.setText("Data loaded.");
+            List<Account> accounts = restClient.findAccountsByCustomerId_XML(
+                    new GenericType<List<Account>>() {
+                    },
+                    loggedCustomer.getId().toString()
+            );
+            accountsData.setAll(accounts);
+            tableAccounts.refresh();
         } catch (Exception e) {
             lblMessage.setText("Error loading data.");
         }
