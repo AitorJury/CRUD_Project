@@ -67,7 +67,7 @@ public class MovementController {
     MovementRESTClient movementClient = new MovementRESTClient();
     private Account account;
 
-    public void initStage(Parent root) {
+    public void init(Parent root) {
         Scene scene = new Scene(root);
         this.stage = new Stage();
         this.stage.setScene(scene);
