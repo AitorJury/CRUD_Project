@@ -61,6 +61,13 @@
 
 .button-primary:hover {
     -fx-background-color: #3C8A23;
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+}
+
+.button-primary:pressed {
+    -fx-scale-x: 0.95;
+    -fx-scale-y: 0.95;
 }
 
 .button-secondary {
@@ -74,6 +81,36 @@
 .button-secondary:hover {
     -fx-background-color: #6C3FA3;
     -fx-text-fill: #1E3E2C;
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+
+}
+
+.button-secondary:pressed {
+    -fx-scale-x: 0.95;
+    -fx-scale-y: 0.95;
+}
+
+.button-delete {
+    -fx-background-color: #a32b2b;
+    -fx-text-fill: #FFFFFF;
+    -fx-font-size: 16px;
+    -fx-background-radius: 5;
+    -fx-cursor: hand;
+
+}
+
+.button-delete:hover {
+
+    -fx-background-color: #8b2424;
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+
+}
+
+.button-delete:pressed {
+    -fx-scale-x: 0.95;
+    -fx-scale-y: 0.95;
 }
 
 /* ---------- Links ---------- */
@@ -98,7 +135,7 @@
 
 /* ---------- Logos (Imágenes) ---------- */
 .image-view {
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 10, 0, 0, 2);
 }
 
 /* ---------- Separadores ---------- */
@@ -106,3 +143,38 @@
     -fx-background-color: #BFBFBF;
     -fx-pref-height: 1;
 }
+
+/* ---------- Columnas ---------- */
+.table-view {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+    -fx-border-color: #a8a8a8;
+    -fx-background-radius: 35;
+}
+
+.table-view .column-header {
+    -fx-background-color: #3C8A23;
+    -fx-border-color: #2F6E1C;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: #FFFFFF;
+    -fx-font-weight: bold;
+    -fx-alignment: center;
+}
+
+
+/* Color cuando pasas el ratón por encima (Hover) */
+.table-row-cell:hover {
+    -fx-background-color: #e2f0d9;
+}
+.table-row-cell:selected .table-cell{
+    -fx-background-color: #3C8A23;
+    -fx-text-fill: white;
+}
+
+/*---------- Alerts -----------*/
+.alert-dialog {
+    -fx-background-color: rgba(255, 0, 0, 0.73);
+}
+
