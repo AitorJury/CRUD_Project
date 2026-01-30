@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<Pane prefHeight="768.0" prefWidth="1024.0" style="-fx-background-color: white;" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="crud_project.ui.MovementController">
+       <children>
+       <ImageView fitHeight="92.0" fitWidth="100.0" layoutX="31.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@logo_Cynthor_SF.png" />
+         </image>
+      </ImageView>
+          <Label layoutX="40.0" layoutY="99.0" prefHeight="39.0" prefWidth="69.0" text="Account" />
+          <HBox alignment="CENTER_LEFT" layoutX="303.0" layoutY="139.0" spacing="10.0" /> 
+          <TableView fx:id="tbMovement" layoutX="40.0" layoutY="138.0" prefHeight="467.0" prefWidth="779.0">
+            <columns>
+              <TableColumn fx:id="clDate" prefWidth="289.0" text="Date" />
+            <TableColumn fx:id="clDescription" prefWidth="160.0" text="Type" />
+            <TableColumn fx:id="clAmount" prefWidth="152.0" text="Amount" />
+            <TableColumn fx:id="clBalance" prefWidth="176.0" text="Balance" />
+            </columns>
+             <placeholder>
+                <Label />
+             </placeholder>
+          </TableView>
+          <Button fx:id="btnDelete" layoutX="830.0" layoutY="250.0" prefHeight="30.0" prefWidth="120.0" text="Delete" />
+          <Button fx:id="btnBack" layoutX="830.0" layoutY="290.0" prefHeight="39.0" prefWidth="150.0" text="Back to accounts" />
+      <HBox layoutX="47.0" layoutY="632.0" prefHeight="45.0" prefWidth="719.0">
+         <children>
+            <ComboBox fx:id="comboType" prefHeight="25.0" prefWidth="230.0" promptText="Type" />
+            <TextField fx:id="txtAmount" prefHeight="25.0" prefWidth="313.0" />
+            <Button fx:id="createMovement" mnemonicParsing="false" prefHeight="25.0" prefWidth="235.0" text="Create Movement" />
+         </children>
+      </HBox>
+      <Label layoutX="261.0" layoutY="617.0" prefHeight="15.0" prefWidth="53.0" text="Amount" />
+      <Label fx:id="lblName" layoutX="40.0" layoutY="139.0" prefHeight="27.0" prefWidth="274.0" />
+      <Label layoutX="835.0" layoutY="536.0" prefHeight="15.0" prefWidth="111.0" text="Balance" />
+      <Label fx:id="lblError" layoutX="47.0" layoutY="677.0" prefHeight="27.0" prefWidth="550.0" textFill="RED" />
+      <Label fx:id="lblNumAccount" layoutX="109.0" layoutY="111.0" prefHeight="15.0" prefWidth="187.0" />
+      <Label fx:id="lblBalance" layoutX="835.0" layoutY="569.0" prefHeight="30.0" prefWidth="82.0" />
+      <Label fx:id="lblNmCredit" layoutX="835.0" layoutY="474.0" prefHeight="15.0" prefWidth="111.0" text="CreditLine" />
+      <Label fx:id="lblCreditLine" layoutX="835.0" layoutY="496.0" prefHeight="15.0" prefWidth="82.0" />
+       </children>
+</Pane>
