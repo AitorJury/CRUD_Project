@@ -103,7 +103,6 @@ public class MovementController {
     private int contador = 0;
     AccountRESTClient accountClient = new AccountRESTClient();
     MovementRESTClient movementClient = new MovementRESTClient();
-    private Account account;
 
     public void init(Parent root) {
         lblNumAccount.setText(account.getId().toString());
@@ -164,7 +163,7 @@ public class MovementController {
 
     public void loadMovements() {
         try {
-            this.account = accountClient.find_XML(Account.class, account.getId().toString());
+            //this.account = accountClient.find_XML(Account.class, account.getId().toString());
             //Id de prueba idAccount
             //Se crea una lista de movimientos
             GenericType<List<Movement>> movementListType = new GenericType<List<Movement>>() {

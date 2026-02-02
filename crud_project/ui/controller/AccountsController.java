@@ -527,7 +527,7 @@ public class AccountsController {
                 return;
             }
             // Carga del controlador de movimientos.
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/crud_project/ui/Movement.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/crud_project/ui/view/Movement.fxml"));
             Parent parent = loader.load();
             MovementController mc = loader.getController();
             mc.setAccount(a);

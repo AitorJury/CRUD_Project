@@ -196,21 +196,16 @@ public class SignInController {
                 handleLabelError("Checking in the database...");
                 CustomerRESTClient client = new CustomerRESTClient();
                 // Verificar que la contraseña coincida con la del usuario registrado. 
-                // Verificar que el correo y la contraseña existe en la base de datos.
+                // Verificar que el correo y la contraseña existe en la base de datos.  
                 Customer customer = client.findCustomerByEmailPassword_XML(
                         Customer.class, email, password);
 
                 // Si t0do es correcto se abrirá la página “Main” y se cerrará la actual.
-
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("../view/Accounts.fxml"));
-
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/crud_project/ui/view/Accounts.fxml"));
                 Parent root = loader.load();
                 // Cargamos controlador.
-                MovementController controller = loader.getController();
+                AccountsController controller = loader.getController();
                 controller.setCustomer(customer);
-                Account account = new Account();
-                account.setId(3252214522L);
-                controller.setAccount(account);
 
                 //AccountsController controller = loader.getController();
                 this.stage.hide();
