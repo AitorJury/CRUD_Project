@@ -25,7 +25,7 @@
 }
 
 .error-label {
-    -fx-text-fill: red;
+    -fx-text-fill: #A32B2B;
     -fx-font-size: 12px;
     -fx-font-weight: bold;
 }
@@ -80,7 +80,7 @@
 
 .button-secondary:hover {
     -fx-background-color: #6C3FA3;
-    -fx-text-fill: #1E3E2C;
+    -fx-text-fill: #FFFFFF;
     -fx-scale-x: 1.05;
     -fx-scale-y: 1.05;
 
@@ -92,17 +92,18 @@
 }
 
 .button-delete {
-    -fx-background-color: #a32b2b;
+    -fx-background-color: #A32B2B;
     -fx-text-fill: #FFFFFF;
     -fx-font-size: 16px;
     -fx-background-radius: 5;
     -fx-cursor: hand;
+    -fx-border-color: transparent;
 
 }
 
 .button-delete:hover {
 
-    -fx-background-color: #8b2424;
+    -fx-background-color: #8B2424;
     -fx-scale-x: 1.05;
     -fx-scale-y: 1.05;
 
@@ -148,8 +149,7 @@
 .table-view {
     -fx-focus-color: transparent;
     -fx-faint-focus-color: transparent;
-    -fx-border-color: #a8a8a8;
-    -fx-background-radius: 35;
+    -fx-border-color: #A8A8A8;
 }
 
 .table-view .column-header {
@@ -166,7 +166,7 @@
 
 /* Color cuando pasas el ratón por encima (Hover) */
 .table-row-cell:hover {
-    -fx-background-color: #e2f0d9;
+    -fx-background-color: #E2F0D9;
 }
 .table-row-cell:selected .table-cell{
     -fx-background-color: #3C8A23;
@@ -175,6 +175,8 @@
 
 /*---------- Alerts -----------*/
 .alert-dialog {
-    -fx-background-color: rgba(255, 0, 0, 0.73);
+    -fx-background-color: #F8F8F8;
+    -fx-border-color: #A32B2B;
+    -fx-border-width: 2;
 }
 
