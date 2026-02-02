@@ -1,34 +1,24 @@
 package crud_project.ui.controller;
 
 import crud_project.AppCRUD;
-import crud_project.logic.CustomerRESTClient;
 import crud_project.model.Customer;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.MouseButton;
 import javafx.stage.Stage;
-import org.glassfish.jersey.internal.inject.Custom;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-
 import static org.junit.Assert.*;
 import static org.testfx.api.FxAssert.verifyThat;
-
+import org.testfx.api.FxToolkit;
 import org.testfx.framework.junit.ApplicationTest;
-
-import javax.ws.rs.core.GenericType;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
-
 import static org.testfx.matcher.base.NodeMatchers.*;
 import static org.testfx.matcher.control.ButtonMatchers.isDefaultButton;
 
@@ -69,6 +59,11 @@ public class CustomerControllerTest extends ApplicationTest {
         btnExit = lookup("#fxBtnExit").queryButton();
 
 
+    }
+    @After
+    public void close_window()throws Exception{
+        FxToolkit.hideStage();
+        FxToolkit.cleanupStages();
     }
 
     @Test

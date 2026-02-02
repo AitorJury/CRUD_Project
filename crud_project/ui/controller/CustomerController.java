@@ -744,21 +744,23 @@ public class CustomerController {
     }
 
 
-    private void setupTableContextMenu() {
-        ContextMenu contextMenu = new ContextMenu();
+//TODO Hacer el menu de contexto en proceso
 
-        MenuItem editItem = new MenuItem("Editar");
-        MenuItem deleteItem = new MenuItem("Eliminar");
-
-        // Reutilizamos tus métodos de lógica
-        editItem.setOnAction(e -> fxTableView.edit(fxTableView.getSelectionModel().getSelectedIndex(), fxTcFirstName));
-        deleteItem.setOnAction(this::handleDeleteCustomerAndRow);
-
-        contextMenu.getItems().addAll(editItem, new SeparatorMenuItem(), deleteItem);
-
-        // Asignar el menú a la tabla de forma permanente
-        fxTableView.setContextMenu(contextMenu);
-    }
+//    private void setupTableContextMenu() {
+//        ContextMenu contextMenu = new ContextMenu();
+//
+//        MenuItem editItem = new MenuItem("Editar");
+//        MenuItem deleteItem = new MenuItem("Eliminar");
+//
+//        // Reutilizamos tus métodos de lógica
+//        editItem.setOnAction(e -> fxTableView.edit(fxTableView.getSelectionModel().getSelectedIndex(), fxTcFirstName));
+//        deleteItem.setOnAction(this::handleDeleteCustomerAndRow);
+//
+//        contextMenu.getItems().addAll(editItem, new SeparatorMenuItem(), deleteItem);
+//
+//        // Asignar el menú a la tabla de forma permanente
+//        fxTableView.setContextMenu(contextMenu);
+//    }
 
     /**
      * Obtiene la etapa (Stage) actual.
