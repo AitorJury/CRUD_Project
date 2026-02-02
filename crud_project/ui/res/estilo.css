@@ -178,3 +178,24 @@
     -fx-background-color: rgba(255, 0, 0, 0.73);
 }
 
+.combo-box {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #BFBFBF;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+    -fx-padding: 2; 
+    -fx-font-size: 14px;
+    -fx-text-fill: #1A1A1A;
+}
+.combo-box:hover,
+.combo-box:focused {
+    -fx-border-color: #6C3FA3;
+    -fx-background-color: #F3E5F5;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(108, 63, 163, 0.2), 6, 0, 0, 0);
+}
+
+.combo-box .list-cell:hover{
+    -fx-background-color: #6C3FA3;
+    -fx-text-fill: #FFFFFF;
+}

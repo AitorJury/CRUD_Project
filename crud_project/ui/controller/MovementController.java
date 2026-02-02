@@ -187,8 +187,8 @@ public class MovementController {
                 lblCreditLine.setText(account.getCreditLine().toString());
             }
         } catch (Exception e) {
-            handlelblError(e.toString());
-            LOGGER.info("Error to charge movements");
+            handlelblError("No movements found for this account");
+            LOGGER.info("No load movements");
         }
     }
 
@@ -203,7 +203,7 @@ public class MovementController {
                 // Si confirma, cerrar la aplicación.
                 if (resp == yes) {
                     try {
-                        FXMLLoader loader = new FXMLLoader(getClass().getResource("Accounts.fxml"));
+                        FXMLLoader loader = new FXMLLoader(getClass().getResource("/crud_project/ui/view/Accounts.fxml"));
                         Parent root = loader.load();
                         //Cargamos controlador
                         AccountsController controller = loader.getController();
