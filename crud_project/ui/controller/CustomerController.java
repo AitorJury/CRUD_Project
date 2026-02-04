@@ -30,6 +30,9 @@ import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.layout.StackPane;
+import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import javafx.util.converter.IntegerStringConverter;
 import javafx.util.converter.LongStringConverter;
@@ -269,8 +272,11 @@ public class CustomerController {
          * Import del componente reutilizable de MenuBarController
          */
         topMenuController.init(userStage);
+        topMenuController.fxMenuContent.setOnAction(event -> {
+            showHelpWindow("/crud_project/ui/res/help.html");
+        });
 
-        //setupTableContextMenu();
+        setupTableContextMenu();
 
 
     }
@@ -743,24 +749,43 @@ public class CustomerController {
         }
     }
 
+    private void showHelpWindow(String resourcePath) {
 
-//TODO Hacer el menu de contexto en proceso
+        try {
 
-//    private void setupTableContextMenu() {
-//        ContextMenu contextMenu = new ContextMenu();
-//
-//        MenuItem editItem = new MenuItem("Editar");
-//        MenuItem deleteItem = new MenuItem("Eliminar");
-//
-//        // Reutilizamos tus métodos de lógica
-//        editItem.setOnAction(e -> fxTableView.edit(fxTableView.getSelectionModel().getSelectedIndex(), fxTcFirstName));
-//        deleteItem.setOnAction(this::handleDeleteCustomerAndRow);
-//
-//        contextMenu.getItems().addAll(editItem, new SeparatorMenuItem(), deleteItem);
-//
-//        // Asignar el menú a la tabla de forma permanente
-//        fxTableView.setContextMenu(contextMenu);
-//    }
+            WebView webView = new WebView();
+            webView.getEngine().load(getClass().getResource(resourcePath).toExternalForm());
+            Stage customerHelpStage = new Stage();
+            customerHelpStage.setTitle("Customer manager help");
+            customerHelpStage.setScene(new Scene(new StackPane(webView), 800, 600));
+            customerHelpStage.show();
+
+
+        } catch (Exception e) {
+            LOGGER.severe("Error in showHelpWindow");
+            handleAlertError("Error in showHelpWindow");
+        }
+    }
+
+
+    private void setupTableContextMenu() {
+        ContextMenu contextMenu = new ContextMenu();
+
+        MenuItem editItem = new MenuItem("Edit Customer");
+        MenuItem deleteItem = new MenuItem("Remove Customer");
+        MenuItem addItem = new MenuItem("Add Customer");
+
+        // Reutilizar metodos
+        //Busca la fila seleccionada, y en la columna name la pone en edicion
+        editItem.setOnAction(event -> fxTableView.edit(fxTableView.getSelectionModel().getSelectedIndex(), fxTcFirstName));
+        addItem.setOnAction(this::handleAddCustomerRow);
+        deleteItem.setOnAction(this::handleDeleteCustomerAndRow);
+
+        contextMenu.getItems().addAll(addItem, new SeparatorMenuItem(), editItem, new SeparatorMenuItem(), deleteItem);
+
+        // Asignar el menú a la tabla de forma permanente
+        fxTableView.setContextMenu(contextMenu);
+    }
 
     /**
      * Obtiene la etapa (Stage) actual.

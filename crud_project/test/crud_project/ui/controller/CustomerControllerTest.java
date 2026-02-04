@@ -1,6 +1,8 @@
 package crud_project.ui.controller;
 
 import crud_project.AppCRUD;
+import crud_project.logic.AccountRESTClient;
+import crud_project.model.Account;
 import crud_project.model.Customer;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -12,13 +14,19 @@ import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+
 import static org.junit.Assert.*;
 import static org.testfx.api.FxAssert.verifyThat;
+
 import org.testfx.api.FxToolkit;
 import org.testfx.framework.junit.ApplicationTest;
+
+import javax.ws.rs.core.GenericType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
+
 import static org.testfx.matcher.base.NodeMatchers.*;
 import static org.testfx.matcher.control.ButtonMatchers.isDefaultButton;
 
@@ -60,49 +68,69 @@ public class CustomerControllerTest extends ApplicationTest {
 
 
     }
+
     @After
-    public void close_window()throws Exception{
+    public void close_window() throws Exception {
         FxToolkit.hideStage();
         FxToolkit.cleanupStages();
     }
 
     @Test
-    public void test_delete_customer_success() {
+    public void test_D_delete_customer_success() {
+        //Instaciar el restClient para verificar las cuentas
+        AccountRESTClient accClient = new AccountRESTClient();
 
-        // 1. Buscar el índice del primer cliente que se pueda borrar que no tenga cuentas para que no falle el test
-        int rowIndex = 0;
-        for (int i = 0; i < table.getItems().size(); i++) {
-            Customer customer = table.getItems().get(i);
-            //No es admin Y no tiene cuentas (o la lista está vacía)
-            if (!customer.getFirstName().equalsIgnoreCase("admin") &&
-                    (customer.getAccounts() == null || customer.getAccounts().isEmpty())) {
-                rowIndex = i;
-                break;
+        // Buscar al usuario que no tiene cuentas
+        int rowIndex = -1;
+        String userToDeleteName = "";
+        List<Customer> customers = table.getItems();
+
+        for (int i = 0; i < customers.size(); i++) {
+            Customer c = customers.get(i);
+            // Ignorar admin
+            if (!c.getFirstName().equalsIgnoreCase("admin")) {
+                try {
+                    Set<Account> accounts = accClient.findAccountsByCustomerId_XML(
+                            new GenericType<Set<Account>>() {
+                            },
+                            c.getId().toString()
+                    );
+
+                    // Si NO tiene cuentas, es el cliente para borrar
+                    if (accounts == null || accounts.isEmpty()) {
+                        rowIndex = i;
+                        userToDeleteName = c.getFirstName();
+                        break; // Solo hacemos break si entramos en este IF
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error: " + e.getMessage());
+                }
             }
         }
-        verifyThat(btnDelete, isDisabled());
-        //Tamaño de la tabla
-        int rowsCount = table.getItems().size();
-        assertNotEquals("Table has no data: Cannot test", 0, rowsCount);
-        //se usa rowIndex para asegurar que haga clic en un customer que no tenga cuentas
-        Node row = lookup(".table-row-cell").nth(rowIndex).query();
-        assertNotNull("Row is null: table has not that row. ", row);
-        clickOn(row);
 
-        Customer selected = table.getSelectionModel().getSelectedItem();
-        String firstName = selected.getFirstName();
+        // Verificar que encontramos a Paco
+        assertNotEquals("No se encontró el usuario creado para borrar", -1, rowIndex);
+
+        verifyThat(btnDelete, isDisabled());
+        int rowsCount = table.getItems().size();
+
+        // Seleccionamos la fila de Paco
+        Node row = lookup(".table-row-cell").nth(rowIndex).query();
+        clickOn(row);
 
         verifyThat(btnDelete, isEnabled());
         clickOn(btnDelete);
-        verifyThat("Deleting user: " + firstName, isVisible());
 
-        clickOn("Sí");
+        // Ahora el alert debería ser el correcto
+        verifyThat("Deleting user: " + userToDeleteName, isVisible());
+
+        clickOn("Sí"); // O clickOn("Yes") dependiendo de tu idioma
         assertEquals("The row has not been deleted", rowsCount - 1, table.getItems().size());
 
     }
 
     @Test
-    public void test_add_customer_success() {
+    public void test_A_add_customer_success() {
 
         Customer customer = new Customer(
                 new Random().nextLong(),
@@ -149,7 +177,7 @@ public class CustomerControllerTest extends ApplicationTest {
     }
 
     @Test
-    public void test_update_customer_success() {
+    public void test_B_update_customer_success() {
 
         List<String> datos = new ArrayList<>(9);
         datos.add("NameTest");
@@ -180,19 +208,35 @@ public class CustomerControllerTest extends ApplicationTest {
     }
 
     @Test
-    public void test_delete_customer_fail() {
+    public void test_C_delete_customer_fail() {
 
-        // 1. Buscar el índice del primer cliente que se pueda borrar que tenga cuentas para que salte el mensaje de fallo
-        int rowIndex = 1;
-        for (int i = 0; i < table.getItems().size(); i++) {
-            Customer customer = table.getItems().get(i);
-            //No es admin Y no tiene cuentas (o la lista está vacía)
-            System.out.println("Cliente: " + customer.getFirstName() + " Cuentas: " + customer.getAccounts().size());
-            // Selects row index based on customer properties
-            if (!customer.getFirstName().equalsIgnoreCase("admin") &&
-                    (customer.getAccounts() != null && !customer.getAccounts().isEmpty())) {
-                rowIndex = i;
-                break;
+        //Instaciar el restClient para verificar las cuentas
+        AccountRESTClient accClient = new AccountRESTClient();
+
+        // Buscar al usuario que tiene cuentas
+        int rowIndex = -1;
+        String userToDeleteName = "";
+        List<Customer> customers = table.getItems();
+
+        for (int i = 0; i < customers.size(); i++) {
+            Customer c = customers.get(i);
+
+            if (!c.getFirstName().equalsIgnoreCase("admin")) {
+                try {
+                    Set<Account> accounts = accClient.findAccountsByCustomerId_XML(
+                            new GenericType<Set<Account>>() {
+                            },
+                            c.getId().toString()
+                    );
+
+                    //Busca que el usuario tenga cuentas
+                    if (accounts != null && !accounts.isEmpty()) {
+                        rowIndex = i;
+                        break;
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error consultando cuentas: " + e.getMessage());
+                }
             }
         }
         verifyThat(btnDelete, isDisabled());

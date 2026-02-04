@@ -17,15 +17,10 @@
                         <MenuItem fx:id="fxMenuSignOut" mnemonicParsing="false" text="Sign out" />
                     </items>
                 </Menu>
-                <Menu mnemonicParsing="false" text="Edit">
-                    <items>
-                        <MenuItem fx:id="fxMenuDelete" mnemonicParsing="false" text="Delete" />
-                    </items>
-                </Menu>
                 <Menu mnemonicParsing="false" text="Help">
                     <items>
                         <MenuItem fx:id="fxMenuAbout" mnemonicParsing="false" text="About" />
-                        <MenuItem fx:id="fxMenuContent" mnemonicParsing="false" text="Content" />
+                        <MenuItem fx:id="fxMenuContent" mnemonicParsing="false" text="Help" />
                     </items>
                 </Menu>
             </menus>

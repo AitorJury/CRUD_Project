@@ -19,6 +19,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.ChoiceBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.converter.DoubleStringConverter;
@@ -27,11 +28,13 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.GenericType;
 
 /**
- * Controlador para la gestión de cuentas bancarias.
- * Maneja la visualización, creación, edición y borrado de cuentas en una TableView.
+ * Controlador para la gestión de cuentas bancarias. Maneja la visualización,
+ * creación, edición y borrado de cuentas en una TableView.
+ *
  * * @author Aitor Jury Rodríguez. 1º DAM.
  */
 public class AccountsController {
+
     // Logger para el seguimiento de eventos y errores en consola.
     private static final Logger LOGGER = Logger.getLogger("crud_project.ui");
 
@@ -54,6 +57,8 @@ public class AccountsController {
     private ToggleButton btnAddAccount;
     @FXML
     private Label lblMessage;
+    @FXML
+    private MenuBarController hBoxMenuController;
 
     // Lista observable que sincroniza los datos con la tabla.
     private final ObservableList<Account> accountsData = FXCollections.observableArrayList();
@@ -68,6 +73,7 @@ public class AccountsController {
 
     /**
      * Inicializa la ventana y configura los componentes.
+     *
      * @param root Nodo raíz de la vista.
      */
     public void init(Parent root) {
@@ -78,6 +84,13 @@ public class AccountsController {
             this.stage.setResizable(false);
             // Gestión del cierre de ventana.
             this.stage.setOnCloseRequest(this::handleWindowClose);
+
+            if (hBoxMenuController != null) {
+                hBoxMenuController.init(this.stage);
+                hBoxMenuController.fxMenuContent.setOnAction(e -> {
+                    showCustomHelp("/crud_project/ui/res/helpAccount.html");
+                });
+            }
 
             // Configuración inicial de la tabla y carga de datos.
             setupTable();
@@ -107,7 +120,8 @@ public class AccountsController {
     }
 
     /**
-     * Configura las columnas de la tabla, sus factorías de celdas y eventos de edición.
+     * Configura las columnas de la tabla, sus factorías de celdas y eventos de
+     * edición.
      */
     private void setupTable() {
         try {
@@ -186,6 +200,8 @@ public class AccountsController {
             colBeginBalance.setOnEditCommit(this::handleBeginBalanceEdit);
 
             colTimestamp.setCellValueFactory(new PropertyValueFactory<>("beginBalanceTimestamp"));
+
+            setupContextMenu();
         } catch (Exception e) {
             showError("Table setup error: " + e.getMessage());
         }
@@ -245,7 +261,8 @@ public class AccountsController {
     }
 
     /**
-     * Procesa la edición de Credit Line tanto en creación como en cuentas existentes CREDIT.
+     * Procesa la edición de Credit Line tanto en creación como en cuentas
+     * existentes CREDIT.
      */
     private void handleCreditLineEdit(TableColumn.CellEditEvent<Account, Double> event) {
         try {
@@ -297,7 +314,8 @@ public class AccountsController {
     }
 
     /**
-     * Inicia el proceso de creación de una cuenta o confirma la persistencia de la misma.
+     * Inicia el proceso de creación de una cuenta o confirma la persistencia de
+     * la misma.
      */
     private void handleAddAccount(ActionEvent event) {
         try {
@@ -380,7 +398,8 @@ public class AccountsController {
     }
 
     /**
-     * Restablece el estado de los botones y recarga datos tras una creación o cancelación.
+     * Restablece el estado de los botones y recarga datos tras una creación o
+     * cancelación.
      */
     private void finishCreation(String message) {
         try {
@@ -402,7 +421,7 @@ public class AccountsController {
         try {
             List<Account> accounts = restClient.findAccountsByCustomerId_XML(
                     new GenericType<List<Account>>() {
-            },
+                    },
                     loggedCustomer.getId().toString()
             );
             accountsData.setAll(accounts);
@@ -433,12 +452,15 @@ public class AccountsController {
     }
 
     /**
-     * Recalcula el balance de la cuenta en base al saldo inicial y línea de crédito.
+     * Recalcula el balance de la cuenta en base al saldo inicial y línea de
+     * crédito.
      */
     private void updateBalance(Account a) {
         try {
             if (btnAddAccount.isSelected() && a == creatingAccount) {
-                a.setBalance(a.getBeginBalance() + a.getCreditLine() + a.getBalance());
+                a.setBalance(a.getBeginBalance());
+            } else {
+                loadAccountsData();
             }
         } catch (Exception e) {
             LOGGER.warning("Balance calculation error" + e.getMessage());
@@ -446,7 +468,8 @@ public class AccountsController {
     }
 
     /**
-     * Habilita o deshabilita botones de navegación durante el proceso de creación.
+     * Habilita o deshabilita botones de navegación durante el proceso de
+     * creación.
      */
     private void setButtonsCreating(boolean creating) {
         try {
@@ -502,6 +525,11 @@ public class AccountsController {
             if (a == null) {
                 return;
             }
+            if (a.getMovements() != null && !a.getMovements().isEmpty()) {
+                showWarning("Cannot delete account with existing movements.");
+                return;
+            }
+
             Alert al = new Alert(Alert.AlertType.CONFIRMATION, "Delete account: " + a.getDescription() + "?", yes, no);
             if (al.showAndWait().get() == yes) {
                 restClient.removeAccount(a.getId().toString());
@@ -529,10 +557,25 @@ public class AccountsController {
             // Carga del controlador de movimientos.
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/crud_project/ui/view/Movement.fxml"));
             Parent parent = loader.load();
+
             MovementController mc = loader.getController();
             mc.setAccount(a);
+            mc.setCustomer(loggedCustomer);
+
+            //
+            Stage movementsStage = new Stage();
+            movementsStage.setScene(new Scene(parent));
+            movementsStage.initModality(Modality.WINDOW_MODAL);
+            movementsStage.initOwner(this.stage);
+            movementsStage.setResizable(false);
+
+            movementsStage.setOnHidden(e -> loadAccountsData());
+
+            mc.setStage(movementsStage);
             mc.init(parent);
-            this.stage.close();
+
+            /*mc.init(parent);
+            this.stage.close();*/
         } catch (Exception e) {
             showError("Navigation Error: " + e.getMessage());
         }
@@ -562,8 +605,40 @@ public class AccountsController {
         }
     }
 
-    // Métodos auxiliares para la gestión de mensajes en la interfaz.
+    /**
+     * Configuración del menú contextual para la tabla.
+     */
+    private void setupContextMenu() {
+        ContextMenu contextMenu = new ContextMenu();
 
+        MenuItem itemDelete = new MenuItem("Delete Selected Account");
+        MenuItem itemView = new MenuItem("View Account Movements");
+
+        itemDelete.setOnAction(this::handleDeleteAccount);
+        itemView.setOnAction(this::handleViewMovements);
+
+        contextMenu.getItems().addAll(itemDelete, new SeparatorMenuItem(), itemView);
+        tableAccounts.setContextMenu(contextMenu);
+    }
+
+    /**
+     * Muestra la ayuda HTML sensible al contexto.
+     */
+    private void showCustomHelp(String resourcePath) {
+        try {
+            javafx.scene.web.WebView webView = new javafx.scene.web.WebView();
+            webView.getEngine().load(getClass().getResource(resourcePath).toExternalForm());
+
+            Stage helpStage = new Stage();
+            helpStage.setTitle("Help: Managing Accounts");
+            helpStage.setScene(new Scene(new javafx.scene.layout.StackPane(webView), 800, 600));
+            helpStage.show();
+        } catch (Exception ex) {
+            showError("The help file could not be loaded.");
+        }
+    }
+
+    // Métodos auxiliares para la gestión de mensajes en la interfaz.
     private void showWarning(String msg) {
         lblMessage.setText(msg);
         lblMessage.setStyle("-fx-text-fill: red;");
