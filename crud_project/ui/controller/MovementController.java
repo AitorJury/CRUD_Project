@@ -94,6 +94,8 @@ public class MovementController {
     private Label lblBalance;
     @FXML
     private Label lblNmCredit;
+    @FXML
+    private MenuBarController hBoxMenuController;
 
     //Se crea los botones para el alert
     private final ButtonType ok = new ButtonType("OK");
@@ -117,6 +119,12 @@ public class MovementController {
         this.stage.setTitle("Movement page");
         this.stage.setResizable(false);
 
+        if (hBoxMenuController != null) {
+            hBoxMenuController.init(this.stage);
+            hBoxMenuController.fxMenuContent.setOnAction(e -> {
+                showCustomerHelp("/crud_project/ui/res/help_movement.html");
+            });
+        }
 
         //Da valor a la factoría de celda 
         clDate.setCellValueFactory(new PropertyValueFactory<>("timestamp"));
@@ -167,13 +175,13 @@ public class MovementController {
             //Id de prueba idAccount
             //Se crea una lista de movimientos
             GenericType<List<Movement>> movementListType = new GenericType<List<Movement>>() {
-            };  
-            
+            };
+
             List<Movement> movements = movementClient.findMovementByAccount_XML(movementListType, account.getId().toString());
             //Si la tabla esta vacia lanzamos excepcion de que no hay datos que cargar
             if (movements == null || movements.isEmpty()) {
                 LOGGER.info("No movements found ");
-                throw new Exception("No movements found for this account"); 
+                throw new Exception("No movements found for this account");
             }
             ObservableList<Movement> dataMovement = FXCollections.observableArrayList(movements);
             //Se muestra la lista en la tabla
@@ -187,7 +195,7 @@ public class MovementController {
                 lblCreditLine.setText(account.getCreditLine().toString());
             }
         } catch (Exception e) {
-            handlelblError("No movements found for this account");
+            handlelblError(e.getMessage());
             LOGGER.info("No load movements");
         }
     }
@@ -208,12 +216,10 @@ public class MovementController {
                         //Cargamos controlador
                         AccountsController controller = loader.getController();
                         controller.setCustomer(customer);
-                        
                         //Iniciamos la pagina y cerramos la mia
                         LOGGER.info("Showing accounts page");
                         this.stage.close();
-                        controller.init(root);
-                        controller.getStage().setOnHiding(e -> this.stage.show());
+                       
                     } catch (IOException ex) {
                         Logger.getLogger(MovementController.class.getName()).log(Level.SEVERE, null, ex);
                     }
@@ -417,6 +423,20 @@ public class MovementController {
 
     public Account getAccount() {
         return this.account;
+    }
+
+    private void showCustomerHelp(String source) {
+        try {
+            javafx.scene.web.WebView webView = new javafx.scene.web.WebView();
+            webView.getEngine().load(getClass().getResource(source).toExternalForm());
+
+            Stage helpStage = new Stage();
+            helpStage.setTitle("Help movement");
+            helpStage.setScene(new Scene(new javafx.scene.layout.StackPane(webView), 800, 600));
+            helpStage.show();
+        } catch (Exception e) {
+            handlelblError("The help file could not be loaded");
+        }
     }
 
 }

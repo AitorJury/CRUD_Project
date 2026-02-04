@@ -27,11 +27,13 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.GenericType;
 
 /**
- * Controlador para la gestión de cuentas bancarias.
- * Maneja la visualización, creación, edición y borrado de cuentas en una TableView.
+ * Controlador para la gestión de cuentas bancarias. Maneja la visualización,
+ * creación, edición y borrado de cuentas en una TableView.
+ *
  * * @author Aitor Jury Rodríguez. 1º DAM.
  */
 public class AccountsController {
+
     // Logger para el seguimiento de eventos y errores en consola.
     private static final Logger LOGGER = Logger.getLogger("crud_project.ui");
 
@@ -68,6 +70,7 @@ public class AccountsController {
 
     /**
      * Inicializa la ventana y configura los componentes.
+     *
      * @param root Nodo raíz de la vista.
      */
     public void init(Parent root) {
@@ -107,7 +110,8 @@ public class AccountsController {
     }
 
     /**
-     * Configura las columnas de la tabla, sus factorías de celdas y eventos de edición.
+     * Configura las columnas de la tabla, sus factorías de celdas y eventos de
+     * edición.
      */
     private void setupTable() {
         try {
@@ -245,7 +249,8 @@ public class AccountsController {
     }
 
     /**
-     * Procesa la edición de Credit Line tanto en creación como en cuentas existentes CREDIT.
+     * Procesa la edición de Credit Line tanto en creación como en cuentas
+     * existentes CREDIT.
      */
     private void handleCreditLineEdit(TableColumn.CellEditEvent<Account, Double> event) {
         try {
@@ -297,7 +302,8 @@ public class AccountsController {
     }
 
     /**
-     * Inicia el proceso de creación de una cuenta o confirma la persistencia de la misma.
+     * Inicia el proceso de creación de una cuenta o confirma la persistencia de
+     * la misma.
      */
     private void handleAddAccount(ActionEvent event) {
         try {
@@ -380,7 +386,8 @@ public class AccountsController {
     }
 
     /**
-     * Restablece el estado de los botones y recarga datos tras una creación o cancelación.
+     * Restablece el estado de los botones y recarga datos tras una creación o
+     * cancelación.
      */
     private void finishCreation(String message) {
         try {
@@ -433,7 +440,8 @@ public class AccountsController {
     }
 
     /**
-     * Recalcula el balance de la cuenta en base al saldo inicial y línea de crédito.
+     * Recalcula el balance de la cuenta en base al saldo inicial y línea de
+     * crédito.
      */
     private void updateBalance(Account a) {
         try {
@@ -446,7 +454,8 @@ public class AccountsController {
     }
 
     /**
-     * Habilita o deshabilita botones de navegación durante el proceso de creación.
+     * Habilita o deshabilita botones de navegación durante el proceso de
+     * creación.
      */
     private void setButtonsCreating(boolean creating) {
         try {
@@ -528,13 +537,20 @@ public class AccountsController {
             }
             // Carga del controlador de movimientos.
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/crud_project/ui/view/Movement.fxml"));
-            Parent parent = loader.load();
+            Parent root = loader.load();
+
             MovementController mc = loader.getController();
             mc.setAccount(a);
-            mc.init(parent);
-            this.stage.close();
+            mc.setCustomer(loggedCustomer);
+
+            //
+            this.stage.hide();
+            mc.init(root);
+            mc.getStage().setOnHiding(e -> this.stage.show());
+
         } catch (Exception e) {
             showError("Navigation Error: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -563,7 +579,6 @@ public class AccountsController {
     }
 
     // Métodos auxiliares para la gestión de mensajes en la interfaz.
-
     private void showWarning(String msg) {
         lblMessage.setText(msg);
         lblMessage.setStyle("-fx-text-fill: red;");
@@ -585,4 +600,5 @@ public class AccountsController {
     public Stage getStage() {
         return this.stage;
     }
+
 }

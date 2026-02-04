@@ -208,11 +208,8 @@ public class SignInController {
                 controller.setCustomer(customer);
 
                 //AccountsController controller = loader.getController();
-                this.stage.hide();
                 controller.init(root);
-                controller.getStage().setOnHiding(e -> {
-                    this.stage.show();
-                });
+                this.stage.close();
                 LOGGER.info("Changing to User Window");
             }
 

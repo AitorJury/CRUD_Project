@@ -19,12 +19,12 @@ import static crud_project.ui.controller.CustomerController.EXIT_CONFIRMATION_ME
 import static crud_project.ui.controller.CustomerController.EXIT_CONFIRMATION_TITLE;
 
 /**
- * La clase {@code MenuBarController} gestiona el comportamiento de la barra de menú
- * en una aplicación JavaFX.
+ * La clase {@code MenuBarController} gestiona el comportamiento de la barra de
+ * menú en una aplicación JavaFX.
  *
- * Se encarga de manejar las acciones del usuario asociadas a los distintos elementos
- * del menú, como cerrar la aplicación, mostrar la ventana "Acerca de", cerrar sesión
- * y mostrar la página de ayuda.
+ * Se encarga de manejar las acciones del usuario asociadas a los distintos
+ * elementos del menú, como cerrar la aplicación, mostrar la ventana "Acerca
+ * de", cerrar sesión y mostrar la página de ayuda.
  */
 public class MenuBarController {
 
@@ -44,7 +44,8 @@ public class MenuBarController {
     public MenuItem fxMenuAbout;
 
     /**
-     * Elemento de menú que permite cerrar sesión y volver a la ventana de inicio de sesión.
+     * Elemento de menú que permite cerrar sesión y volver a la ventana de
+     * inicio de sesión.
      */
     @FXML
     public MenuItem fxMenuSignOut;
@@ -56,11 +57,11 @@ public class MenuBarController {
     public MenuItem fxMenuContent;
 
     /**
-     * Inicializa la funcionalidad de la barra de menú y configura
-     * los manejadores de eventos para cada elemento del menú.
+     * Inicializa la funcionalidad de la barra de menú y configura los
+     * manejadores de eventos para cada elemento del menú.
      *
      * @param stage escenario principal de la aplicación, utilizado para
-     *              gestionar las ventanas de la aplicación
+     * gestionar las ventanas de la aplicación
      */
     public void init(Stage stage) {
         this.userStage = stage;
@@ -69,14 +70,14 @@ public class MenuBarController {
         fxMenuAbout.setOnAction(this::handleAboutWindow);
         fxMenuContent.setOnAction(this::handleWindowShowing);
 
-
     }
 
     /**
      * Maneja la acción de cerrar sesión.
      * <p>
-     * Muestra un cuadro de diálogo de confirmación al usuario y, si este confirma,
-     * cierra la ventana actual. En caso de error, se muestra un mensaje de alerta.
+     * Muestra un cuadro de diálogo de confirmación al usuario y, si este
+     * confirma, cierra la ventana actual. En caso de error, se muestra un
+     * mensaje de alerta.
      *
      * @param event evento asociado a la acción del menú
      */
@@ -104,8 +105,8 @@ public class MenuBarController {
      * Maneja la visualización de la ventana de ayuda.
      * <p>
      * Crea una nueva ventana que muestra un archivo HTML embebido
-     * ({@code help.html}) con la documentación de ayuda del sistema.
-     * Si el archivo no se encuentra, se muestra una alerta de error.
+     * ({@code help.html}) con la documentación de ayuda del sistema. Si el
+     * archivo no se encuentra, se muestra una alerta de error.
      *
      * @param event evento que desencadena la apertura de la ventana de ayuda
      */
@@ -128,27 +129,25 @@ public class MenuBarController {
             helpStage.setScene(scene);
             helpStage.show();
 
-
         } catch (Exception e) {
             LOGGER.severe("File help not found: " + e.getMessage());
             handleAlertError("File not found");
         }
 
-
     }
 
     /**
-     * Muestra una ventana "Acerca de" no redimensionable con
-     * información y créditos de la aplicación.
+     * Muestra una ventana "Acerca de" no redimensionable con información y
+     * créditos de la aplicación.
      *
      * @param event evento que desencadena la apertura de la ventana
      */
     private void handleAboutWindow(Event event) {
 
         StackPane root = new StackPane();
-        Text contentText = new Text("This is a simple bank application made by group 3\n" +
-                "made up for:\n" +
-                "Aitor, Cynthia and Juan");
+        Text contentText = new Text("This is a simple bank application made by group 3\n"
+                + "made up for:\n"
+                + "Aitor, Cynthia and Juan");
 
         // Centrar el alineamiento de las líneas de texto entre sí
         contentText.setTextAlignment(TextAlignment.CENTER);
