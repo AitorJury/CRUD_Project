@@ -67,7 +67,7 @@ public class MenuBarController {
         fxMenuClose.setOnAction(e -> System.exit(0));
         fxMenuSignOut.setOnAction(this::handleOnExitAction);
         fxMenuAbout.setOnAction(this::handleAboutWindow);
-        fxMenuContent.setOnAction(this::handleWindowShowing);
+        //fxMenuContent.setOnAction(this::handleWindowShowing);
 
 
     }
