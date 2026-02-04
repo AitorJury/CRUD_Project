@@ -94,6 +94,8 @@ public class MovementController {
     private Label lblBalance;
     @FXML
     private Label lblNmCredit;
+    @FXML
+    private MenuBarController hBoxMenuController;
 
     //Se crea los botones para el alert
     private final ButtonType ok = new ButtonType("OK");
@@ -115,6 +117,13 @@ public class MovementController {
         // Establecer el título de la ventana.
         this.stage.setTitle("Movement page");
         this.stage.setResizable(false);
+
+        if (hBoxMenuController != null) {
+            hBoxMenuController.init(this.stage);
+            hBoxMenuController.fxMenuContent.setOnAction(e -> {
+                showCustomerHelp("/crud_project/ui/res/help_movement.html");
+            });
+        }
 
         //Da valor a la factoría de celda 
         clDate.setCellValueFactory(new PropertyValueFactory<>("timestamp"));
@@ -185,8 +194,8 @@ public class MovementController {
                 lblCreditLine.setText(account.getCreditLine().toString());
             }
         } catch (Exception e) {
-            handlelblError(e.toString());
-            LOGGER.info("Error to charge movements");
+            handlelblError(e.getMessage());
+            LOGGER.info("No load movements");
         }
     }
 
@@ -201,7 +210,7 @@ public class MovementController {
                 // Si confirma, cerrar la aplicación.
                 if (resp == yes) {
                     try {
-                        FXMLLoader loader = new FXMLLoader(getClass().getResource("Accounts.fxml"));
+                        FXMLLoader loader = new FXMLLoader(getClass().getResource("/crud_project/ui/view/Accounts.fxml"));
                         Parent root = loader.load();
                         //Cargamos controlador
                         AccountsController controller = loader.getController();
@@ -209,7 +218,8 @@ public class MovementController {
 
                         //Iniciamos la pagina y cerramos la mia
                         LOGGER.info("Showing accounts page");
-                        this.stage.getScene().setRoot(root);
+                        this.stage.close();
+
                     } catch (IOException ex) {
                         Logger.getLogger(MovementController.class.getName()).log(Level.SEVERE, null, ex);
                     }
@@ -413,6 +423,20 @@ public class MovementController {
 
     public Account getAccount() {
         return this.account;
+    }
+
+    private void showCustomerHelp(String source) {
+        try {
+            javafx.scene.web.WebView webView = new javafx.scene.web.WebView();
+            webView.getEngine().load(getClass().getResource(source).toExternalForm());
+
+            Stage helpStage = new Stage();
+            helpStage.setTitle("Help movement");
+            helpStage.setScene(new Scene(new javafx.scene.layout.StackPane(webView), 800, 600));
+            helpStage.show();
+        } catch (Exception e) {
+            handlelblError("The help file could not be loaded");
+        }
     }
 
 }
