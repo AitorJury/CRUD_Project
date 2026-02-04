@@ -556,7 +556,7 @@ public class AccountsController {
             }
             // Carga del controlador de movimientos.
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/crud_project/ui/view/Movement.fxml"));
-            Parent parent = loader.load();
+            Parent root = loader.load();
 
             MovementController mc = loader.getController();
             mc.setAccount(a);
@@ -564,20 +564,14 @@ public class AccountsController {
 
             //
             Stage movementsStage = new Stage();
-            movementsStage.setScene(new Scene(parent));
-            movementsStage.initModality(Modality.WINDOW_MODAL);
-            movementsStage.initOwner(this.stage);
-            movementsStage.setResizable(false);
-
-            movementsStage.setOnHidden(e -> loadAccountsData());
-
             mc.setStage(movementsStage);
-            mc.init(parent);
+            mc.init(root);
 
-            /*mc.init(parent);
-            this.stage.close();*/
+            this.stage.close();
+            
         } catch (Exception e) {
             showError("Navigation Error: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 

@@ -1,4 +1,4 @@
-package crud_project.ui.controller;
+package crud_project.test.crud_project.ui.controller;
 
 import crud_project.AppCRUD;
 import crud_project.model.Account;
