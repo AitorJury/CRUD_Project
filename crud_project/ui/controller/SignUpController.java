@@ -697,7 +697,7 @@ public class SignUpController {
                     .showAndWait();
 
             // Conectar con Sign In para iniciar sesión.
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("SignIn.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/crud_project/ui/view/SignIn.fxml"));
             Parent root = loader.load();
 
             SignInController controller = loader.getController();

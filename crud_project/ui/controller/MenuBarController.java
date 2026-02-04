@@ -148,7 +148,7 @@ public class MenuBarController {
         StackPane root = new StackPane();
         Text contentText = new Text("This is a simple bank application made by group 3\n" +
                 "made up for:\n" +
-                "Aitor Jury Rodríguez, Cynthia Medina Romera and Juan Ismael Caiza Dueñas");
+                "Aitor Jury, Cynthia Medina & Juan Ismael Caiza");
 
         // Centrar el alineamiento de las líneas de texto entre sí
         contentText.setTextAlignment(TextAlignment.CENTER);

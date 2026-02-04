@@ -115,7 +115,7 @@ public class SignInController {
         try {
             // Cerrar la ventana actual.
             // Abrir la ventana de registro de nuevo usuario.
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("../view/SignUp.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/crud_project/ui/view/SignUp.fxml"));
             Parent root = loader.load();
 
             SignUpController controller = loader.getController();
