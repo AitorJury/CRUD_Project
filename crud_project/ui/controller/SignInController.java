@@ -115,7 +115,7 @@ public class SignInController {
         try {
             // Cerrar la ventana actual.
             // Abrir la ventana de registro de nuevo usuario.
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("../view/SignUp.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/crud_project/ui/view/SignUp.fxml"));
             Parent root = loader.load();
 
             SignUpController controller = loader.getController();
@@ -208,11 +208,8 @@ public class SignInController {
                 controller.setCustomer(customer);
 
                 //AccountsController controller = loader.getController();
-                this.stage.hide();
                 controller.init(root);
-                controller.getStage().setOnHiding(e -> {
-                    this.stage.show();
-                });
+                this.stage.close();
                 LOGGER.info("Changing to User Window");
             }
 

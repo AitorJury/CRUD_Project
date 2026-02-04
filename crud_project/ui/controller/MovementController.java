@@ -109,14 +109,12 @@ public class MovementController {
         //Se muestra la escena
 
         Scene scene = new Scene(root);
-        this.stage = new Stage();
         this.stage.setScene(scene);
         stage.setTitle("Movements");
         LOGGER.info("Initializing Movement Window");
         // Establecer el título de la ventana.
         this.stage.setTitle("Movement page");
         this.stage.setResizable(false);
-
 
         //Da valor a la factoría de celda 
         clDate.setCellValueFactory(new PropertyValueFactory<>("timestamp"));
@@ -167,13 +165,13 @@ public class MovementController {
             //Id de prueba idAccount
             //Se crea una lista de movimientos
             GenericType<List<Movement>> movementListType = new GenericType<List<Movement>>() {
-            };  
-            
+            };
+
             List<Movement> movements = movementClient.findMovementByAccount_XML(movementListType, account.getId().toString());
             //Si la tabla esta vacia lanzamos excepcion de que no hay datos que cargar
             if (movements == null || movements.isEmpty()) {
                 LOGGER.info("No movements found ");
-                throw new Exception("No movements found for this account"); 
+                throw new Exception("No movements found for this account");
             }
             ObservableList<Movement> dataMovement = FXCollections.observableArrayList(movements);
             //Se muestra la lista en la tabla
@@ -208,12 +206,10 @@ public class MovementController {
                         //Cargamos controlador
                         AccountsController controller = loader.getController();
                         controller.setCustomer(customer);
-                        
+
                         //Iniciamos la pagina y cerramos la mia
                         LOGGER.info("Showing accounts page");
-                        this.stage.close();
-                        controller.init(root);
-                        controller.getStage().setOnHiding(e -> this.stage.show());
+                        this.stage.getScene().setRoot(root);
                     } catch (IOException ex) {
                         Logger.getLogger(MovementController.class.getName()).log(Level.SEVERE, null, ex);
                     }

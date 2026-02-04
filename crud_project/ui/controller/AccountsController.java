@@ -58,7 +58,7 @@ public class AccountsController {
     @FXML
     private Label lblMessage;
     @FXML
-    private MenuBarController hBoxMenuController;
+    private MenuBarController menuBarController;
 
     // Lista observable que sincroniza los datos con la tabla.
     private final ObservableList<Account> accountsData = FXCollections.observableArrayList();
@@ -85,9 +85,12 @@ public class AccountsController {
             // Gestión del cierre de ventana.
             this.stage.setOnCloseRequest(this::handleWindowClose);
 
-            if (hBoxMenuController != null) {
-                hBoxMenuController.init(this.stage);
-                hBoxMenuController.fxMenuContent.setOnAction(e -> {
+            if (menuBarController != null) {
+                menuBarController.init(this.stage);
+
+                menuBarController.fxMenuSignOut.setOnAction(this::handleLogOut);
+
+                menuBarController.fxMenuContent.setOnAction(e -> {
                     showCustomHelp("/crud_project/ui/res/helpAccount.html");
                 });
             }
@@ -421,7 +424,7 @@ public class AccountsController {
         try {
             List<Account> accounts = restClient.findAccountsByCustomerId_XML(
                     new GenericType<List<Account>>() {
-                    },
+            },
                     loggedCustomer.getId().toString()
             );
             accountsData.setAll(accounts);
@@ -505,11 +508,13 @@ public class AccountsController {
         try {
             Alert a = new Alert(Alert.AlertType.CONFIRMATION, "Log out?", yes, no);
             if (a.showAndWait().get() == yes) {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/crud_project/ui/SignIn.fxml"));
-                Parent parent = loader.load();
-                SignInController sic = loader.getController();
-                sic.initStage(this.stage, parent);
                 restClient.close();
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/crud_project/ui/view/SignIn.fxml"));
+                Parent root = loader.load();
+                SignInController sic = loader.getController();
+                Stage signInStage = new Stage();
+                sic.initStage(signInStage, root);
+                this.stage.close();
             }
         } catch (Exception e) {
             showError("Logout failed: " + e.getMessage());
@@ -523,6 +528,7 @@ public class AccountsController {
         try {
             Account a = tableAccounts.getSelectionModel().getSelectedItem();
             if (a == null) {
+                showWarning("Please select an account to delete.");
                 return;
             }
             if (a.getMovements() != null && !a.getMovements().isEmpty()) {
@@ -556,7 +562,7 @@ public class AccountsController {
             }
             // Carga del controlador de movimientos.
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/crud_project/ui/view/Movement.fxml"));
-            Parent parent = loader.load();
+            Parent root = loader.load();
 
             MovementController mc = loader.getController();
             mc.setAccount(a);
@@ -564,20 +570,14 @@ public class AccountsController {
 
             //
             Stage movementsStage = new Stage();
-            movementsStage.setScene(new Scene(parent));
-            movementsStage.initModality(Modality.WINDOW_MODAL);
-            movementsStage.initOwner(this.stage);
-            movementsStage.setResizable(false);
-
-            movementsStage.setOnHidden(e -> loadAccountsData());
-
             mc.setStage(movementsStage);
-            mc.init(parent);
+            mc.init(root);
 
-            /*mc.init(parent);
-            this.stage.close();*/
+            this.stage.close();
+
         } catch (Exception e) {
             showError("Navigation Error: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -613,11 +613,15 @@ public class AccountsController {
 
         MenuItem itemDelete = new MenuItem("Delete Selected Account");
         MenuItem itemView = new MenuItem("View Account Movements");
+        MenuItem itemHelp = new MenuItem("Get Help");
 
         itemDelete.setOnAction(this::handleDeleteAccount);
         itemView.setOnAction(this::handleViewMovements);
+        itemHelp.setOnAction(e -> {
+            showCustomHelp("/crud_project/ui/res/helpAccount.html");
+        });
 
-        contextMenu.getItems().addAll(itemDelete, new SeparatorMenuItem(), itemView);
+        contextMenu.getItems().addAll(itemDelete, itemView, new SeparatorMenuItem(), itemHelp);
         tableAccounts.setContextMenu(contextMenu);
     }
 
