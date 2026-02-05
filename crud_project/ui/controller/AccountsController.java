@@ -567,19 +567,11 @@ public class AccountsController {
             MovementController mc = loader.getController();
             mc.setAccount(a);
             mc.setCustomer(loggedCustomer);
-
-            //
-
-            /*Stage movementsStage = new Stage();
+            Stage movementsStage = new Stage();
             mc.setStage(movementsStage);
             mc.init(root);
 
-            this.stage.close(); */
-            
-            this.stage.hide();
-            mc.init(root);
-            mc.getStage().setOnHiding(e -> this.stage.show());
-
+            this.stage.close();
         } catch (Exception e) {
             showError("Navigation Error: " + e.getMessage());
             e.printStackTrace();

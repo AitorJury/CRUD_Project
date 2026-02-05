@@ -218,6 +218,7 @@ public class MovementController {
 
                         //Iniciamos la pagina y cerramos la mia
                         LOGGER.info("Showing accounts page");
+                        controller.init(root);
                         this.stage.close();
 
                     } catch (IOException ex) {
