@@ -40,6 +40,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import javax.ws.rs.core.GenericType;
 
 /**
@@ -117,6 +118,7 @@ public class MovementController {
         // Establecer el título de la ventana.
         this.stage.setTitle("Movement page");
         this.stage.setResizable(false);
+        this.stage.setOnCloseRequest(this::handleWindowClose);
 
         if (hBoxMenuController != null) {
             hBoxMenuController.init(this.stage);
@@ -218,6 +220,7 @@ public class MovementController {
 
                         //Iniciamos la pagina y cerramos la mia
                         LOGGER.info("Showing accounts page");
+                        controller.init(root);
                         this.stage.close();
 
                     } catch (IOException ex) {
@@ -423,6 +426,18 @@ public class MovementController {
 
     public Account getAccount() {
         return this.account;
+    }
+    private void handleWindowClose(WindowEvent event) {
+        try {
+            Alert a = new Alert(Alert.AlertType.CONFIRMATION, "Exit application?", yes, no);
+            if (a.showAndWait().get() == yes) {
+                System.exit(0);
+            } else {
+                event.consume();
+            }
+        } catch (Exception e) {
+            System.exit(0);
+        }
     }
 
     private void showCustomerHelp(String source) {
