@@ -62,13 +62,14 @@ public class MovementControllerTest extends ApplicationTest {
     @Before
     public void testStart() {
         clickOn("#txtEmail");
-        write("cynthia@gmail.com");
+        write("awallace@gmail.com");
         clickOn("#txtPassword");
-        write("cynthia1");
+        write("qwerty*9876");
         clickOn("#btnSignIn");
         //cambiar el id para el test 0
         //clickOn("6599097192");
-        clickOn("8182225860");
+        
+        clickOn(".table-row-cell:nth-child(1)");
         clickOn("#btnViewMovements");
 
     }
