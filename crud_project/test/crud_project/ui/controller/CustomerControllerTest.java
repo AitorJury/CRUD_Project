@@ -204,6 +204,19 @@ public class CustomerControllerTest extends ApplicationTest {
             //Se escribe el dato
             write(datos.get(i)).push(KeyCode.ENTER);
         }
+        Customer c = table.getItems().get(0);
+
+        // Verificaciones
+        assertEquals(datos.get(0), c.getFirstName());
+        assertEquals(datos.get(1), c.getLastName());
+        assertEquals(datos.get(2), c.getMiddleInitial());
+        assertEquals(datos.get(3), c.getEmail());
+        assertEquals(datos.get(4), c.getPassword());
+        assertEquals(Long.valueOf(datos.get(5)), c.getPhone());
+        assertEquals(datos.get(6), c.getStreet());
+        assertEquals(datos.get(7), c.getCity());
+        assertEquals(datos.get(8), c.getState());
+        assertEquals(Integer.valueOf(datos.get(9)), c.getZip());
 
     }
 
