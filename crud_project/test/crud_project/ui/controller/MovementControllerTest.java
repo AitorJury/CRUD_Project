@@ -68,9 +68,12 @@ public class MovementControllerTest extends ApplicationTest {
         clickOn("#btnSignIn");
         //cambiar el id para el test 0
         //clickOn("6599097192");
-        
-        clickOn(".table-row-cell:nth-child(1)");
+        clickOn("#tableAccounts");
+        Node row = lookup(".table-row-cell").nth(0).query();
+        clickOn(row);
         clickOn("#btnViewMovements");
+        
+        //clickOn("#btnViewMovements");
 
     }
 
