@@ -119,7 +119,6 @@ public class MovementController {
         this.stage.setTitle("Movement page");
         this.stage.setResizable(false);
         this.stage.setOnCloseRequest(this::handleWindowClose);
-
         if (hBoxMenuController != null) {
             hBoxMenuController.init(this.stage);
             hBoxMenuController.fxMenuContent.setOnAction(e -> {
@@ -134,6 +133,11 @@ public class MovementController {
         clBalance.setCellValueFactory(new PropertyValueFactory<>("balance"));
         //Carga los movimientos de la tabla
         loadMovements();
+        //Para que cargue los label
+         lblBalance.setText(account.getBalance().toString());
+         if (lblCreditLine.isVisible()) {
+                lblCreditLine.setText(account.getCreditLine().toString());
+            }
         buttonEnable();
 
         //Creamos variable que necesitaremos para el delete

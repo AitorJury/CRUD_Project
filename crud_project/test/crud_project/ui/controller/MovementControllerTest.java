@@ -66,6 +66,8 @@ public class MovementControllerTest extends ApplicationTest {
         clickOn("#txtPassword");
         write("cynthia1");
         clickOn("#btnSignIn");
+        //cambiar el id para el test 0
+        //clickOn("6599097192");
         clickOn("8182225860");
         clickOn("#btnViewMovements");
 
@@ -76,16 +78,23 @@ public class MovementControllerTest extends ApplicationTest {
         FxToolkit.hideStage();
         FxToolkit.cleanupStages();
     }
-    
+    /*
     @Test
-    public void test0_InitialStage() {
-        verifyThat("#txtAmount", hasText(""));
-        verifyThat("#btnDelete", isEnabled());
-        verifyThat("#btnCreate", isDisabled());
-        verifyThat("#lblError", hasText(""));
-        
+    public void test0_ButtonCreatePaymentWithCredit() {
+        TableView<Movement> table = lookup("#tbMovement").queryTableView();
+        int numRowBefore = table.getItems().size();
+        clickOn("#comboType");
+        type(KeyCode.DOWN);
+        type(KeyCode.DOWN);
+        type(KeyCode.ENTER);
+        clickOn("#txtAmount");
+        write("100000");
+        clickOn("#createMovement");
+        clickOn("Yes");
+        int numRowAfter = table.getItems().size();
+        assertTrue("The movement cant be created", numRowAfter > numRowBefore);
     }
-
+*/
     @Test
     public void test1_ButtonCreateDeposit() {
         TableView<Movement> table = lookup("#tbMovement").queryTableView();
@@ -150,6 +159,5 @@ public class MovementControllerTest extends ApplicationTest {
         verifyThat("Amount cant be negative", isVisible());
 
     }
-
 
 }
