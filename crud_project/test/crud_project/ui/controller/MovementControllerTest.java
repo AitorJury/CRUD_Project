@@ -17,6 +17,7 @@ import static org.junit.Assert.*;
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+import org.junit.FixMethodOrder;
 import crud_project.AppCRUD;
 import crud_project.model.Account;
 import crud_project.model.Movement;
@@ -28,14 +29,18 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 import javafx.scene.control.TableView;
 import javafx.scene.input.KeyCode;
+import org.junit.After;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
+import org.junit.runners.MethodSorters;
 import static org.testfx.api.FxAssert.verifyThat;
+import org.testfx.api.FxToolkit;
 import org.testfx.framework.junit.ApplicationTest;
 import static org.testfx.matcher.base.NodeMatchers.isDisabled;
 import static org.testfx.matcher.base.NodeMatchers.isEnabled;
 import static org.testfx.matcher.base.NodeMatchers.isVisible;
+import static org.testfx.matcher.control.ButtonMatchers.isDefaultButton;
 import static org.testfx.matcher.control.LabeledMatchers.hasText;
 import static org.testfx.matcher.control.ListViewMatchers.isEmpty;
 
@@ -43,6 +48,7 @@ import static org.testfx.matcher.control.ListViewMatchers.isEmpty;
  *
  * @author cynthia
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class MovementControllerTest extends ApplicationTest {
 
     private TableView table;
@@ -56,154 +62,105 @@ public class MovementControllerTest extends ApplicationTest {
     @Before
     public void testStart() {
         clickOn("#txtEmail");
-        write("cynthia@gmail.com");
+        write("awallace@gmail.com");
         clickOn("#txtPassword");
-        write("cynthia1");
+        write("qwerty*9876");
         clickOn("#btnSignIn");
-        clickOn("8182225860");
+        //cambiar el id para el test 0
+        //clickOn("6599097192");
+        clickOn("#tableAccounts");
+        Node row = lookup(".table-row-cell").nth(0).query();
+        clickOn(row);
         clickOn("#btnViewMovements");
+       
 
     }
 
+    @After
+    public void close_window() throws Exception {
+        FxToolkit.hideStage();
+        FxToolkit.cleanupStages();
+    }
+    /*
     @Test
-    public void test1_ButtonCreate() {
+    public void test0_ButtonCreatePaymentWithCredit() {
+        TableView<Movement> table = lookup("#tbMovement").queryTableView();
+        int numRowBefore = table.getItems().size();
+        clickOn("#comboType");
+        type(KeyCode.DOWN);
+        type(KeyCode.DOWN);
+        type(KeyCode.ENTER);
+        clickOn("#txtAmount");
+        write("100000");
+        clickOn("#createMovement");
+        clickOn("Yes");
+        int numRowAfter = table.getItems().size();
+        assertTrue("The movement cant be created", numRowAfter > numRowBefore);
+    }
+*/
+    @Test
+    public void test1_ButtonCreateDeposit() {
         TableView<Movement> table = lookup("#tbMovement").queryTableView();
         int numRowBefore = table.getItems().size();
         clickOn("#comboType");
         type(KeyCode.DOWN);
         type(KeyCode.ENTER);
         clickOn("#txtAmount");
-        write("1000");
+        write("100000");
         clickOn("#createMovement");
         clickOn("Yes");
-
         int numRowAfter = table.getItems().size();
-        assertTrue("Could not delete movement", numRowAfter > numRowBefore);
-        /*clickOn("Type");
-        clickOn("Payment");
+        assertTrue("The movement cant be created", numRowAfter > numRowBefore);
+    }
+     @Test
+    public void test2_ButtonCreatePayment() {
+        TableView<Movement> table = lookup("#tbMovement").queryTableView();
+        int numRowBefore = table.getItems().size();
+        clickOn("#comboType");
+        type(KeyCode.DOWN);
+        type(KeyCode.DOWN);
+        type(KeyCode.ENTER);
         clickOn("#txtAmount");
-        write("1000");
-        clickOn("#btnCreate");
+        write("100000");
+        clickOn("#createMovement");
         clickOn("Yes");
-        int numRowAfter2 = table.getItems().size();
-        assertTrue("Could not delete movement", numRowAfter2 > numRowBefore);
-         */
+        int numRowAfter = table.getItems().size();
+        assertTrue("The movement cant be created", numRowAfter > numRowBefore);
     }
 
     @Test
-    public void test2_ButtonBackAccount() {
-        clickOn("#txtEmail");
-        write("cynthia@gmail.com");
-        clickOn("#txtPassword");
-        write("cynthia1");
-        clickOn("#btnSignIn");
+    public void test2_DeleteMovement() {
+        //Obtiene las filas iniciales
+        TableView<Account> table = lookup("#tbMovement").queryTableView();
+        int rowCountBefore = table.getItems().size();
+        clickOn("#btnDelete");
+        clickOn("Yes");
+        //Miramos cuantas celdas hay despues
+        int rowCountAfter = table.getItems().size();
+        assertEquals(rowCountBefore - 1, rowCountAfter);
+        verifyThat("#btnDelete", isDisabled());
+
+    }
+
+    @Test
+    public void test4_ButtonBackAccount() {
         clickOn("#btnBack");
         clickOn("Yes");
         verifyThat("My Accounts Management", isVisible());
     }
 
     @Test
-    public void test2_DeleteMovement() {
-        //Obtiene las filas iniciales
-        TableView<Account> table = lookup("#tbMovement").queryTableView();
-        int rowCountBefore = table.getItems().size();
-        clickOn("#btnDelete");
-        clickOn("Yes");
-        //Miramos cuantas celdas hay despues
-        int rowCountAfter = table.getItems().size();
-        assertEquals(rowCountBefore - 1, rowCountAfter);
-        
-    }
-
-}
-
-/*
-    @Test
-    public void test2_DeleteMovement() {
-        //Obtiene las filas iniciales
-        TableView<Account> table = lookup("#tbMovement").queryTableView();
-        int rowCountBefore = table.getItems().size();
-        clickOn("#btnDelete");
-        clickOn("Yes");
-        //Miramos cuantas celdas hay despues
-        int rowCountAfter = table.getItems().size();
-        assertEquals(rowCountBefore - 1, rowCountAfter);
-    }
-
-     
-/*
-    
-/*
-    @Test
-    public void test3_ButtonCreate() {
+    public void test5_ButtonCreateNegativeAmountFailed() {
         TableView<Movement> table = lookup("#tbMovement").queryTableView();
         int numRowBefore = table.getItems().size();
         clickOn("#comboType");
         type(KeyCode.DOWN);
         type(KeyCode.ENTER);
-        //table = lookup("#tbMovement").queryTableView();
-        //Node cell = comboType.lookup(".list-cell");
-        //comboType.getSelectionModel().select("Deposit");
         clickOn("#txtAmount");
-        write("1000");
+        write("-100");
         clickOn("#createMovement");
-        int numRowAfter = table.getItems().size();
-        assertTrue("Could not delete movement", numRowAfter > numRowBefore);
-        clickOn("Type");
-        clickOn("Payment");
-        clickOn("#txtAmount");
-        write("1000");
-        clickOn("#btnCreate");
-        int numRowAfter2 = table.getItems().size();
-        assertTrue("Could not delete movement", numRowAfter2 > numRowBefore);
+        verifyThat("Amount cant be negative", isVisible());
+
     }
 
-    /*@Test
-    public void test0_InitialStage() {
-        clickOn("#txtEmail");
-        write("cynthia@gmail.com");
-        clickOn("#txtPassword");
-        write("cynthia1");
-        clickOn("#btnSignIn");
-        verifyThat("#txtAmount", hasText(""));
-        verifyThat("#btnDelete", isEnabled());
-        verifyThat("#btnCreate", isDisabled());
-        verifyThat("#lblError", hasText(""));
-        /*
-    } */
-
- /* 
-
-    }*/
- /*   
-     
-    
-    
-    /*
-
-    @Test
-    public void test3_ButtonCreatePaymentFailed() {
-        int numRowBefore = table.getItems().size();
-        clickOn("#comboType");
-        table = lookup("#tbMovement").queryTableView();
-        Node cell = comboType.lookup(".list-cell");
-        comboType.getSelectionModel().select("Payment");
-        clickOn("#txtAmount");
-        write("100000");
-        verifyThat("The balance and the credit are insuficient", isVisible());
-    }
-
-    @Test
-    public void test4_ButtonCreateNegativeAmountFailed() {
-        int numRowBefore = table.getItems().size();
-        clickOn("#comboType");
-        table = lookup("#tbMovement").queryTableView();
-        Node cell = comboType.lookup(".list-cell");
-        comboType.getSelectionModel().select("Payment");
-        clickOn("#txtAmount");
-        write("-100000");
-        verifyThat("The balance and the credit are insuficient", isVisible());
-    }
-
-    
-    }*/
+}
