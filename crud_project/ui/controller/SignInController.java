@@ -176,7 +176,7 @@ public class SignInController {
             // En el caso de ser administrador, se envía a otra ventana distinta.
             if (email.equals("admin") && password.equals("admin")) {
                 LOGGER.info("Admin login detected. Changing to User Controller Window");
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("../view/CustomerController.fxml"));
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/crud_project/ui/view/CustomerController.fxml"));
                 Parent root = loader.load();
 
                 CustomerController controller = loader.getController();
