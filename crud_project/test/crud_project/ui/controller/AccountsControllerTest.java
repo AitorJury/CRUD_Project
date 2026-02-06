@@ -27,7 +27,8 @@ import static org.junit.Assert.*;
 public class AccountsControllerTest extends ApplicationTest {
 
     private TableView table;
-    private Long idAcc;
+    private static Long idAcc;
+    private static String uniqueName;
 
     /**
      * Punto de entrada de la aplicación para TestFX.
@@ -79,7 +80,7 @@ public class AccountsControllerTest extends ApplicationTest {
         verifyThat("#btnCancelAccount", isEnabled());
         verifyThat("#btnRefresh", isDisabled());
         verifyThat("#btnLogOut", isDisabled());
-        
+
         clickOn("#btnCancelAccount");
 
         if (table.getItems().isEmpty()) {
@@ -329,10 +330,10 @@ public class AccountsControllerTest extends ApplicationTest {
     /**
      * Valida que el sistema impide crear cuentas sin una descripción.
      */
-    /*    @Test
+    @Test
     public void test_L_create_without_description_fail() {
         clickOn("#btnAddAccount");
-        clickOn("#btnAddAccount"); // Intentar confirmar sin escribir.
+        clickOn("#btnAddAccount");
         verifyThat("#lblMessage", hasText("Description is obligatory."));
         clickOn("#btnCancelAccount");
     }
@@ -343,18 +344,32 @@ public class AccountsControllerTest extends ApplicationTest {
     @Test
     public void test_M_create_account_success() {
         int rowsBefore = table.getItems().size();
+        uniqueName = "Test-" + System.currentTimeMillis();
         clickOn("#btnAddAccount");
 
         Node cell = lookup(".table-cell").nth(1).query();
         doubleClickOn(cell);
-        write("Cuenta Tests");
-        Node id = lookup(".table-cell").nth(0).query();
-        Account acc = (Account) table.getSelectionModel().getSelectedItem();
-        idAcc = acc.getId();
+        write(uniqueName);
         type(KeyCode.ENTER);
 
         clickOn("#btnAddAccount");
         verifyThat("#lblMessage", hasText("Account created."));
+        clickOn("#btnRefresh");
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+        }
+
+        idAcc = null;
+        for (Object item : table.getItems()) {
+            Account acc = (Account) item;
+            if (acc.getDescription().equals(uniqueName)) {
+                idAcc = acc.getId();
+                break;
+            }
+        }
+
+        assertNotNull("No se pudo capturar el ID de: " + uniqueName, idAcc);
         assertEquals(rowsBefore + 1, table.getItems().size());
     }
 
@@ -398,12 +413,11 @@ public class AccountsControllerTest extends ApplicationTest {
      */
     @Test
     public void test_O_delete_new_account_success() {
+        assertNotNull("El ID de la cuenta a borrar es null. Revisa el Test M.", idAcc);
+
         int rowsCurrent = table.getItems().size();
-        if (rowsCurrent == 0) {
-            return;
-        }
         int targetRow = -1;
-        
+
         for (int i = 0; i < table.getItems().size(); i++) {
             Account acc = (Account) table.getItems().get(i);
             if (acc.getId().equals(idAcc)) {
@@ -415,12 +429,18 @@ public class AccountsControllerTest extends ApplicationTest {
         if (targetRow != -1) {
             Node rowNode = lookup(".table-row-cell").nth(targetRow).query();
             clickOn(rowNode);
-
             clickOn("#btnDeleteAccount");
             clickOn("Yes");
 
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+            }
+
             verifyThat("#lblMessage", hasText("Account deleted."));
-            assertEquals(rowsCurrent - 1, table.getItems().size());
+            assertEquals("La cuenta no se eliminó de la tabla.", rowsCurrent - 1, table.getItems().size());
+        } else {
+            fail("No se encontró la fila con el ID: " + idAcc + " y nombre: " + uniqueName);
         }
     }
 
