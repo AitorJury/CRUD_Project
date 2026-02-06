@@ -72,8 +72,7 @@ public class MovementControllerTest extends ApplicationTest {
         Node row = lookup(".table-row-cell").nth(0).query();
         clickOn(row);
         clickOn("#btnViewMovements");
-        
-        //clickOn("#btnViewMovements");
+       
 
     }
 
