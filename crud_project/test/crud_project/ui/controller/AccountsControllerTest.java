@@ -22,6 +22,8 @@ import static org.junit.Assert.*;
 
 /**
  * Clase de pruebas de integración para el controlador de cuentas.
+* @fixme Test insuficientes: crear un test que compruebe la actualización con éxito de description y creditLine para una cuenta de Crédito.Verificar que la Account seleccionada para modificar entre los items de la tabla tiene modificados dichos campos. 
+
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class AccountsControllerTest extends ApplicationTest {
@@ -276,6 +278,7 @@ public class AccountsControllerTest extends ApplicationTest {
     /**
      * Verifica que la descripción de una cuenta existente puede ser
      * actualizada.
+     * @fixme Test insuficiente: verificar que la Account seleccionada para modificar entre los items de la tabla tiene la nueva descripción. 
      */
     @Test
     public void test_I_update_description_success() {
@@ -340,6 +343,7 @@ public class AccountsControllerTest extends ApplicationTest {
 
     /**
      * Realiza el flujo completo de creación exitosa de una nueva cuenta.
+     * @fixme Test insuficiente: en la interacción establecer valores para todos los campos editables a la hora de crear para Account, guardar estos datos en un objeto Account y verificar que dicho objeto está entre los items de la tabla. 
      */
     @Test
     public void test_M_create_account_success() {
@@ -410,6 +414,7 @@ public class AccountsControllerTest extends ApplicationTest {
 
     /**
      * Realiza el flujo completo de borrado exitoso de una cuenta recién creada.
+     * @fixme Test insuficiente: verificar que el objeto Account eliminado ya está entre los items de la tabla. 
      */
     @Test
     public void test_O_delete_new_account_success() {

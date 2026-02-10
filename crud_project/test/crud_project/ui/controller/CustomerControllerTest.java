@@ -126,6 +126,9 @@ public class CustomerControllerTest extends ApplicationTest {
 
         clickOn("Sí"); // O clickOn("Yes") dependiendo de tu idioma
         assertEquals("The row has not been deleted", rowsCount - 1, table.getItems().size());
+        //FIXME El assert anterior es insuficiente. Añadir uno que compruebe que el Customer seleccionado 
+        //FIXME para borrar no está entre los items de la tabla.
+
 
     }
 
@@ -172,6 +175,8 @@ public class CustomerControllerTest extends ApplicationTest {
             cellIndex++;
         }
         assertEquals("The row has not been added!!!", rowsCount + 1, table.getItems().size());
+        //FIXME El assert anterior es insuficiente. Añadir uno que compruebe que el nuevo Customer 
+        //FIXME con los datos del array datos está entre los items de la tabla.
 
 
     }

@@ -47,6 +47,7 @@ import static org.testfx.matcher.control.ListViewMatchers.isEmpty;
 /**
  *
  * @author cynthia
+ * @fixme Añadir un método de test para el caso de uso READ que compruebe que los items de la tabla son objetos Movement.
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class MovementControllerTest extends ApplicationTest {
@@ -111,6 +112,9 @@ public class MovementControllerTest extends ApplicationTest {
         clickOn("Yes");
         int numRowAfter = table.getItems().size();
         assertTrue("The movement cant be created", numRowAfter > numRowBefore);
+        //FIXME El assert anterior es insuficiente. Añadir uno que compruebe que el nuevo Movement 
+        //FIXME con los datos introducidos está entre los items de la tabla.
+        
     }
      @Test
     public void test2_ButtonCreatePayment() {
@@ -126,6 +130,8 @@ public class MovementControllerTest extends ApplicationTest {
         clickOn("Yes");
         int numRowAfter = table.getItems().size();
         assertTrue("The movement cant be created", numRowAfter > numRowBefore);
+        //FIXME El assert anterior es insuficiente. Añadir uno que compruebe que el nuevo Movement 
+        //FIXME con los datos introducidos está entre los items de la tabla.
     }
 
     @Test
@@ -139,6 +145,8 @@ public class MovementControllerTest extends ApplicationTest {
         int rowCountAfter = table.getItems().size();
         assertEquals(rowCountBefore - 1, rowCountAfter);
         verifyThat("#btnDelete", isDisabled());
+        //FIXME El assert anterior es insuficiente. Añadir uno que compruebe que el Movement 
+        //FIXME seleccionado para borrar no está entre los items de la tabla.
 
     }
 
