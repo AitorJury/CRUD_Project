@@ -414,7 +414,7 @@ public class AccountsControllerTest extends ApplicationTest {
 
     /**
      * Realiza el flujo completo de borrado exitoso de una cuenta recién creada.
-     * @fixme Test insuficiente: verificar que el objeto Account eliminado ya está entre los items de la tabla. 
+     * @fixme Test insuficiente: verificar que el objeto Account eliminado ya NO está entre los items de la tabla. 
      */
     @Test
     public void test_O_delete_new_account_success() {
