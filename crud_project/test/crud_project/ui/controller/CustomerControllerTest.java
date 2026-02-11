@@ -22,10 +22,7 @@ import org.testfx.api.FxToolkit;
 import org.testfx.framework.junit.ApplicationTest;
 
 import javax.ws.rs.core.GenericType;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 import static org.testfx.matcher.base.NodeMatchers.*;
 import static org.testfx.matcher.control.ButtonMatchers.isDefaultButton;
@@ -79,10 +76,11 @@ public class CustomerControllerTest extends ApplicationTest {
     public void test_D_delete_customer_success() {
         //Instaciar el restClient para verificar las cuentas
         AccountRESTClient accClient = new AccountRESTClient();
-
+        Customer actualCustomer = table.getSelectionModel().getSelectedItem();
         // Buscar al usuario que no tiene cuentas
         int rowIndex = -1;
-        String userToDeleteName = "";
+        String userToDeleteEmail = "";
+        String userName = "";
         List<Customer> customers = table.getItems();
 
         for (int i = 0; i < customers.size(); i++) {
@@ -99,7 +97,8 @@ public class CustomerControllerTest extends ApplicationTest {
                     // Si NO tiene cuentas, es el cliente para borrar
                     if (accounts == null || accounts.isEmpty()) {
                         rowIndex = i;
-                        userToDeleteName = c.getFirstName();
+                        userToDeleteEmail = c.getEmail();
+                        userName = c.getFirstName();
                         break; // Solo hacemos break si entramos en este IF
                     }
                 } catch (Exception e) {
@@ -122,10 +121,15 @@ public class CustomerControllerTest extends ApplicationTest {
         clickOn(btnDelete);
 
         // Ahora el alert debería ser el correcto
-        verifyThat("Deleting user: " + userToDeleteName, isVisible());
+        verifyThat("Deleting user: " + userName, isVisible());
 
         clickOn("Sí"); // O clickOn("Yes") dependiendo de tu idioma
         assertEquals("The row has not been deleted", rowsCount - 1, table.getItems().size());
+        List<Customer> customerList = table.getItems();
+        String finalUserToDeleteEmail = userToDeleteEmail;
+        assertFalse(customerList.stream().anyMatch(c -> c.getEmail().equals(finalUserToDeleteEmail)));
+
+        assertFalse(customerList.contains(actualCustomer));
         //FIXME El assert anterior es insuficiente. Añadir uno que compruebe que el Customer seleccionado 
         //FIXME para borrar no está entre los items de la tabla.
 
@@ -136,7 +140,7 @@ public class CustomerControllerTest extends ApplicationTest {
     public void test_A_add_customer_success() {
 
         Customer customer = new Customer(
-                new Random().nextLong(),
+                0L,
                 "Paco",
                 "Perez",
                 "M",
@@ -174,8 +178,16 @@ public class CustomerControllerTest extends ApplicationTest {
             write(dato).push(KeyCode.ENTER);
             cellIndex++;
         }
+
+        Customer newCustomer = table.getSelectionModel().getSelectedItem();
+        customer.setId(newCustomer.getId());
+
         assertEquals("The row has not been added!!!", rowsCount + 1, table.getItems().size());
-        //FIXME El assert anterior es insuficiente. Añadir uno que compruebe que el nuevo Customer 
+        List<Customer> customers = table.getItems();
+        assertEquals(1, customers.stream().filter(c -> c.getEmail().equalsIgnoreCase(customer.getEmail())).count());
+
+        assertEquals(customer, table.getSelectionModel().getSelectedItem());
+        //FIXME El assert anterior es insuficiente. Añadir uno que compruebe que el nuevo Customer
         //FIXME con los datos del array datos está entre los items de la tabla.
 
 
@@ -210,8 +222,9 @@ public class CustomerControllerTest extends ApplicationTest {
             write(datos.get(i)).push(KeyCode.ENTER);
         }
         Customer c = table.getItems().get(0);
-
+        Customer customerObject = table.getSelectionModel().getSelectedItem();
         // Verificaciones
+        assertEquals(c.getId(), customerObject.getId());
         assertEquals(datos.get(0), c.getFirstName());
         assertEquals(datos.get(1), c.getLastName());
         assertEquals(datos.get(2), c.getMiddleInitial());
@@ -291,6 +304,73 @@ public class CustomerControllerTest extends ApplicationTest {
         release(KeyCode.CONTROL);
         //Verificar que se ha deshabilitado el boton de eliminar
         verifyThat("#fxBtnDelete", isDisabled());
+
+    }
+
+    @Test
+    public void test_E_read_table_data() {
+        boolean isCustomer = false;
+        List<Customer> customers = table.getItems();
+        if (!customers.isEmpty()) {
+            for (Customer c : customers) {
+                isCustomer = c instanceof Customer;
+            }
+            assertTrue(isCustomer);
+        } else {
+            assertEquals(0, table.getItems().size());
+        }
+
+    }
+
+    @Test
+    public void test_F_email_repeat() {
+        Customer customer = new Customer(
+                new Random().nextLong(),
+                "Wallace",
+                "Perez",
+                "M",
+                "Avenida America",
+                "Madrid",
+                "Madrid",
+                28052,
+                615487796L,
+                "awallace@gmail.com",
+                "clave$%&"
+        );
+
+
+        String[] datos = {
+                customer.getFirstName(),
+                customer.getLastName(),
+                customer.getMiddleInitial(),
+                customer.getEmail(),
+                customer.getPassword(),
+                customer.getPhone().toString(),
+                customer.getStreet(),
+                customer.getCity(),
+                customer.getState(),
+                customer.getZip().toString(),
+
+        };
+        int rowsCount = table.getItems().size();
+        clickOn(isDefaultButton());
+        Node cell = lookup(".table-cell").nth(4).query();
+        clickOn(cell);
+        write(datos[3]).push(KeyCode.ENTER);
+
+        Node dialogPane = lookup(".dialog-pane").query();
+        verifyThat(dialogPane, isVisible());
+
+        verifyThat("Error the email already exists", isVisible());
+
+        //Pulsar el boton de aceptar
+        Node button = from(dialogPane).lookup(".button").query();
+        clickOn(button);
+
+        List<Customer> customers = table.getItems();
+
+        assertTrue(customers.stream().anyMatch(c -> c.getEmail().equals(customer.getEmail())));
+
 
     }
 }
