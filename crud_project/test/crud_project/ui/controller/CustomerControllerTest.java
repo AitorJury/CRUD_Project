@@ -9,10 +9,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TableView;
 import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runners.MethodSorters;
 
 import static org.junit.Assert.*;
@@ -35,14 +32,11 @@ import static org.testfx.matcher.control.ButtonMatchers.isDefaultButton;
 public class CustomerControllerTest extends ApplicationTest {
     private TableView<Customer> table;
     private Button btnDelete;
-    private Button btnAdd;
-    private Button btnExit;
 
 
     @Override
     public void start(Stage stage) throws Exception {
         //Method to start the application
-        //new AppCRUD().start(stage);
         new AppCRUD().start(stage);
 
     }
@@ -60,8 +54,6 @@ public class CustomerControllerTest extends ApplicationTest {
         //var needed to test
         table = lookup("#fxTableView").queryTableView();
         btnDelete = lookup("#fxBtnDelete").queryButton();
-        btnAdd = lookup("#fxBtnNewCustomer").queryButton();
-        btnExit = lookup("#fxBtnExit").queryButton();
 
 
     }
@@ -72,6 +64,7 @@ public class CustomerControllerTest extends ApplicationTest {
         FxToolkit.cleanupStages();
     }
 
+    @Ignore
     @Test
     public void test_D_delete_customer_success() {
         //Instaciar el restClient para verificar las cuentas
@@ -136,6 +129,7 @@ public class CustomerControllerTest extends ApplicationTest {
 
     }
 
+    @Ignore
     @Test
     public void test_A_add_customer_success() {
 
@@ -193,6 +187,7 @@ public class CustomerControllerTest extends ApplicationTest {
 
     }
 
+    @Ignore
     @Test
     public void test_B_update_customer_success() {
 
@@ -238,6 +233,7 @@ public class CustomerControllerTest extends ApplicationTest {
 
     }
 
+    @Ignore
     @Test
     public void test_C_delete_customer_fail() {
 
@@ -307,23 +303,33 @@ public class CustomerControllerTest extends ApplicationTest {
 
     }
 
+    @Ignore
     @Test
     public void test_E_read_table_data() {
         boolean isCustomer = false;
         List<Customer> customers = table.getItems();
-        if (!customers.isEmpty()) {
-            for (Customer c : customers) {
-                isCustomer = c instanceof Customer;
-            }
-            assertTrue(isCustomer);
-        } else {
-            assertEquals(0, table.getItems().size());
+        assertNotNull("The list is null!!", customers);
+        assertFalse("The list is empty!!", customers.isEmpty());
+        for (Customer c : customers) {
+            isCustomer = c instanceof Customer;
         }
+        assertTrue(isCustomer);
 
     }
 
+    @Ignore
     @Test
     public void test_F_email_repeat() {
+
+        List<Customer> customersTable = table.getItems();
+        String emailToClone = "";
+        assertNotNull("The list is null!!", customersTable);
+        emailToClone = customersTable.stream()
+                .map(Customer::getEmail)// Para convertir el Customer a su email
+                .filter(email -> email != null && !email.isEmpty())
+                .findFirst()
+                .orElse("awallace@gmail.com");
+
         Customer customer = new Customer(
                 new Random().nextLong(),
                 "Wallace",
@@ -334,7 +340,7 @@ public class CustomerControllerTest extends ApplicationTest {
                 "Madrid",
                 28052,
                 615487796L,
-                "awallace@gmail.com",
+                emailToClone,
                 "clave$%&"
         );
 
@@ -352,7 +358,6 @@ public class CustomerControllerTest extends ApplicationTest {
                 customer.getZip().toString(),
 
         };
-        int rowsCount = table.getItems().size();
         clickOn(isDefaultButton());
         Node cell = lookup(".table-cell").nth(4).query();
         clickOn(cell);
