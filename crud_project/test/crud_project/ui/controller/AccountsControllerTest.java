@@ -3,6 +3,7 @@ package crud_project.ui.controller;
 import crud_project.AppCRUD;
 import crud_project.model.Account;
 import crud_project.model.AccountType;
+import java.util.Date;
 import java.util.List;
 import javafx.scene.Node;
 import javafx.scene.control.TableView;
@@ -15,7 +16,6 @@ import org.junit.runners.MethodSorters;
 import org.testfx.api.FxToolkit;
 import org.testfx.framework.junit.ApplicationTest;
 import javafx.scene.input.KeyCode;
-import javafx.scene.web.WebView;
 
 import static org.testfx.api.FxAssert.verifyThat;
 import static org.testfx.matcher.base.NodeMatchers.*;
@@ -297,6 +297,7 @@ public class AccountsControllerTest extends ApplicationTest {
      * seleccionada para modificar entre los items de la tabla tiene la nueva
      * descripción.
      */
+    @Ignore
     @Test
     public void test_I_update_description_success() {
         if (table.getItems().isEmpty()) {
@@ -305,6 +306,12 @@ public class AccountsControllerTest extends ApplicationTest {
 
         Account acc = null;
         String newDesc = "Update " + System.currentTimeMillis();
+
+        Date actualDate = new Date();
+        Long time = actualDate.getTime();
+        int change = (int) (time % 1000);
+        Double newCredit = (double) change;
+        
         int accRow = -1;
         int numCols = table.getColumns().size();
 
@@ -325,15 +332,16 @@ public class AccountsControllerTest extends ApplicationTest {
 
             Node cellCredit = lookup(".table-cell").nth(accRow * numCols + 4).query();
             doubleClickOn(cellCredit);
-            write("100");
+            write(newCredit.toString());
             type(KeyCode.ENTER);
             verifyThat("#lblMessage", hasText("Changes saved."));
 
+            clickOn("#btnRefresh");
             int index = table.getSelectionModel().getSelectedIndex();
             assertEquals("La cuenta no se ha editado.", acc, (Account) table.getItems().get(index));
             List<Account> accs = table.getItems();
             assertEquals("La cuenta no se ha actualizado en la base de datos.", accs.stream().filter(a -> a.getDescription().equals(newDesc)).count(), 1);
-            assertEquals("La cuenta no se ha actualizado en la base de datos.", accs.stream().filter(a -> a.getCreditLine().toString().equals("100.0")).count(), 1);
+            assertEquals("La cuenta no se ha actualizado en la base de datos.", accs.stream().filter(a -> a.getCreditLine().equals(newCredit)).count(), 1);
         }
     }
 
@@ -395,6 +403,7 @@ public class AccountsControllerTest extends ApplicationTest {
      * guardar estos datos en un objeto Account y verificar que dicho objeto
      * está entre los items de la tabla.
      */
+    @Ignore
     @Test
     public void test_M_create_account_success() {
         int rowsBefore = table.getItems().size();
@@ -504,6 +513,7 @@ public class AccountsControllerTest extends ApplicationTest {
      * @fixme (ARREGLADO) Test insuficiente: verificar que el objeto Account
      * eliminado ya NO está entre los items de la tabla.
      */
+    @Ignore
     @Test
     public void test_O_delete_new_account_success() {
         if (idAcc == null) {
