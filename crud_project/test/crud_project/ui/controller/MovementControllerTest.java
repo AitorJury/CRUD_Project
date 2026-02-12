@@ -21,6 +21,7 @@ import org.junit.FixMethodOrder;
 import crud_project.AppCRUD;
 import crud_project.model.Account;
 import crud_project.model.Movement;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import javafx.collections.FXCollections;
@@ -124,7 +125,13 @@ public class MovementControllerTest extends ApplicationTest {
 
         Double amount = Math.round(ThreadLocalRandom.current().nextDouble(100, 1000) * 100.0) / 100.0;
 
+        Movement newMovements = new Movement();
+
+        //Sumo id a uno y ya se cual es el ultimo 
+        //fecha la cuentta
+        //Filtrar el movimiento 
         clickOn("#comboType");
+        //Selecciono deposito
         type(KeyCode.DOWN);
         type(KeyCode.ENTER);
         clickOn("#txtAmount");
@@ -135,7 +142,9 @@ public class MovementControllerTest extends ApplicationTest {
 
         assertTrue("The movement cant be created", numRowAfter > numRowBefore);
         List<Movement> movements = table.getItems();
-        assertEquals("No se creo el movimiento", movements.stream().filter(u -> u.getAmount().equals(amount)).count(), 1);
+        assertEquals("No se creo el movimiento", movements.stream().filter(u -> u.getAmount().equals(amount)
+                && u.getDescription().equals("Deposit")).count(), 1);
+        
 
         //FIXME El assert anterior es insuficiente. Añadir uno que compruebe que el nuevo Movement 
         //FIXME con los datos introducidos está entre los items de la tabla. LISTO
@@ -162,8 +171,10 @@ public class MovementControllerTest extends ApplicationTest {
 
         assertTrue("The movement cant be created", numRowAfter > numRowBefore);
         List<Movement> movements = table.getItems();
-        assertEquals("No se creo el movimiento", movements.stream().filter(u -> u.getAmount().equals(-amount)).count(), 1);
-
+        
+        assertEquals("No se creo el movimiento", movements.stream().filter(u -> u.getAmount().equals(-amount)
+                && u.getDescription().equals("Payment")).count(),  1);
+      
         //FIXME El assert anterior es insuficiente. Añadir uno que compruebe que el nuevo Movement 
         //FIXME con los datos introducidos está entre los items de la tabla. LISTO
     }
