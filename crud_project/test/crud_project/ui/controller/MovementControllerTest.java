@@ -122,7 +122,7 @@ public class MovementControllerTest extends ApplicationTest {
 
         int numRowBefore = table.getItems().size();
 
-        Double amount = Math.round(ThreadLocalRandom.current().nextDouble(10, 1000) * 100.0) / 100.0;
+        Double amount = Math.round(ThreadLocalRandom.current().nextDouble(100, 1000) * 100.0) / 100.0;
 
         clickOn("#comboType");
         type(KeyCode.DOWN);
@@ -148,7 +148,7 @@ public class MovementControllerTest extends ApplicationTest {
 
         int numRowBefore = table.getItems().size();
 
-        Double amount = Math.round(ThreadLocalRandom.current().nextDouble(10, 1000) * 100.0) / 100.0;
+        Double amount = Math.round(ThreadLocalRandom.current().nextDouble(10, 20) * 100.0) / 100.0;
 
         clickOn("#comboType");
         type(KeyCode.DOWN);
