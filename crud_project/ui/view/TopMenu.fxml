@@ -8,22 +8,20 @@
       stylesheets="@../res/estilo.css"
       alignment="CENTER_LEFT">
 
-    <children>
-        <MenuBar HBox.hgrow="ALWAYS" maxWidth="1.7976931348623157E308">
-            <menus>
-                <Menu mnemonicParsing="false" text="Session">
-                    <items>
-                        <MenuItem fx:id="fxMenuClose" mnemonicParsing="false" text="Close" />
-                        <MenuItem fx:id="fxMenuSignOut" mnemonicParsing="false" text="Sign out" />
-                    </items>
-                </Menu>
-                <Menu mnemonicParsing="false" text="Help">
-                    <items>
-                        <MenuItem fx:id="fxMenuAbout" mnemonicParsing="false" text="About" />
-                        <MenuItem fx:id="fxMenuContent" mnemonicParsing="false" text="Help" />
-                    </items>
-                </Menu>
-            </menus>
-        </MenuBar>
-    </children>
+    <MenuBar HBox.hgrow="ALWAYS" maxWidth="1.7976931348623157E308">
+        <Menu mnemonicParsing="false" text="Session">
+            <MenuItem fx:id="fxMenuClose" mnemonicParsing="false" text="Close"/>
+            <MenuItem fx:id="fxMenuSignOut" mnemonicParsing="false" text="Sign out"/>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Help">
+            <MenuItem fx:id="fxMenuAbout" mnemonicParsing="false" text="About"/>
+            <MenuItem fx:id="fxMenuContent" mnemonicParsing="false" text="Help"/>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Accion">
+            <MenuItem fx:id="fxCreateCustomer" mnemonicParsing="false" text="Add"/>
+            <MenuItem fx:id="fxDeleteCustomer" mnemonicParsing="false" text="Delete"/>
+            <MenuItem fx:id="fxUpdateCustomer" mnemonicParsing="false" text="Update"/>
+        </Menu>
+
+    </MenuBar>
 </HBox>

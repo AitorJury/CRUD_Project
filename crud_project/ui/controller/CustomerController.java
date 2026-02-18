@@ -22,7 +22,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -30,29 +29,21 @@ import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.layout.StackPane;
-import javafx.scene.web.WebEngine;
-import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import javafx.util.converter.IntegerStringConverter;
 import javafx.util.converter.LongStringConverter;
 
-import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.GenericType;
 
 /**
  *
  * @author juancaizaduenas
  */
-public class CustomerController {
+public class CustomerController extends BaseController {
 
-    private static final Logger LOGGER = Logger.getLogger("crudbankclientside.ui");
-    private final Stage userStage = new Stage();
+    private static final Logger LOGGER = Logger.getLogger(CustomerController.class.getName());
 
-    public static final String EXIT_CONFIRMATION_TITLE = "Exit Confirmation";
-    public static final String EXIT_CONFIRMATION_MESSAGE = "Are you sure you want to exit?";
     public static final String BASIC_MATCHER = "[a-zA-Z]+";
 
     private Scene userScene;
@@ -169,22 +160,154 @@ public class CustomerController {
      */
     public void initUserStage(Parent root) {
 
-
+        this.stage = new Stage();
         //Creacion de la nueva ventana para User
         userScene = new Scene(root);
-        userStage.setScene(userScene);
+        stage.setScene(userScene);
         LOGGER.info("Initialization window user");
-        userStage.setTitle("Users management for ADMIN");
+        stage.setTitle("Users management for ADMIN");
         LOGGER.info("Setting title");
-        userStage.setResizable(false);
+        stage.setResizable(false);
         LOGGER.info("Setting fix size");
-        userStage.show();
+        stage.show();
         LOGGER.info("Showing window");
 
         //Deshabilitar boton de delete
         fxBtnDelete.setDisable(true);
 
+        loadData();
 
+        //metodo para cuando el usuario quiere cerrar la aplicacion
+        stage.setOnCloseRequest(this::handleExit);
+
+        //Comprobacion de cambio de fila
+        fxTableView.getSelectionModel().selectedItemProperty().addListener(this::handleTableSelectionChanged);
+
+        //Filtro para cada celda, se acciona en el evento de commit (en este caso al pulsar enter)
+        //Cada celda tiene sus propias validaciones
+        fxTcFirstName.setOnEditCommit(this::handleFirstNameCellEdit);
+        fxTcLastName.setOnEditCommit(this::handleLastNameCellEdit);
+        fxTcMidName.setOnEditCommit(this::handleMiddleInitialCellEdit);
+        fxTcStreet.setOnEditCommit(this::handleStreetCellEdit);
+        fxTcCity.setOnEditCommit(this::handleCityCellEdit);
+        fxTcState.setOnEditCommit(this::handleStateCellEdit);
+        fxTcEmail.setOnEditCommit(this::handleEmailCellEdit);
+        fxTcPassword.setOnEditCommit(this::handlePasswordCellEdit);
+        fxTcZip.setOnEditCommit(this::handleZipCellEdit);
+        fxTcPhone.setOnEditCommit(this::handlePhoneCellEdit);
+
+        //---- Accion de botones ----//
+        /* Añade una fila y llama al metodo create_XML del RESTClient para crear un nuevo cliente*/
+        fxBtnNewCustomer.setOnAction(this::handleCreate);
+        /* Borra una fila y llama al metodo delete_XML del RESTClient para eliminar el cliente*/
+        fxBtnDelete.setOnAction(this::handleDelete);
+        /* Salir de la aplicacion a traves del boton Exit creado*/
+        fxBtnExit.setOnAction(this::handleExit);
+
+        /*
+         * Import del componente reutilizable de MenuBarController
+         */
+        topMenuController.init(stage);
+        topMenuController.fxMenuContent.setOnAction(event -> showHelp());
+
+        setupTableContextMenu();
+
+
+    }
+
+    @Override
+    protected void handleCreate(ActionEvent event) {
+        try {
+
+            Customer newCustomer = new Customer();
+            client.create_XML(newCustomer);
+            fxTableView.getItems().add(0, newCustomer);
+
+            Customer bdCustomer = client.findCustomerByEmailPassword_XML(Customer.class, newCustomer.emailProperty().get(), "clave$%&");
+            Long idCustomer = bdCustomer.getId();
+            newCustomer.setId(idCustomer);
+
+            Platform.runLater(() -> {
+                fxTableView.requestFocus();
+                fxTableView.getSelectionModel().select(0);
+                fxTableView.scrollTo(0);
+                fxTableView.edit(0, fxTcFirstName);
+            });
+
+
+        } catch (Exception e) {
+            showError("Error saving new customer...");
+            LOGGER.severe("Error saving new customer: " + e.getMessage());
+        }
+    }
+
+    @Override
+    protected void handleUpdate(ActionEvent event) {
+        // La actualización se realiza mediante la edición de celdas
+    }
+
+    @Override
+    protected void handleDelete(ActionEvent event) {
+        try {
+
+            AccountRESTClient accClient = new AccountRESTClient();
+
+            Customer selectedCustomer = fxTableView.getSelectionModel().getSelectedItem();
+            //Comprobar si esta seleccionado una fila
+
+            Set<Account> account = accClient.findAccountsByCustomerId_XML(
+                    new GenericType<Set<Account>>() {
+                    },
+                    selectedCustomer.getId().toString()
+            );
+
+            if (selectedCustomer.getFirstName().equals("admin")) {
+                throw new IllegalArgumentException("No se puede borrar el usuario administrador");
+            }
+
+            if (account != null && !account.isEmpty()) {
+                throw new InternalServerErrorException("The user cannot be deleted because they have associated accounts or data.");
+            }
+
+            Alert deleteAlert = new Alert(
+                    Alert.AlertType.CONFIRMATION,
+                    "Are you sure you want to delete the user: " + selectedCustomer.getFirstName() + "?",
+                    ButtonType.YES, ButtonType.NO);
+
+            deleteAlert.setTitle("Delete user?");
+            deleteAlert.setHeaderText("Deleting user: " + selectedCustomer.getFirstName());
+            deleteAlert.showAndWait().ifPresent(resp -> {
+                if (resp == ButtonType.YES) {
+
+
+                    client.remove(selectedCustomer.getId().toString());
+                    fxTableView.getItems().remove(selectedCustomer);
+                    fxTableView.getSelectionModel().clearSelection();
+                }
+            });
+
+
+        } catch (InternalServerErrorException | IllegalArgumentException ex) {
+            showError(ex.getMessage());
+            LOGGER.severe(ex.getMessage());
+        } catch (Exception e) {
+            showError("Error while deleting this user, please try again.");
+            LOGGER.severe(e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
+        }
+    }
+
+    @Override
+    protected String getHelpResourcePath() {
+        return "/crud_project/ui/res/help.html";
+    }
+
+    @Override
+    protected String getHelpWindowTitle() {
+        return "Customer manager help";
+    }
+
+    @Override
+    protected void loadData() {
         //Configuracion de la tabla a modo editable
         fxTableView.setEditable(true);
 
@@ -234,52 +357,11 @@ public class CustomerController {
         fxTcZip.setEditable(true);
         fxTcZip.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
 
-        //Carga de datos a las columnas
         customersData = FXCollections.observableArrayList(client.findAll_XML(new GenericType<List<Customer>>() {
         }));
-        //Inserta los datos cargados en la tabla
         fxTableView.setItems(customersData);
-
-        //metodo para cuando el usuario quiere cerrar la aplicacion
-        userStage.setOnCloseRequest(this::handleOnExitAction);
-
-
-        //Comprobacion de cambio de fila
-        fxTableView.getSelectionModel().selectedItemProperty().addListener(this::handleTableSelectionChanged);
-
-        //Filtro para cada celda, se acciona en el evento de commit (en este caso al pulsar enter)
-        //Cada celda tiene sus propias validaciones
-        fxTcFirstName.setOnEditCommit(this::handleFirstNameCellEdit);
-        fxTcLastName.setOnEditCommit(this::handleLastNameCellEdit);
-        fxTcMidName.setOnEditCommit(this::handleMiddleInitialCellEdit);
-        fxTcStreet.setOnEditCommit(this::handleStreetCellEdit);
-        fxTcCity.setOnEditCommit(this::handleCityCellEdit);
-        fxTcState.setOnEditCommit(this::handleStateCellEdit);
-        fxTcEmail.setOnEditCommit(this::handleEmailCellEdit);
-        fxTcPassword.setOnEditCommit(this::handlePasswordCellEdit);
-        fxTcZip.setOnEditCommit(this::handleZipCellEdit);
-        fxTcPhone.setOnEditCommit(this::handlePhoneCellEdit);
-
-        //---- Accion de botones ----//
-        /* Añade una fila y llama al metodo create_XML del RESTClient para crear un nuevo cliente*/
-        fxBtnNewCustomer.setOnAction(this::handleAddCustomerRow);
-        /* Borra una fila y llama al metodo delete_XML del RESTClient para eliminar el cliente*/
-        fxBtnDelete.setOnAction(this::handleDeleteCustomerAndRow);
-        /* Salir de la aplicacion a traves del boton Exit creado*/
-        fxBtnExit.setOnAction(this::handleOnExitAction);
-
-        /*
-         * Import del componente reutilizable de MenuBarController
-         */
-        topMenuController.init(userStage);
-        topMenuController.fxMenuContent.setOnAction(event -> {
-            showHelpWindow("/crud_project/ui/res/help.html");
-        });
-
-        setupTableContextMenu();
-
-
     }
+
 
     /**
      * Maneja el cambio de selección de filas en la tabla de clientes.
@@ -295,96 +377,9 @@ public class CustomerController {
 
     }
 
-    /**
-     * Maneja la acción de eliminar un cliente seleccionado y su fila correspondiente.
-     * Si no hay un cliente seleccionado, no realiza ninguna acción.
-     * Si falla la eliminación, muestra un mensaje de error.
-     *
-     * @param actionEvent El evento de acción.
-     */
-    private void handleDeleteCustomerAndRow(ActionEvent actionEvent) {
-        try {
-
-            AccountRESTClient accClient = new AccountRESTClient();
-
-            Customer selectedCustomer = fxTableView.getSelectionModel().getSelectedItem();
-            //Comprobar si esta seleccionado una fila
-
-            Set<Account> account = accClient.findAccountsByCustomerId_XML(
-                    new GenericType<Set<Account>>() {
-                    },
-                    selectedCustomer.getId().toString()
-            );
-
-            if (selectedCustomer.getFirstName().equals("admin")) {
-                throw new IllegalArgumentException("No se puede borrar el usuario administrador");
-            }
-
-            if (account != null && !account.isEmpty()) {
-                throw new InternalServerErrorException("The user cannot be deleted because they have associated accounts or data.");
-            }
-
-            Alert deleteAlert = new Alert(
-                    Alert.AlertType.CONFIRMATION,
-                    "Are you sure you want to delete the user: " + selectedCustomer.getFirstName() + "?",
-                    ButtonType.YES, ButtonType.NO);
-
-            deleteAlert.setTitle("Delete user?");
-            deleteAlert.setHeaderText("Deleting user: " + selectedCustomer.getFirstName());
-            deleteAlert.showAndWait().ifPresent(resp -> {
-                if (resp == ButtonType.YES) {
-
-
-                    client.remove(selectedCustomer.getId().toString());
-                    fxTableView.getItems().remove(selectedCustomer);
-                    fxTableView.getSelectionModel().clearSelection();
-                }
-            });
-
-
-        } catch (InternalServerErrorException | IllegalArgumentException ex) {
-            handleAlertError(ex.getMessage());
-            LOGGER.severe(ex.getMessage());
-        } catch (Exception e) {
-            handleAlertError("Error while deleting this user, please try again.");
-            LOGGER.severe(e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
-        }
-    }
 
     /**
-     * Maneja la acción de añadir una nueva fila de clientes a la tabla ademas de crearlo en la BD.
-     *
-     * @param event El evento de acción.
-     */
-    public void handleAddCustomerRow(ActionEvent event) {
-
-        try {
-
-            Customer newCustomer = new Customer();
-            client.create_XML(newCustomer);
-            fxTableView.getItems().add(0, newCustomer);
-
-            Customer bdCustomer = client.findCustomerByEmailPassword_XML(Customer.class, newCustomer.emailProperty().get(), "clave$%&");
-            Long idCustomer = bdCustomer.getId();
-            newCustomer.setId(idCustomer);
-
-            Platform.runLater(() -> {
-                fxTableView.requestFocus();
-                fxTableView.getSelectionModel().select(0);
-                fxTableView.scrollTo(0);
-                fxTableView.edit(0, fxTcFirstName);
-            });
-
-
-        } catch (Exception e) {
-            handleAlertError("Error saving new customer...");
-            LOGGER.severe("Error saving new customer: " + e.getMessage());
-        }
-
-    }
-
-    /**
-     * Método para la gestión y validación de la edición de la celda del nombre.
+     * Metodo para la gestión y validación de la edición de la celda del nombre.
      *
      * @param cellName El evento de edición de celda.
      */
@@ -409,7 +404,7 @@ public class CustomerController {
 
         } catch (Exception e) {
             LOGGER.warning("Error in First Name cell edit: " + e.getMessage());
-            handleAlertError(e.getMessage());
+            showError(e.getMessage());
             fxTableView.refresh();
         }
 
@@ -441,7 +436,7 @@ public class CustomerController {
 
         } catch (Exception e) {
             LOGGER.warning("Error in First Name cell edit: " + e.getMessage());
-            handleAlertError(e.getMessage());
+            showError(e.getMessage());
             fxTableView.refresh();
         }
 
@@ -478,7 +473,7 @@ public class CustomerController {
         } catch (Exception e) {
 
 
-            handleAlertError(e.getMessage());
+            showError(e.getMessage());
             fxTableView.refresh();
         }
     }
@@ -508,7 +503,7 @@ public class CustomerController {
 
         } catch (Exception e) {
 
-            handleAlertError(e.getMessage());
+            showError(e.getMessage());
             fxTableView.refresh();
 
         }
@@ -543,7 +538,7 @@ public class CustomerController {
             client.edit_XML(myCustomer, myCustomer.getId());
 
         } catch (Exception e) {
-            handleAlertError(e.getMessage());
+            showError(e.getMessage());
             fxTableView.refresh();
         }
 
@@ -573,7 +568,7 @@ public class CustomerController {
 
 
         } catch (Exception e) {
-            handleAlertError(e.getMessage());
+            showError(e.getMessage());
             fxTableView.refresh();
         }
     }
@@ -606,11 +601,11 @@ public class CustomerController {
         } catch (InternalServerErrorException ex) {
             LOGGER.severe("Error the email already exists");
             myCustomer.setEmail(oldEmail);
-            handleAlertError("Error the email already exists");
+            showError("Error the email already exists");
             fxTableView.refresh();
         } catch (Exception e) {
             myCustomer.setEmail(oldEmail);
-            handleAlertError(e.getMessage());
+            showError(e.getMessage());
             fxTableView.refresh();
         }
     }
@@ -640,7 +635,7 @@ public class CustomerController {
 
         } catch (Exception e) {
             LOGGER.warning("Error in Password cell edit: " + e.getMessage());
-            handleAlertError(e.getMessage());
+            showError(e.getMessage());
             fxTableView.refresh();
         }
     }
@@ -665,12 +660,12 @@ public class CustomerController {
             client.edit_XML(myCustomer, myCustomer.getId());
 
         } catch (NumberFormatException | InputMismatchException e) {
-            handleAlertError("Zip code must be a number");
+            showError("Zip code must be a number");
             LOGGER.severe("Error in Zip cell edit: " + e.getMessage());
             fxTableView.refresh();
 
         } catch (Exception e) {
-            handleAlertError(e.getMessage());
+            showError(e.getMessage());
             LOGGER.severe(e.getMessage());
             fxTableView.refresh();
         }
@@ -701,71 +696,17 @@ public class CustomerController {
             client.edit_XML(myCustomer, myCustomer.getId());
 
         } catch (NumberFormatException | InputMismatchException e) {
-            handleAlertError("Phone number must be a number");
+            showError("Phone number must be a number");
             LOGGER.severe("Error in Phone cell edit: " + e.getMessage());
             fxTableView.refresh();
         } catch (Exception e) {
-            handleAlertError(e.getMessage());
+            showError(e.getMessage());
             LOGGER.severe(e.getMessage());
             fxTableView.refresh();
             fxTableView.refresh();
         }
     }
 
-    /**
-     * Muestra una alerta de error con el mensaje especificado.
-     *
-     * @param message El mensaje de error a mostrar.
-     */
-    private void handleAlertError(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR, "", ButtonType.OK);
-        alert.setTitle("Error");
-        alert.setContentText(message);
-        alert.showAndWait();
-
-    }
-
-    /**
-     * Maneja la acción de salida de la aplicación, pidiendo confirmación.
-     *
-     * @param event El evento que dispara la acción.
-     */
-    public void handleOnExitAction(Event event) {
-        try {
-            LOGGER.info("Clicked exit button");
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, EXIT_CONFIRMATION_MESSAGE,
-                    ButtonType.OK, ButtonType.CANCEL);
-            alert.setTitle(EXIT_CONFIRMATION_TITLE);
-
-            alert.showAndWait().ifPresent(response -> {
-                if (response == ButtonType.OK) {
-                    userStage.close();
-                }
-            });
-
-            event.consume();
-        } catch (Exception e) {
-            handleAlertError("Fail to Close");
-        }
-    }
-
-    private void showHelpWindow(String resourcePath) {
-
-        try {
-
-            WebView webView = new WebView();
-            webView.getEngine().load(getClass().getResource(resourcePath).toExternalForm());
-            Stage customerHelpStage = new Stage();
-            customerHelpStage.setTitle("Customer manager help");
-            customerHelpStage.setScene(new Scene(new StackPane(webView), 800, 600));
-            customerHelpStage.show();
-
-
-        } catch (Exception e) {
-            LOGGER.severe("Error in showHelpWindow");
-            handleAlertError("Error in showHelpWindow");
-        }
-    }
 
 
     private void setupTableContextMenu() {
@@ -778,8 +719,8 @@ public class CustomerController {
         // Reutilizar metodos
         //Busca la fila seleccionada, y en la columna name la pone en edicion
         editItem.setOnAction(event -> fxTableView.edit(fxTableView.getSelectionModel().getSelectedIndex(), fxTcFirstName));
-        addItem.setOnAction(this::handleAddCustomerRow);
-        deleteItem.setOnAction(this::handleDeleteCustomerAndRow);
+        addItem.setOnAction(this::handleCreate);
+        deleteItem.setOnAction(this::handleDelete);
 
         contextMenu.getItems().addAll(addItem, new SeparatorMenuItem(), editItem, new SeparatorMenuItem(), deleteItem);
 
@@ -792,8 +733,9 @@ public class CustomerController {
      *
      * @return El Stage del usuario.
      */
+    @Override
     public Stage getStage() {
-        return this.userStage;
+        return this.stage;
     }
 
     /**

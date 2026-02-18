@@ -1,5 +1,6 @@
 package crud_project.ui.controller;
 
+import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
@@ -15,18 +16,16 @@ import javafx.stage.Stage;
 
 import java.util.logging.Logger;
 
-import static crud_project.ui.controller.CustomerController.EXIT_CONFIRMATION_MESSAGE;
-import static crud_project.ui.controller.CustomerController.EXIT_CONFIRMATION_TITLE;
 
 /**
  * La clase {@code MenuBarController} gestiona el comportamiento de la barra de
  * menú en una aplicación JavaFX.
- *
+ * <p>
  * Se encarga de manejar las acciones del usuario asociadas a los distintos
  * elementos del menú, como cerrar la aplicación, mostrar la ventana "Acerca
  * de", cerrar sesión y mostrar la página de ayuda.
  */
-public class MenuBarController {
+public class MenuBarController extends BaseController{
 
     private static final Logger LOGGER = Logger.getLogger("crudbankclientside.ui");
     private Stage userStage;
@@ -55,84 +54,26 @@ public class MenuBarController {
      */
     @FXML
     public MenuItem fxMenuContent;
+    @FXML
+    public MenuItem fxCreateCustomer;
+    @FXML
+    public MenuItem fxDeleteCustomer;
+    @FXML
+    public MenuItem fxUpdateCustomer;
+
 
     /**
      * Inicializa la funcionalidad de la barra de menú y configura los
      * manejadores de eventos para cada elemento del menú.
      *
      * @param stage escenario principal de la aplicación, utilizado para
-     * gestionar las ventanas de la aplicación
+     *              gestionar las ventanas de la aplicación
      */
     public void init(Stage stage) {
         this.userStage = stage;
         fxMenuClose.setOnAction(e -> System.exit(0));
-        fxMenuSignOut.setOnAction(this::handleOnExitAction);
+        fxMenuSignOut.setOnAction(this::handleExit);
         fxMenuAbout.setOnAction(this::handleAboutWindow);
-        //fxMenuContent.setOnAction(this::handleWindowShowing);
-
-    }
-
-    /**
-     * Maneja la acción de cerrar sesión.
-     * <p>
-     * Muestra un cuadro de diálogo de confirmación al usuario y, si este
-     * confirma, cierra la ventana actual. En caso de error, se muestra un
-     * mensaje de alerta.
-     *
-     * @param event evento asociado a la acción del menú
-     */
-    public void handleOnExitAction(Event event) {
-        try {
-            LOGGER.info("Clicked exit button");
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, EXIT_CONFIRMATION_MESSAGE,
-                    ButtonType.OK, ButtonType.CANCEL);
-            alert.setTitle(EXIT_CONFIRMATION_TITLE);
-
-            alert.showAndWait().ifPresent(response -> {
-                if (response == ButtonType.OK) {
-                    userStage.close();
-                }
-            });
-
-            event.consume();
-        } catch (Exception e) {
-            LOGGER.severe(e.getMessage());
-            handleAlertError("Fail to Close try again");
-        }
-    }
-
-    /**
-     * Maneja la visualización de la ventana de ayuda.
-     * <p>
-     * Crea una nueva ventana que muestra un archivo HTML embebido
-     * ({@code help.html}) con la documentación de ayuda del sistema. Si el
-     * archivo no se encuentra, se muestra una alerta de error.
-     *
-     * @param event evento que desencadena la apertura de la ventana de ayuda
-     */
-    private void handleWindowShowing(Event event) {
-        WebView webView = new WebView();
-
-        WebEngine webEngine = webView.getEngine();
-
-        try {
-            String url = getClass().getResource("/crud_project/ui/res/help.html").toExternalForm();
-            webEngine.load(url);
-
-            //Crear ventana para mostrar la help al igual que el about
-            StackPane root = new StackPane(webView);
-            Scene scene = new Scene(root, 800, 600);
-            Stage helpStage = new Stage();
-
-            helpStage.setResizable(false);
-            helpStage.setTitle("System help");
-            helpStage.setScene(scene);
-            helpStage.show();
-
-        } catch (Exception e) {
-            LOGGER.severe("File help not found: " + e.getMessage());
-            handleAlertError("File not found");
-        }
 
     }
 
@@ -164,19 +105,56 @@ public class MenuBarController {
 
     }
 
+
+    @Override
+    protected void loadData() {
+        // Se queda vacio, ya que no se usa
+    }
+
     /**
-     * Muestra un cuadro de diálogo de error con el mensaje indicado.
-     * <p>
-     * El diálogo contiene un título, el mensaje de error y un botón "OK".
+     * Lógica de creación de entidad según la ventana activa.
      *
-     * @param message mensaje de error que se mostrará al usuario
+     * @param event evento de acción
      */
-    private void handleAlertError(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR, "", ButtonType.OK);
-        alert.setTitle("Error");
-        alert.setContentText(message);
-        alert.showAndWait();
+    @Override
+    protected void handleCreate(ActionEvent event) {
 
     }
 
+    /**
+     * Lógica de actualización de entidad según la ventana activa.
+     *
+     * @param event evento de acción
+     */
+    @Override
+    protected void handleUpdate(ActionEvent event) {
+
+    }
+
+    /**
+     * Lógica de borrado de entidad según la ventana activa.
+     *
+     * @param event evento de acción
+     */
+    @Override
+    protected void handleDelete(ActionEvent event) {
+
+    }
+
+    /**
+     * Devuelve la ruta al recurso HTML de ayuda específico de cada ventana.
+     * Ejemplo: "/crud_project/ui/res/helpAccount.html"
+     */
+    @Override
+    protected String getHelpResourcePath() {
+        return "";
+    }
+
+    /**
+     * Devuelve el título de la ventana de ayuda específico de cada ventana.
+     */
+    @Override
+    protected String getHelpWindowTitle() {
+        return "";
+    }
 }
