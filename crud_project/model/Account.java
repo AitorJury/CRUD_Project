@@ -8,19 +8,6 @@ package crud_project.model;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
-import static javax.persistence.CascadeType.MERGE;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import static javax.persistence.FetchType.EAGER;
-import javax.persistence.Id;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
@@ -31,11 +18,6 @@ import javax.xml.bind.annotation.XmlTransient;
  * customers owning the account and movements or transactions made on the account.  
  * @author Javier Martín Uría
  */
-@Entity
-@Table(name="account",schema="bankdb")
-@NamedQuery(name="findAllAccounts",
-            query="SELECT a FROM Account a ORDER BY a.id DESC"
-)
 @XmlRootElement
 public class Account implements Serializable {
 
@@ -43,12 +25,10 @@ public class Account implements Serializable {
     /**
      * Identification field for the account.
      */
-    @Id
     private Long id;
     /**
      * Type of the account.
      */
-    @Enumerated(EnumType.ORDINAL)
     private AccountType type;
     /**
      * Description of the account.
@@ -72,18 +52,14 @@ public class Account implements Serializable {
     /**
      * Begin balance timestamp.
      */
-    @Temporal(TemporalType.TIMESTAMP)
     private Date beginBalanceTimestamp;
     /**
      * Relational field containing Customers owning the account. 
      */
-    @ManyToMany(fetch=EAGER,cascade=MERGE)
-    @JoinTable(schema="bankdb",name="customer_account")
     private Set<Customer> customers;
     /**
      * Relational field containing the list of movements on the account.
      */
-    @OneToMany(mappedBy="account",fetch=EAGER)
     private Set<Movement> movements;
     /**
      * 

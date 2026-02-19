@@ -5,21 +5,21 @@ import crud_project.logic.AccountRESTClient;
 import crud_project.model.Account;
 import crud_project.model.AccountType;
 import crud_project.model.Customer;
+import java.net.URL;
 import java.util.*;
 import java.util.logging.Logger;
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.ChoiceBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.converter.DoubleStringConverter;
@@ -32,14 +32,14 @@ import javax.ws.rs.core.GenericType;
  * creación, edición y borrado de cuentas en una TableView.
  *
  * * @author Aitor Jury Rodríguez. 1º DAM.
- * @todo @fixme Hacer que la siguiente clase implemente las interfaces 
- * Initializable y MenuActionsHandler para que al pulsar en las acciones CRUD del 
- * menú Actions se ejecuten los métodos manejadores correspondientes a la vista 
- * que incluye el menú.
- * El método initialize debe llamar a setMenuActionsHandler() para establecer que este
- * controlador es el manejador de acciones del menú. 
+ * @todo (SOLUCIONADO ) @fixme Hacer que la siguiente clase implemente las
+ * interfaces Initializable y MenuActionsHandler para que al pulsar en las
+ * acciones CRUD del menú Actions se ejecuten los métodos manejadores
+ * correspondientes a la vista que incluye el menú. El métod o initialize debe
+ * llamar a setMenuActionsHandler() para establecer que este controlador es el
+ * manejador de acciones del menú.
  */
-public class AccountsController {
+public class AccountsController implements Initializable, MenuActionsHandler {
 
     // Logger para el seguimiento de eventos y errores en consola.
     private static final Logger LOGGER = Logger.getLogger("crud_project.ui");
@@ -64,8 +64,8 @@ public class AccountsController {
     @FXML
     private Label lblMessage;
     /**
-     * Controlador del menú superior
-     * JavaFX asigna automáticamente el campo topMenuController cuando usas fx:id="menuBar".
+     * Controlador del menú superior JavaFX asigna automáticamente el campo
+     * topMenuController cuando usas fx:id="menuBar".
      */
     @FXML
     private MenuBarController menuBarController;
@@ -368,6 +368,7 @@ public class AccountsController {
                     restClient.createAccount_XML(creatingAccount);
                     creatingAccount = null;
                     finishCreation("Account created.");
+                    event.consume();
                 }
             }
         } catch (WebApplicationException e) {
@@ -672,4 +673,29 @@ public class AccountsController {
         return this.stage;
     }
 
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        menuBarController.setMenuActionsHandler(this);
+    }
+
+    @Override
+    public void onCreate() {
+        btnAddAccount.fire();
+    }
+
+    @Override
+    public void onRefresh() {
+        loadAccountsData();
+        showSuccess("Data refreshed from server.");
+    }
+
+    @Override
+    public void onUpdate() {
+        showError("Editable table, click on an editable cell");
+    }
+
+    @Override
+    public void onDelete() {
+        handleDeleteAccount(null);
+    }
 }
