@@ -12,6 +12,7 @@ import crud_project.model.AccountType;
 import crud_project.model.Customer;
 import crud_project.model.Movement;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -35,6 +36,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -46,14 +48,14 @@ import javax.ws.rs.core.GenericType;
 /**
  *
  * @author cynthia
- * @todo @fixme Hacer que la siguiente clase implemente las interfaces 
- * Initializable y MenuActionsHandler para que al pulsar en las acciones CRUD del 
- * menú Actions se ejecuten los métodos manejadores correspondientes a la vista 
- * que incluye el menú.
- * El método initialize debe llamar a setMenuActionsHandler() para establecer que este
- * controlador es el manejador de acciones del menú. 
+ * @todo @fixme Hacer que la siguiente clase implemente las interfaces
+ * Initializable y MenuActionsHandler para que al pulsar en las acciones CRUD
+ * del menú Actions se ejecuten los métodos manejadores correspondientes a la
+ * vista que incluye el menú. El método initialize debe llamar a
+ * setMenuActionsHandler() para establecer que este controlador es el manejador
+ * de acciones del menú. HECHO
  */
-public class MovementController {
+public class MovementController implements MenuActionsHandler {
 
     private static final Logger LOGGER = Logger.getLogger("crudbankclientside.ui");
 
@@ -102,8 +104,8 @@ public class MovementController {
     @FXML
     private Label lblNmCredit;
     /**
-     * Controlador del menú superior
-     * JavaFX asigna automáticamente el campo topMenuController cuando usas fx:id="hBoxMenu".
+     * Controlador del menú superior JavaFX asigna automáticamente el campo
+     * topMenuController cuando usas fx:id="hBoxMenu".
      */
     @FXML
     private MenuBarController hBoxMenuController;
@@ -119,8 +121,7 @@ public class MovementController {
 
     public void init(Parent root) {
         lblNumAccount.setText(account.getId().toString());
-        //Se muestra la escena
-
+        //Se muestra la escenar
         Scene scene = new Scene(root);
         this.stage.setScene(scene);
         stage.setTitle("Movements");
@@ -129,7 +130,10 @@ public class MovementController {
         this.stage.setTitle("Movement page");
         this.stage.setResizable(false);
         this.stage.setOnCloseRequest(this::handleWindowClose);
+
         if (hBoxMenuController != null) {
+            //HECHO
+            hBoxMenuController.setMenuActionsHandler(this);
             hBoxMenuController.init(this.stage);
             hBoxMenuController.fxMenuContent.setOnAction(e -> {
                 showCustomerHelp("/crud_project/ui/res/help_movement.html");
@@ -137,23 +141,21 @@ public class MovementController {
         }
 
         //Da valor a la factoría de celda 
-        clDate.setCellValueFactory(new PropertyValueFactory<>("timestamp"));
         clAmount.setCellValueFactory(new PropertyValueFactory<>("amount"));
         clDescription.setCellValueFactory(new PropertyValueFactory<>("description"));
         clBalance.setCellValueFactory(new PropertyValueFactory<>("balance"));
         //Carga los movimientos de la tabla
         loadMovements();
         //Para que cargue los label
-         lblBalance.setText(account.getBalance().toString());
-         if (lblCreditLine.isVisible()) {
-                lblCreditLine.setText(account.getCreditLine().toString());
-            }
+        lblBalance.setText(account.getBalance().toString());
+        if (lblCreditLine.isVisible()) {
+            lblCreditLine.setText(account.getCreditLine().toString());
+        }
         buttonEnable();
 
         //Creamos variable que necesitaremos para el delete
         Double creditNow = 0.0;
         btnBack.setCancelButton(true);
-
         //Se pone los valores en la combo de la description (type)
         ObservableList<String> items = FXCollections.observableArrayList("Deposit", "Payment");
         comboType.setItems(items);
@@ -182,9 +184,43 @@ public class MovementController {
         btnDelete.setOnAction(this::handleBtnDelete);
         btnBack.setOnAction(this::handleBtnBack);
         this.stage.show();
+        //
+        /* MEJORAS FORMATEAR FECHA*/
+        clDate.setCellValueFactory(new PropertyValueFactory<>("timestamp"));
+        clDate.setCellFactory(column -> new TableCell<Movement, Date>() {
+            private final SimpleDateFormat format
+                    = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+
+            @Override
+            protected void updateItem(Date item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : format.format(item));
+            }
+        });
+        /*MEJORA PARA QUE APAREZCA EL EURO*/
+        clBalance.setCellFactory(column -> new TableCell<Movement, Double>() {
+            @Override
+            protected void updateItem(Double item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : String.format("%.2f €", item));
+            }
+        });
+        clAmount.setCellFactory(column -> new TableCell<Movement, Double>() {
+            @Override
+            protected void updateItem(Double item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : String.format("%.2f €", item));
+            }
+        });
+        /* MEJORA PARA QUE EL VALOR DEL DINERO ESTA EN LA DERECHA  */
+        clAmount.setStyle("-fx-alignment: CENTER-RIGHT;");
+        clBalance.setStyle("-fx-alignment: CENTER-RIGHT;");
+        clDescription.setStyle("-fx-alignment: CENTER;");
+
     }
 
     public void loadMovements() {
+
         try {
             //this.account = accountClient.find_XML(Account.class, account.getId().toString());
             //Id de prueba idAccount
@@ -326,6 +362,7 @@ public class MovementController {
     }
 
     public void handleBtnCreate(ActionEvent event) {
+
         try {
             //Se crea el movimiento
             Movement newMovement = new Movement();
@@ -441,6 +478,7 @@ public class MovementController {
     public Account getAccount() {
         return this.account;
     }
+
     private void handleWindowClose(WindowEvent event) {
         try {
             Alert a = new Alert(Alert.AlertType.CONFIRMATION, "Exit application?", yes, no);
@@ -467,5 +505,31 @@ public class MovementController {
             handlelblError("The help file could not be loaded");
         }
     }
+    //Implementados los Override
 
+    @Override
+    public void onCreate() {
+        handleBtnCreate(null);
+        LOGGER.info("Movimiento creado");
+
+    }
+
+    @Override
+    public void onRefresh() {
+        loadMovements();
+        handlelblError("Tabla refrescada");
+        LOGGER.info("Tabla refrescada");
+    }
+
+    @Override
+    public void onUpdate() {
+        handlelblError("No se puede hacer update con los movimientos");
+    }
+
+    @Override
+    public void onDelete() {
+        handleBtnDelete(null);
+        LOGGER.info("Movimiento borrado");
+
+    }
 }

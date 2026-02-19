@@ -8,24 +8,20 @@
 
 <AnchorPane prefHeight="768.0" prefWidth="1024.0" styleClass="root-pane" stylesheets="@../res/estilo.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="crud_project.ui.controller.MovementController">
     <children>
-        <fx:include fx:id="hBoxMenu" source="TopMenu.fxml" 
-            AnchorPane.leftAnchor="0.0"
-            AnchorPane.rightAnchor="0.0"
-            AnchorPane.topAnchor="0.0"
-        />
+        <fx:include fx:id="hBoxMenu" source="TopMenu.fxml" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
         <ImageView fitHeight="105.0" fitWidth="133.0" layoutX="864.0" layoutY="24.0" pickOnBounds="true" preserveRatio="true">
             <image>
                 <Image url="@../res/icono_Cynthor_SF.png" />
             </image>
         </ImageView>
-        <Label layoutX="40.0" layoutY="99.0" prefHeight="39.0" prefWidth="69.0" styleClass="title-label" text="Account" />
+        <Label layoutX="40.0" layoutY="57.0" prefHeight="39.0" prefWidth="69.0" styleClass="title-label" text="Account" />
         <HBox alignment="CENTER_LEFT" layoutX="303.0" layoutY="139.0" spacing="10.0" /> 
-        <TableView fx:id="tbMovement" layoutX="40.0" layoutY="138.0" prefHeight="467.0" prefWidth="779.0" styleClass="text-field">
+        <TableView fx:id="tbMovement" layoutX="20.0" layoutY="94.0" prefHeight="511.0" prefWidth="799.0" styleClass="text-field">
             <columns>
-                <TableColumn fx:id="clDate" prefWidth="289.0" text="Date" />
-                <TableColumn fx:id="clDescription" prefWidth="160.0" text="Type" />
-                <TableColumn fx:id="clAmount" prefWidth="152.0" text="Amount" />
-                <TableColumn fx:id="clBalance" prefWidth="176.0" text="Balance" />
+                <TableColumn fx:id="clDate" prefWidth="147.0" text="Date" />
+                <TableColumn fx:id="clDescription" prefWidth="156.0" text="Type" />
+                <TableColumn fx:id="clAmount" prefWidth="205.0" text="Amount" />
+                <TableColumn fx:id="clBalance" prefWidth="285.0" text="Balance" />
             </columns>
             <placeholder>
                 <Label />
@@ -41,10 +37,9 @@
             </children>
         </HBox>
         <Label layoutX="245.0" layoutY="610.0" prefHeight="18.0" prefWidth="139.0" styleClass="title-label" text="Amount" />
-        <Label fx:id="lblName" layoutX="40.0" layoutY="139.0" prefHeight="27.0" prefWidth="274.0" styleClass="title-label" />
         <Label layoutX="835.0" layoutY="529.0" prefHeight="25.0" prefWidth="139.0" styleClass="title-label" text="Balance" />
         <Label fx:id="lblError" layoutX="47.0" layoutY="677.0" prefHeight="27.0" prefWidth="550.0" styleClass="error-label" />
-        <Label fx:id="lblNumAccount" layoutX="109.0" layoutY="111.0" prefHeight="15.0" prefWidth="187.0" />
+        <Label fx:id="lblNumAccount" layoutX="109.0" layoutY="68.0" prefHeight="15.0" prefWidth="187.0" />
         <Label fx:id="lblBalance" layoutX="843.0" layoutY="563.0" prefHeight="30.0" prefWidth="111.0" />
         <Label fx:id="lblNmCredit" layoutX="835.0" layoutY="474.0" prefHeight="15.0" prefWidth="111.0" styleClass="title-label" text="CreditLine" />
         <Label fx:id="lblCreditLine" layoutX="835.0" layoutY="496.0" prefHeight="18.0" prefWidth="111.0" />
