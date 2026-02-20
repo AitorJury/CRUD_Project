@@ -45,6 +45,12 @@ import javax.ws.rs.core.GenericType;
 /**
  *
  * @author juancaizaduenas
+ * @todo @fixme Hacer que la siguiente clase implemente las interfaces 
+ * Initializable y MenuActionsHandler para que al pulsar en las acciones CRUD del 
+ * menú Actions se ejecuten los métodos manejadores correspondientes a la vista 
+ * que incluye el menú.
+ * El método initialize debe llamar a setMenuActionsHandler() para establecer que este
+ * controlador es el manejador de acciones del menú. 
  */
 public class CustomerController {
 
@@ -147,6 +153,7 @@ public class CustomerController {
 
     /**
      * Controlador del menú superior
+     * JavaFX asigna automáticamente el campo topMenuController cuando usas fx:id="topMenu".
      */
     @FXML
     public MenuBarController topMenuController;
