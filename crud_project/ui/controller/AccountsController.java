@@ -32,6 +32,12 @@ import javax.ws.rs.core.GenericType;
  * creación, edición y borrado de cuentas en una TableView.
  *
  * * @author Aitor Jury Rodríguez. 1º DAM.
+ * @todo @fixme Hacer que la siguiente clase implemente las interfaces 
+ * Initializable y MenuActionsHandler para que al pulsar en las acciones CRUD del 
+ * menú Actions se ejecuten los métodos manejadores correspondientes a la vista 
+ * que incluye el menú.
+ * El método initialize debe llamar a setMenuActionsHandler() para establecer que este
+ * controlador es el manejador de acciones del menú. 
  */
 public class AccountsController {
 
@@ -57,6 +63,10 @@ public class AccountsController {
     private ToggleButton btnAddAccount;
     @FXML
     private Label lblMessage;
+    /**
+     * Controlador del menú superior
+     * JavaFX asigna automáticamente el campo topMenuController cuando usas fx:id="menuBar".
+     */
     @FXML
     private MenuBarController menuBarController;
 
